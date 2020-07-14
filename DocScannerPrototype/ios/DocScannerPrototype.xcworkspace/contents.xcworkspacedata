@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:Fonts"
+      name = "Fonts">
+      <FileRef
+         location = "group:Fonts/Ionicons.ttf">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:DocScannerPrototype.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Pods/Pods.xcodeproj">
+   </FileRef>
+</Workspace>
