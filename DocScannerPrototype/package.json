@@ -16,7 +16,6 @@
     "@react-navigation/drawer": "^5.3.4",
     "@react-navigation/native": "^5.5.1",
     "@react-navigation/stack": "^5.5.1",
-    "@woonivers/react-native-document-scanner": "^2.1.1",
     "react": "16.11.0",
     "react-native": "0.62.2",
     "react-native-elements": "^2.0.2",
@@ -24,9 +23,15 @@
     "react-native-permissions": "^2.1.5",
     "react-native-perspective-image-cropper": "^0.4.4",
     "react-native-reanimated": "^1.9.0",
+    "react-native-rectangle-scanner": "^1.0.10",
     "react-native-safe-area-context": "^3.0.5",
     "react-native-screens": "^2.9.0",
-    "react-native-vector-icons": "^6.6.0"
+    "react-native-snap-carousel": "^3.9.1",
+    "react-native-svg": "^12.1.0",
+    "react-native-vector-icons": "^6.6.0",
+    "react-redux": "^7.2.0",
+    "redux": "^4.0.5",
+    "redux-thunk": "^2.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",

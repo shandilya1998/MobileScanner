@@ -1,12 +1,24 @@
 import { PropTypes } from 'prop-types';
 import React, { PureComponent } from 'react';
-import { ActivityIndicator, Animated, Dimensions, Platform, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {ActivityIndicator, 
+        Animated, 
+        Dimensions, 
+        Platform, 
+        SafeAreaView, 
+        StatusBar, 
+        StyleSheet, 
+        Text, 
+        TouchableOpacity, 
+        View,
+        Switch } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import PDFScanner from '@woonivers/react-native-document-scanner';
 import {styles} from '../../assets/styles';
 import Permissions from 'react-native-permissions';
+import {connect} from 'react-redux';
+import {addPicture} from '../../actions/actions';
 
-export default class Scanner extends PureComponent {
+class Scanner extends PureComponent {
     constructor(props) {
         super(props);
         this.state = {
@@ -14,20 +26,18 @@ export default class Scanner extends PureComponent {
             didLoadInitialLayout: false,
             isMultiTasking: false,
             loadingCamera: true,
-            processingImage: false,
             takingPicture: false,
             cameraAllowed : false,
             overlayFlashOpacity: new Animated.Value(0),
+            captureMultiple : false,
             device: {
-                initialized: false,
-                hasCamera: false,
-                permissionToUseCamera: false,
-                flashIsAvailable: false,
+                initialized: false, 
                 previewHeightPercent: 1,
                 previewWidthPercent: 1,
             },
         };
         this.capture = this.capture.bind(this);
+        this.toggleSwitch = this.toggleSwitch.bind(this);
         this.camera = React.createRef();
     }
 
@@ -101,17 +111,25 @@ export default class Scanner extends PureComponent {
 
     capture(){
         if (this.state.takingPicture) return;
-        this.setState({ takingPicture: true, processingImage: true });
+        this.setState({ takingPicture: true});
         this.camera.capture();
         this.triggerSnapAnimation();
-
+    
         // If capture failed, allow for additional captures
      }
 
     // The picture was captured but still needs to be processed.
     onPictureTaken = (event) => {
+        //console.log('test')
         this.setState({ takingPicture: false });
-        this.props.onPictureTaken(event);
+        this.props.onPictureTaken(event.initialImage, 
+                                  event.croppedImage, 
+                                  event.rectangleCoordinates);
+        if(!this.state.captureMultiple){
+            this.props.navigation.navigate('edit', 
+                                          {'captureMultiple' : this.state.captureMultiple}); 
+            this.turnOffCamera(); 
+        }
     }
 
     // Flashes the screen on capture
@@ -151,7 +169,6 @@ export default class Scanner extends PureComponent {
 
     // Renders the flashlight button. Only shown if the device has a flashlight.
     renderFlashControl() {
-        console.log('here');
         const { flashEnabled, device } = this.state;
         return (
             <TouchableOpacity
@@ -169,6 +186,11 @@ export default class Scanner extends PureComponent {
         );
     }
 
+    toggleSwitch(){
+        const value = this.state.captureMultiple;
+        this.setState({captureMultiple : !value});
+    }
+
     // Renders the camera controls. This will show controls on the side for large tablet screens
     // or on the bottom for phones. (For small tablets it will adjust the view a little bit).
     renderCameraControls() {
@@ -184,6 +206,29 @@ export default class Scanner extends PureComponent {
                 <View style={styles.buttonContainer}>
                     <View style={[styles.buttonActionGroup, { flexDirection: 'row', alignItems: 'flex-end', marginBottom: 28 }]}>
                         {this.renderFlashControl()}
+                        <View style={{ 
+                            flexDirection: 'column', 
+                            justifyContent: 'flex-end' }}>
+                            {null}
+                            <View style={{
+                                backgroundColor: '#00000080',
+                                flexDirection: isPhone ? 'column' : 'row',
+                                borderRadius: 30,
+                                margin: 8,}}>
+                                <Switch
+                                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                    thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={this.toggleSwitch}
+                                    value={isEnabled}
+                                    style={{
+                                        paddingHorizontal: 14,
+                                        paddingVertical: 13,
+                                        height: 50,
+                                        width: 50,
+                                    }}/>
+                            </View>
+                        </View>
                         <View style={[styles.buttonGroup, { marginLeft: 8 }]}>
                             <TouchableOpacity
                                 style={[styles.button, disabledStyle]}
@@ -227,6 +272,28 @@ export default class Scanner extends PureComponent {
             <View style={styles.buttonContainer}>
                 <View style={[styles.buttonActionGroup, { justifyContent: 'flex-end', marginBottom: 20 }]}>
                     {this.renderFlashControl()}
+                    <View style={{ 
+                        flexDirection: 'column', 
+                        justifyContent: 'flex-end' }}> 
+                        {null}
+                        <View style={{
+                            backgroundColor: '#00000080',
+                            flexDirection: isPhone ? 'column' : 'row',
+                            borderRadius: 30, 
+                            margin: 8,}}>
+                            <Switch
+                                trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
+                                ios_backgroundColor="#3e3e3e"
+                                onValueChange={this.toggleSwitch}
+                                value={this.state.captureMultiple}
+                                style={{
+                                    paddingHorizontal: 14, 
+                                    paddingVertical: 13, 
+                                    height: 50, 
+                                    width: 50, }}/>
+                        </View>
+                    </View>
                 </View>
                 <View style={[styles.cameraOutline, disabledStyle]}>
                     <TouchableOpacity
@@ -296,9 +363,29 @@ export default class Scanner extends PureComponent {
                             justifyContent: 'flex-end', 
                             marginBottom: this.props.hideSkip ? 0 : 16 }]}>
                         {this.renderFlashControl()}
+                        <View style={{
+                            flexDirection: 'column',
+                            justifyContent: 'flex-end' }}>
+                            <View style={{
+                                backgroundColor: '#00000080',
+                                flexDirection: isPhone ? 'column' : 'row',
+                                borderRadius: 30,
+                                margin: 8,}}>
+                                <Switch
+                                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                    thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={this.toggleSwitch}
+                                    value={this.state.captureMultiple}
+                                    style={{
+                                        paddingHorizontal: 14,
+                                        paddingVertical: 13,
+                                        height: 50,
+                                        width: 50, }}/>
+                            </View>
+                        </View>
                     </View>
                     <View style={styles.buttonGroup}>
-                        {this.props.hideSkip ? null : (
                         <TouchableOpacity
                             style={[styles.button, disabledStyle]}
                             onPress={cameraIsDisabled ? () => null : this.props.onSkip}
@@ -309,7 +396,7 @@ export default class Scanner extends PureComponent {
                                 color="white" 
                                 style={styles.buttonIcon} />
                             <Text style={styles.buttonText}>Skip</Text>
-                        </TouchableOpacity>)}
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
@@ -357,10 +444,13 @@ export default class Scanner extends PureComponent {
                 height: dimensions.height, 
                 width: dimensions.width }}>
                 <PDFScanner
+                    onDeviceSetup = {(event)=>this.onDeviceSetup(event)}
                     onPictureTaken={this.onPictureTaken}
                     overlayColor="rgba(135, 130, 235, 0.7)"
                     enableTorch={this.state.flashEnabled}
-                    ref={this.camera}
+                    ref={ref =>{this.camera = ref;}}
+                    useBase64 = {true}
+                    captureMultiple = {this.state.captureMultiple}
                     quality={0.6}
                     manualOnly = {true}
                     style={styles.scanner}
@@ -428,6 +518,10 @@ export default class Scanner extends PureComponent {
             </View>
         );
     }
+    
+    onDeviceSetup(event){
+        console.log(event);
+    }
 
     render() {
         return (
@@ -460,3 +554,15 @@ export default class Scanner extends PureComponent {
     }
 }
 
+const mapStateToProps = (state) => {
+    //const {} = state;
+    return {};
+};
+
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onPictureTaken : (originalImage, detectedImage, rectCoords) => dispatch(addPicture(originalImage, detectedImage, rectCoords)), 
+    };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Scanner);

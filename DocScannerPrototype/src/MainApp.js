@@ -3,6 +3,7 @@ import {createDrawerNavigator } from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {navigatorRef} from './rootNavigator';
 import MobileScanner from './containers/MobileScanner';
+import ScanContainer from './containers/ScanContainer';
 
 MainStack = createDrawerNavigator();
 
@@ -17,7 +18,7 @@ class MainApp extends Component{
                 <MainStack.Navigator initialRouteName = {'Scanner'}>
                     <MainStack.Screen 
                         name = {'Scanner'}
-                        component = {MobileScanner}/>
+                        component = {ScanContainer}/>
                 </MainStack.Navigator>
             </NavigationContainer>
         );

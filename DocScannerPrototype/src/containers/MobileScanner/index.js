@@ -1,3 +1,3 @@
-import Scanner from './Scanner';
+import MobileScanner from './Scanner2';
 
-export default Scanner;
+export default MobileScanner;
