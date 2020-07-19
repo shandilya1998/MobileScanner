@@ -1,7 +1,9 @@
 rootProject.name = 'DocScannerPrototype'
+include ':react-native-fs'
+project(':react-native-fs').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-fs/android')
 include ':react-native-rectangle-scanner'
 project(':react-native-rectangle-scanner').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-rectangle-scanner/android')
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
-include ':app'
 include ':openCVLibrary310'
-project(':openCVLibrary310').projectDir = new File(rootProject.projectDir,'../node_modules/@woonivers/react-native-document-scanner/android/openCVLibrary310')
+project(':openCVLibrary310').projectDir = new File(rootProject.projectDir,'../node_modules/react-native-perspective-image-cropper/android/openCVLibrary310')
+include ':app'

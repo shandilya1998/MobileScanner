@@ -82,6 +82,8 @@ target 'DocScannerPrototype' do
 
   pod 'RNRectangleScanner', :path => '../node_modules/react-native-rectangle-scanner/ios'
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
   target 'DocScannerPrototypeTests' do
     inherit! :complete
     # Pods for testing

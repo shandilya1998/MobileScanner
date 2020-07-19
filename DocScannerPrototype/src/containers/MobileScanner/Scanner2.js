@@ -26,7 +26,6 @@ class MobileScanner extends PureComponent {
         onCancel: () => {},
         onPictureTaken: () => {},
         hideSkip: false,
-        initialFilterId: Filters.PLATFORM_DEFAULT_FILTER_ID,
     }
 
     constructor(props) {
@@ -176,6 +175,7 @@ class MobileScanner extends PureComponent {
 
     // The picture was taken and cached. You can now go on to using it.
     onPictureProcessed(event){
+        //console.log(event);
         this.props.onPictureProcessed({originalImage : event.initialImage,
                                        detectedImage : event.croppedImage, 
                                        rectCoords : this.state.detectedRectangle});
@@ -206,11 +206,13 @@ class MobileScanner extends PureComponent {
         if (shouldUninitializeCamera && this.state.device.initialized) {
             this.setState(({ device }) => ({
                 showScannerView: false,
+                loadingCamera : false,
                 device: { ...device, initialized: false },
             }));
         } else if (this.state.showScannerView) {
             this.setState({ showScannerView: false, loadingCamera : false });
         }
+        //this.camera.current.stop();
     } 
 
     // Will show the camera view which will setup the camera and start it.
@@ -220,7 +222,7 @@ class MobileScanner extends PureComponent {
             //this.camera.start();        
             this.setState({
                 showScannerView: true,
-                loadingCamera: true,
+                //loadingCamera: false,
             });
         }
     }
@@ -484,7 +486,7 @@ class MobileScanner extends PureComponent {
     renderCameraOverlay() {
         let loadingState = null;
         if (this.state.loadingCamera) {
-            console.log('this');
+            //console.log('this');
             loadingState = (
                 <View style={styles.overlay}>
                     <View style={styles.loadingContainer}>
@@ -563,6 +565,7 @@ class MobileScanner extends PureComponent {
                         style={styles.scanner}/>
                     {rectangleOverlay}
                     <Animated.View 
+                        useNativeDriver = {true}
                         style={{ 
                             ...styles.overlay, 
                             backgroundColor: 'white', 
