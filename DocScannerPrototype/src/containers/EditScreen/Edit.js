@@ -3,30 +3,41 @@ import {View,
         Text, 
         Image, 
         Dimensions,
-        TouchableOpacity} from 'react-native';
+        TouchableOpacity,
+        Platform} from 'react-native';
 import {connect} from 'react-redux';
 import CustomCrop from 'react-native-perspective-image-cropper';
 import {styles} from '../../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 const dimensions = Dimensions.get('window');
 console.log(dimensions);
-
+let RNFS = require('react-native-fs');
+const cachesDir = RNFS.CachesDirectoryPath;
+const writeDir = `${cachesDir}/RNRectangleScanner/`;
+//console.log(cachesDir);
+import {updateDoc} from '../../actions/actions';
+console.log(Platform.OS);
 class Edit extends Component{
     constructor(props){
         super(props);
         console.log(props);
         const currentPageDimensions = {
-            'width' : dimensions.width*0.9,
-            'height' : dimensions.height*0.7,
+            'width' : dimensions.width,
+            'height' : dimensions.height,
             'set' : false,
         };
         this.state = {
-            currentPage : props.doc[0],
-            currentPageDimensions : currentPageDimensions,
+            doc : props.doc,
+            currentPage : {
+                pageNum : 0,
+                updated : false,
+                dimensions : currentPageDimensions,
+            },
             toggle : {
                 crop : false,
                 },
             tools : ['crop'],
+            saving : false,
         };
         this.updateImage = this.updateImage.bind(this);
         this.renderSwiperButtons = this.renderSwiperButtons.bind(this);
@@ -35,44 +46,48 @@ class Edit extends Component{
         this.onPressCrop = this.onPressCrop.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.crop = this.crop.bind(this);
+        this.onPressDone = this.onPressDone.bind(this);
+        this.renderOverlay = this.renderOverlay.bind(this);
     }
 
     componentDidMount(){ 
         const setDimensions = (width, height)=>{
             console.log('success');
-            if(height>dimensions.height){height=dimensions.height*0.7;}
-            if(width>dimensions.width){width=dimensions.width*0.9;}
+            if(height>dimensions.height){height=dimensions.height;}
+            if(width>dimensions.width){width=dimensions.width;}
             console.log(width);
             console.log(height);
+            let {currentPage} = this.state;
+            currentPage.dimensions = {
+                height : height,
+                width : width,
+                set : true,
+            };
             this.setState({
-                currentPageDimensions : {
-                    height : height,
-                    width : width,
-                    set : true,
-                },
-            }); 
+                'currentPage' : currentPage,
+            });
         }; 
         Image.getSize(
-            this.state.currentPage.originalImage,
+            this.state.doc[this.state.currentPage.pageNum].originalImage,
             setDimensions,
             (err)=> console.log(err)
         );
     }
     
     componentDidUpdate(){
-        if(!this.state.currentPageDimensions.set){
+        if(!this.state.currentPage.dimensions.set){
             const setDimensions = (width, height)=>{
                 console.log('success');
                 console.log(width);
                 console.log(height);
-                if(height>dimensions.height){height=dimensions.height*0.7;}
-                if(width>dimensions.width){width=dimensions.width*0.9;}
+                let {currentPage} = this.state;
+                currentPage.dimensions = {
+                    height : height,
+                    width : width,
+                    set : true,
+                };
                 this.setState({
-                    currentPageDimensions : {
-                        height : height,
-                        width : width,
-                        set : true,
-                    },  
+                    'currentPage' : currentPage,
                 }); 
             };  
             Image.getSize(
@@ -81,31 +96,59 @@ class Edit extends Component{
                 (err)=> console.log(err)
             ); 
         } 
+        if(this.state.currentPage.updated){
+            this.props.updateDoc(this.state.doc);
+            let {currentPage} = this.state;
+            currentPage.updated = false;
+            this.setState({
+                'currentPage' : currentPage,
+            });            
+        }
     }
 
-    updateImage(image, rectCoords){
-        //console.log(image);
-        //console.log(rectCoords);
-        const updatedPage = {
-            ...this.state.currentPage,
-            detectedDocument : image,
+    async updateImage(image, rectCoords){
+        console.log('code coordinates');
+        console.log(rectCoords);
+        const type = Platform.OS=='android'?'png':'jpeg'
+        const writeFile = `${writeDir}page${this.state.currentPage.pageNum}.${type}`
+        let exists = await RNFS.exists(writeFile);
+        if(exists){
+            await RNFS.unlink(writeFile);
+        } 
+        RNFS.writeFile(writeFile, image, 'base64')
+        exists = await RNFS.exists(writeFile);
+        if(exists){
+           console.log('image saved'); 
+        }
+        const {doc} =  this.state;
+        doc[this.state.currentPage.pageNum] = {
+            ...doc[this.state.currentPage.pageNum],
+            detectedDocument : `file://${writeFile}`,
             rectCoords : rectCoords,
         };
-        this.setState({currentPage : updatedPage});
+        this.setState({'doc' : doc}); 
     }
     
     crop(){
         this.customCrop.crop();
+        let {currentPage} = this.state;
+        currentPage.updated = true;
+        this.setState({
+            'currentPage' : currentPage,
+        });
     }
 
     renderHeader(){
         return(
-            <View style = {{
-                    flexDirection : 'row',
-                    justifyContent : 'space-between',
-                    alignItems : 'center',
-                    marginHorizontal : 10,
-                }}>
+            <View style = {
+                    styles.overlay,
+                    {
+                        flexDirection : 'row',
+                        justifyContent : 'space-between',
+                        alignItems : 'center',
+                        marginHorizontal : 10,
+                        marginBottom : 5,
+                    }}>
                 <View 
                     style = {styles.buttonGroup}>
                     <TouchableOpacity
@@ -114,12 +157,13 @@ class Edit extends Component{
                             name = 'md-more'
                             size = {40}
                             color = {'white'}
-                            style={styles.buttonIcon} />
+                            style={[styles.buttonIcon, {fontSize:40}]} />
                     </TouchableOpacity>
                 </View>
                 <View
                     style = {styles.buttonGroup}>
                     <TouchableOpacity
+                        onPress = {()=>this.onPressDone()}
                         style = {styles.button}>
                         <Icon 
                             name = 'md-done-all'
@@ -132,17 +176,24 @@ class Edit extends Component{
             </View>
         );
     }
+
+    onPressDone(){
+        this.props.updateDoc(this.state.doc);
+        this.props.navigation.navigate('saved'); 
+    }
      
     renderSwiperButtons(){
         if(this.props.captureMultiple){
             return(
                 <View
-                    style = {{
-                        flex : 1,
-                        flexDirection : 'row',
-                        justifyContent : 'space-between',
-                        alignItems : 'center',
-                    }}>
+                    style = {
+                        styles.overlay,
+                        {
+                            flex : 1.5,
+                            flexDirection : 'row',
+                            justifyContent : 'space-between',
+                            alignItems : 'center',
+                        }}>
                     <View  
                         style={[
                             styles.buttonGroup, 
@@ -185,12 +236,14 @@ class Edit extends Component{
         //console.log(this.state.toggle.crop);
         return(
             <View 
-                style = {{
-                    flex : 1,
-                    flexDirection : 'row',
-                    justifyContent : 'center',
-                    alignItems : 'center',
-                }}>
+                style = {
+                    styles.overlay,
+                    {
+                        flex : 1.5,
+                        flexDirection : 'row',
+                        justifyContent : 'center',
+                        alignItems : 'center',
+                    }}>
                 <View  
                     style={[
                         styles.buttonGroup, 
@@ -220,6 +273,9 @@ class Edit extends Component{
         console.log(this.state.toggle.crop);
         if(this.state.toggle.crop){
             this.crop();
+            const toggle = {crop : false};
+            this.setState({'toggle' : toggle});
+            
         }
         else{
             const toggle = {
@@ -234,20 +290,20 @@ class Edit extends Component{
         return(
             <View 
                 style = {{
-                    flex : 7,
+                    flex : 6,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    //height : dimensions.height*0.7,
+                    //height : dimensions.height*0.6,
                     width : dimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
                 }}>  
                 <CustomCrop
                     updateImage={this.updateImage}
-                    initialImage = {this.state.currentPage.originalImage}
-                    height = {this.state.currentPageDimensions.height}
-                    width = {this.state.currentPageDimensions.width}
+                    initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}
+                    height = {this.state.currentPage.dimensions.height}
+                    width = {this.state.currentPage.dimensions.width}
                     rectangleCoordinates={this.state.currentPage.rectCoords}
                     ref={ref => (this.customCrop = ref)}
                     overlayColor="rgba(18,190,210, 1)"
@@ -259,41 +315,58 @@ class Edit extends Component{
     }
 
     renderItem(){
+        console.log(this.state);
         if(this.state.toggle.crop){
             return this.renderCropper();
         }
         else{
             return(
                 <View style = {{
-                    flex : 7,
+                    flex : 6,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    //height : dimensions.height*0.7,
-                    //width : dimensions.width,
+                    //height : dimensions.height*0.6,
+                    width : dimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
                 }}> 
                     <Image
-                        source = {{uri : this.state.currentPage.originalImage}}
+                        source = {{
+                            uri : this.state.doc[this.state.currentPage.pageNum].detectedDocument}}
                         style = {{
-                            width : this.state.currentPageDimensions.width,
-                            height : this.state.currentPageDimensions.height,
+                            resizeMode : 'contain',
+                            width : this.state.currentPage.dimensions.width,
+                            height : this.state.currentPage.dimensions.height,
                         }}/>
                 </View>
             );
         }
+    }
+    
+    renderOverlay(){
+        return(
+            <View
+                style = {styles.overlay}> 
+                {this.renderHeader()}
+                {this.renderSwiperButtons()}
+                {this.renderToolBar()}
+            </View>
+        );
     }
 
     render(){ 
         //console.log(this.updateImage);
         return(
             <View 
-                style = {[styles.container, {backgroundColor : 'white', paddingVertical : 10}]}>
-                {this.renderHeader()}
+                style = {[
+                    styles.container, 
+                    {
+                        backgroundColor : 'white', 
+                        paddingVertical : 0,
+                    }]}>
                 {this.renderItem()}
-                {this.renderSwiperButtons()}
-                {this.renderToolBar()}
+                {this.renderOverlay()}
             </View>
         );
     }
@@ -307,7 +380,9 @@ const mapStateToProps = (state) => {
 };
 
 const mapDispatchToProps = (dispatch) => {
-    return {};
+    return {
+        updateDoc : (doc) => dispatch(updateDoc),
+    };
 };
 
 export default connect( mapStateToProps, mapDispatchToProps)(Edit);

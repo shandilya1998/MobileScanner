@@ -23,11 +23,9 @@ export default function reducer(state = initialState, action){
                 'scannedDocument' : updatedScannedDocument,
             };
         case UPDATE_DOCUMENT_CROP:
-            let scannedDocument = [...state.scannedDocument];
-            scannedDocument[action.payload.page.pageNum] = page;
             return {
                 ...state,
-                'scannedDocument' : scannedDocument,
+                'scannedDocument' : action.payload['doc'],
             };
         default:
             return {...state};

@@ -14,9 +14,9 @@ export function onPictureProcessed({originalImage, detectedImage, rectCoord}){
     };
 }
 
-export function updatePage(page){
+export function updateDoc(doc){
     const payload = {
-        'page' : page,
+        'doc' : doc,
     };
     return {
         'type' : UPDATE_DOCUMENT_CROP,
