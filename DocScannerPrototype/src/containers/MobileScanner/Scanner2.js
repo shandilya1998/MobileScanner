@@ -254,7 +254,7 @@ class MobileScanner extends PureComponent {
 
     // Renders the camera controls. This will show controls on the side for large tablet screens
     // or on the bottom for phones. (For small tablets it will adjust the view a little bit).
-    renderCameraControls() {
+    renderCameraControls(){
         const dimensions = Dimensions.get('window');
         const aspectRatio = dimensions.height / dimensions.width;
         const isPhone = aspectRatio > 1.6;
