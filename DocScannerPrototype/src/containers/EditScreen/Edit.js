@@ -10,17 +10,17 @@ import CustomCrop from 'react-native-perspective-image-cropper';
 import {styles} from '../../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 const dimensions = Dimensions.get('window');
-console.log(dimensions);
+//console.log(dimensions);
 let RNFS = require('react-native-fs');
 const cachesDir = RNFS.CachesDirectoryPath;
 const writeDir = `${cachesDir}/RNRectangleScanner/`;
 //console.log(cachesDir);
 import {updateDoc} from '../../actions/actions';
-console.log(Platform.OS);
+//console.log(Platform.OS);
 class Edit extends Component{
     constructor(props){
         super(props);
-        console.log(props);
+        //console.log(props);
         const currentPageDimensions = {
             'width' : dimensions.width,
             'height' : dimensions.height,
@@ -38,6 +38,10 @@ class Edit extends Component{
                 },
             tools : ['crop'],
             saving : false,
+            detectedViewDimensions : {
+                width : dimensions.width,
+                height : dimensions.height,
+            },
         };
         this.updateImage = this.updateImage.bind(this);
         this.renderSwiperButtons = this.renderSwiperButtons.bind(this);
@@ -48,13 +52,12 @@ class Edit extends Component{
         this.crop = this.crop.bind(this);
         this.onPressDone = this.onPressDone.bind(this);
         this.renderOverlay = this.renderOverlay.bind(this);
+        this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
     }
 
     componentDidMount(){ 
         const setDimensions = (width, height)=>{
             console.log('success');
-            if(height>dimensions.height){height=dimensions.height;}
-            if(width>dimensions.width){width=dimensions.width;}
             console.log(width);
             console.log(height);
             let {currentPage} = this.state;
@@ -72,6 +75,7 @@ class Edit extends Component{
             setDimensions,
             (err)=> console.log(err)
         );
+        this.computeDetectedViewDimensions()
     }
     
     componentDidUpdate(){
@@ -81,7 +85,7 @@ class Edit extends Component{
                 console.log(width);
                 console.log(height);
                 let {currentPage} = this.state;
-                currentPage.dimensions = {
+                currentPage.dimensions = { 
                     height : height,
                     width : width,
                     set : true,
@@ -103,6 +107,7 @@ class Edit extends Component{
             this.setState({
                 'currentPage' : currentPage,
             });            
+            this.computeDetectedViewDimensions();
         }
     }
 
@@ -110,9 +115,12 @@ class Edit extends Component{
         console.log('code coordinates');
         console.log(rectCoords);
         const type = Platform.OS=='android'?'png':'jpeg'
-        const writeFile = `${writeDir}page${this.state.currentPage.pageNum}.${type}`
+        const now = Date.now()
+        const writeFile = `${writeDir}page${this.state.currentPage.pageNum}_${now}.${type}`
+        console.log(writeFile);
         let exists = await RNFS.exists(writeFile);
         if(exists){
+            console.log('image deleted')
             await RNFS.unlink(writeFile);
         } 
         RNFS.writeFile(writeFile, image, 'base64')
@@ -269,8 +277,8 @@ class Edit extends Component{
     }
 
     onPressCrop(){
-        console.log('pressed')
-        console.log(this.state.toggle.crop);
+        //console.log('pressed')
+        //console.log(this.state.toggle.crop);
         if(this.state.toggle.crop){
             this.crop();
             const toggle = {crop : false};
@@ -288,23 +296,13 @@ class Edit extends Component{
 
     renderCropper(){
         return(
-            <View 
-                style = {{
-                    flex : 6,
-                    //marginVertical : 15,
-                    flexDirection : 'column',
-                    //marginHorizontal : 10,
-                    //height : dimensions.height*0.6,
-                    width : dimensions.width,
-                    justifyContent : 'center',
-                    alignSelf : 'center',
-                }}>  
+            <View>
                 <CustomCrop
                     updateImage={this.updateImage}
                     initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}
                     height = {this.state.currentPage.dimensions.height}
                     width = {this.state.currentPage.dimensions.width}
-                    rectangleCoordinates={this.state.currentPage.rectCoords}
+                    rectangleCoordinates={this.state.doc[this.state.currentPage.pageNum].rectCoords}
                     ref={ref => (this.customCrop = ref)}
                     overlayColor="rgba(18,190,210, 1)"
                     overlayStrokeColor="rgba(20,190,210, 1)"
@@ -314,20 +312,41 @@ class Edit extends Component{
         );
     }
 
+    computeDetectedViewDimensions(){
+        const setDimensions = (width, height)=>{
+            console.log('success');
+            console.log(width);
+            console.log(height);
+            const detectedViewDimensions = {
+                width : dimensions.width,
+                height : dimensions.width*height/width,
+            };
+            this.setState({
+                'detectedViewDimensions' : detectedViewDimensions,
+            }); 
+        };  
+        Image.getSize(
+            this.state.doc[this.state.currentPage.pageNum].detectedDocument,
+            setDimensions,
+            (err)=> console.log(err)
+        ); 
+    }
+
     renderItem(){
-        console.log(this.state);
+        //console.log(this.state);
         if(this.state.toggle.crop){
             return this.renderCropper();
         }
         else{
+            //this.computeDetectedViewDimensions();
             return(
                 <View style = {{
-                    flex : 6,
+                    flex : 1,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    //height : dimensions.height*0.6,
-                    width : dimensions.width,
+                    //height : dimensions.height,
+                    //width : dimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
                 }}> 
@@ -335,10 +354,10 @@ class Edit extends Component{
                         source = {{
                             uri : this.state.doc[this.state.currentPage.pageNum].detectedDocument}}
                         style = {{
-                            resizeMode : 'contain',
-                            width : this.state.currentPage.dimensions.width,
-                            height : this.state.currentPage.dimensions.height,
-                        }}/>
+                            height : this.state.detectedViewDimensions.height,
+                            width : this.state.detectedViewDimensions.width,
+                        }}
+                        resizeMode = {'contain'}/>
                 </View>
             );
         }
