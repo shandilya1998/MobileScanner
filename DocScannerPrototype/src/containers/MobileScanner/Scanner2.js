@@ -59,6 +59,7 @@ class MobileScanner extends PureComponent {
         this.onPictureProcessed = this.onPictureProcessed.bind(this);
         this.onPictureTaken = this.onPictureTaken.bind(this);
         this.turnOnCamera = this.turnOnCamera.bind(this);
+        this.onPressDone = this.onPressDone.bind(this);
     }
 
     componentDidMount() {
@@ -189,6 +190,9 @@ class MobileScanner extends PureComponent {
             this.props.navigation.navigate('edit',
                                            {'captureMultiple' : this.state.captureMultiple});
         }
+        else{
+            this.camera.current.refresh();
+        }
     }
 
     // Flashes the screen on capture
@@ -253,7 +257,11 @@ class MobileScanner extends PureComponent {
     }
 
     onPressDone(){
-        
+        console.log(this.prop);
+        this.props.navigation.navigate(
+            'edit',
+            {'captureMultiple' : this.state.captureMultiple}
+        );    
     }
 
     renderDoneButton(){
@@ -264,7 +272,7 @@ class MobileScanner extends PureComponent {
                     styles.flashControl, 
                     { backgroundColor: '#00000080' }]} 
                 activeOpacity={0.8}
-                onPress={() => {}}>
+                onPress={() => {this.onPressDone()}}>
                 <Icon 
                     name="md-done-all" 
                     style={[

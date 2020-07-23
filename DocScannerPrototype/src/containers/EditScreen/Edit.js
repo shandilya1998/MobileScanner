@@ -53,6 +53,8 @@ class Edit extends Component{
         this.onPressDone = this.onPressDone.bind(this);
         this.renderOverlay = this.renderOverlay.bind(this);
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
+        this.onPressNext = this.onPressNext.bind(this);
+        this.onPressPrevious = this.onPressPrevious.bind(this);
     }
 
     componentDidMount(){ 
@@ -190,6 +192,43 @@ class Edit extends Component{
         this.props.updateDoc(this.state.doc);
         this.props.navigation.navigate('saved'); 
     }
+
+    onPressNext(){
+        console.log('next');
+        if(this.state.currentPage.pageNum<this.state.doc.length-1){
+            const currentPageDimensions = { 
+                'width' : dimensions.width,
+                'height' : dimensions.height,
+                'set' : false,
+            };
+            const currentPage = {
+                pageNum : this.state.currentPage.pageNum+1,
+                updated : false,
+                dimensions : currentPageDimensions,
+            };
+            this.setState({
+                'currentPage' : currentPage,
+            });
+        }    
+    }
+
+    onPressPrevious(){
+        if(this.state.currentPage.pageNum>0){
+            const currentPageDimensions = {
+                'width' : dimensions.width,
+                'height' : dimensions.height,
+                'set' : false,
+            };
+            const currentPage = {
+                pageNum : this.state.currentPage.pageNum-1,
+                updated : false,
+                dimensions : currentPageDimensions,
+            };
+            this.setState({
+                'currentPage' : currentPage,
+            });
+        }
+    }
      
     renderSwiperButtons(){
         return(
@@ -209,6 +248,7 @@ class Edit extends Component{
                         styles.buttonGroup, 
                         { marginLeft : 8 }]}>
                     <TouchableOpacity
+                        onPress = {()=>this.onPressPrevious()}
                         style={[
                             styles.button,
                             {
@@ -230,6 +270,7 @@ class Edit extends Component{
                         styles.buttonGroup, 
                         { marginRight: 8 }]}>
                     <TouchableOpacity
+                        onPress = {()=>{this.onPressNext()}}
                         style={[
                             styles.button,
                             {   
@@ -237,7 +278,6 @@ class Edit extends Component{
                                 width : 32.5,
                             }    
                         ]}
-                        onPress={() => {}}
                         activeOpacity={0.8}>
                         <Icon 
                             name="md-arrow-round-forward" 
@@ -392,7 +432,7 @@ class Edit extends Component{
                         alignItems : 'center',
                         height : 150,
                     }}>
-                    {this.props.captureMultiple?this.renderSwiperButtons():null}
+                    {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
                     {this.renderToolBar()}
                 </View>
             </View>
