@@ -155,7 +155,8 @@ class Edit extends Component{
                         justifyContent : 'space-between',
                         alignItems : 'center',
                         marginHorizontal : 10,
-                        marginBottom : 5,
+                        marginVertical : 10,
+                        paddingVertical : 10,
                     }}>
                 <View 
                     style = {styles.buttonGroup}>
@@ -191,53 +192,62 @@ class Edit extends Component{
     }
      
     renderSwiperButtons(){
-        if(this.props.captureMultiple){
-            return(
-                <View
-                    style = {
-                        styles.overlay,
-                        {
-                            flex : 1.5,
-                            flexDirection : 'row',
-                            justifyContent : 'space-between',
-                            alignItems : 'center',
-                        }}>
-                    <View  
+        return(
+            <View
+                style = {
+                    styles.overlay,
+                    {
+                        width : dimensions.width,
+                        flex : 1.5,
+                        flexDirection : 'row',
+                        justifyContent : 'space-between',
+                        alignItems : 'center',
+                        paddingHorizontal : 10,
+                    }}>
+                <View  
+                    style={[
+                        styles.buttonGroup, 
+                        { marginLeft : 8 }]}>
+                    <TouchableOpacity
                         style={[
-                            styles.buttonGroup, 
-                            { marginLeft : 8 }]}>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => {}}
-                            activeOpacity={0.8}>
-                            <Icon 
-                                name="md-arrow-round-back" 
-                                size={50} 
-                                color="black" 
-                                style={styles.buttonIcon}/>
-                        </TouchableOpacity>
-                    </View>
-                    <View  
-                        style={[
-                            styles.buttonGroup, 
-                            { marginRight: 8 }]}>
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => {}}
-                            activeOpacity={0.8}>
-                            <Icon 
-                                name="md-arrow-round-forward" 
-                                size={50} 
-                                color="black" 
-                                style={styles.buttonIcon} />
-                        </TouchableOpacity>
-                    </View>  
+                            styles.button,
+                            {
+                                height : 35,
+                                width : 32.5,
+                            }    
+                        ]}
+                        onPress={() => {}}
+                        activeOpacity={0.8}>
+                        <Icon 
+                            name="md-arrow-round-back" 
+                            size={50} 
+                            color="black" 
+                            style={styles.buttonIcon}/>
+                    </TouchableOpacity>
                 </View>
-            );
-        }
-        else{   
-            return <View/>;
-        }
+                <View  
+                    style={[
+                        styles.buttonGroup, 
+                        { marginRight: 8 }]}>
+                    <TouchableOpacity
+                        style={[
+                            styles.button,
+                            {   
+                                height : 35, 
+                                width : 32.5,
+                            }    
+                        ]}
+                        onPress={() => {}}
+                        activeOpacity={0.8}>
+                        <Icon 
+                            name="md-arrow-round-forward" 
+                            size={50} 
+                            color="black" 
+                            style={styles.buttonIcon} />
+                    </TouchableOpacity>
+                </View>  
+            </View>
+        );
     }
 
     renderToolBar(){
@@ -248,9 +258,12 @@ class Edit extends Component{
                     styles.overlay,
                     {
                         flex : 1.5,
-                        flexDirection : 'row',
                         justifyContent : 'center',
+                        //position : 'absolute',
                         alignItems : 'center',
+                        flexDirection : 'row',
+                        paddingBottom : 10,
+                        marginBottom : 10,
                     }}>
                 <View  
                     style={[
@@ -362,14 +375,26 @@ class Edit extends Component{
             );
         }
     }
-    
+ 
     renderOverlay(){
         return(
             <View
-                style = {styles.overlay}> 
+                style = {[
+                    styles.overlay, 
+                    {justifyContent : 'space-between'}
+                ]}> 
                 {this.renderHeader()}
-                {this.renderSwiperButtons()}
-                {this.renderToolBar()}
+                <View
+                    style = {{
+                        //flex : 1,
+                        flexDirection : 'column',
+                        jusitfyContent : 'space-between',
+                        alignItems : 'center',
+                        height : 150,
+                    }}>
+                    {this.props.captureMultiple?this.renderSwiperButtons():null}
+                    {this.renderToolBar()}
+                </View>
             </View>
         );
     }

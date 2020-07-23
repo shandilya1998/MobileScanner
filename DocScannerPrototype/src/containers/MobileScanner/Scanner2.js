@@ -252,6 +252,28 @@ class MobileScanner extends PureComponent {
         this.setState({captureMultiple : !value});
     }
 
+    onPressDone(){
+        
+    }
+
+    renderDoneButton(){
+        if (!this.state.captureMultiple) return null;
+        return (
+            <TouchableOpacity
+                style={[
+                    styles.flashControl, 
+                    { backgroundColor: '#00000080' }]} 
+                activeOpacity={0.8}
+                onPress={() => {}}>
+                <Icon 
+                    name="md-done-all" 
+                    style={[
+                        styles.buttonIcon, 
+                        { fontSize: 28, color: '#FFF' }]} />
+            </TouchableOpacity>
+        ); 
+    }
+
     // Renders the camera controls. This will show controls on the side for large tablet screens
     // or on the bottom for phones. (For small tablets it will adjust the view a little bit).
     renderCameraControls(){
@@ -271,16 +293,12 @@ class MobileScanner extends PureComponent {
                                     flexDirection: 'row', 
                                     alignItems: 'flex-end', 
                                     marginBottom: 28 }]}>
+                            {this.renderDoneButton()}
                             {this.renderFlashControl()}
-                            <View style={{ 
-                                flexDirection: 'column', 
-                                justifyContent: 'flex-end' }}> 
-                                {null}
-                                <View style={{
-                                    backgroundColor: '#00000080',
-                                    flexDirection: isPhone ? 'column' : 'row',
-                                    borderRadius: 30, 
-                                    margin: 8,}}>
+                            <View style={[
+                                styles.buttonGroup, 
+                                { marginLeft: 8 }]}>
+                                <View style= {styles.button}>
                                     <Switch
                                         trackColor={{ false: "#767577", true: "#81b0ff" }}
                                         thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
@@ -293,22 +311,8 @@ class MobileScanner extends PureComponent {
                                             height: 50, 
                                             width: 50, 
                                         }}/>
+                                    <Text style={styles.buttonText}>Multiple</Text>
                                 </View>
-                            </View>
-                            <View style={[
-                                styles.buttonGroup, 
-                                { marginLeft: 8 }]}>
-                                <TouchableOpacity
-                                    style={[styles.button, disabledStyle]}
-                                    onPress={cameraIsDisabled ? () => null : this.props.onSkip}
-                                    activeOpacity={0.8}>
-                                    <Icon 
-                                        name="md-arrow-round-forward" 
-                                        size={40} 
-                                        color="white" 
-                                        style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>Skip</Text>
-                                </TouchableOpacity>
                             </View>
                         </View>
                         <View style={[styles.cameraOutline, disabledStyle]}>
@@ -327,10 +331,10 @@ class MobileScanner extends PureComponent {
                                     onPress={this.props.onCancel}
                                     activeOpacity={0.8}>
                                     <Icon 
-                                        name="ios-close-circle" 
+                                        name="md-photos" 
                                         size={40} 
                                         style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>Cancel</Text>
+                                    <Text style={styles.buttonText}>Photos</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -350,24 +354,6 @@ class MobileScanner extends PureComponent {
                             flexDirection: 'column', 
                             justifyContent: 'flex-end' }}> 
                             {null}
-                            <View style={{
-                                backgroundColor: '#00000080',
-                                flexDirection: isPhone ? 'column' : 'row',
-                                borderRadius: 30, 
-                                margin: 8,}}>
-                                <Switch
-                                    trackColor={{ false: "#767577", true: "#81b0ff" }}
-                                    thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
-                                    ios_backgroundColor="#3e3e3e"
-                                    onValueChange={this.toggleSwitch}
-                                    value={this.state.captureMultiple}
-                                    style={{
-                                        paddingHorizontal: 14, 
-                                        paddingVertical: 13, 
-                                        height: 50, 
-                                        width: 50, 
-                                    }}/>
-                            </View>
                         </View>
                     </View>
                     <View style={[styles.cameraOutline, disabledStyle]}>
@@ -380,18 +366,24 @@ class MobileScanner extends PureComponent {
                         style={[
                             styles.buttonActionGroup, 
                             { marginTop: 28 }]}>
+                        {this.renderDoneButton()}
                         <View style={styles.buttonGroup}>
-                            <TouchableOpacity
-                                style={[styles.button, disabledStyle]}
-                                onPress={cameraIsDisabled ? () => null : this.props.onSkip}
-                                activeOpacity={0.8}>
-                                <Icon 
-                                    name="md-arrow-round-forward" 
-                                    size={40} 
-                                    color="white" 
-                                    style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Skip</Text>
-                            </TouchableOpacity>
+                            <View style = {styles.button}>
+                                <Switch
+                                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                    thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={this.toggleSwitch}
+                                    value={this.state.captureMultiple}
+                                    style={{
+                                        paddingHorizontal: 14, 
+                                        paddingVertical: 13, 
+                                        height: 50, 
+                                        width: 50, 
+                                    }}/>
+                                <Text style={styles.buttonText}>Multiple</Text>
+                        
+                            </View>
                         </View>
                         <View style={styles.buttonGroup}>
                             <TouchableOpacity
@@ -399,10 +391,10 @@ class MobileScanner extends PureComponent {
                                 onPress={this.props.onCancel}
                                 activeOpacity={0.8}>
                                 <Icon 
-                                    name="ios-close-circle" 
+                                    name="md-photos" 
                                     size={40} 
                                     style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Cancel</Text>
+                                <Text style={styles.buttonText}>Photos</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -419,10 +411,10 @@ class MobileScanner extends PureComponent {
                             onPress={this.props.onCancel}
                             activeOpacity={0.8}>
                             <Icon 
-                                name="ios-close-circle" 
+                                name="md-photos" 
                                 size={40} 
                                 style={styles.buttonIcon} />
-                            <Text style={styles.buttonText}>Cancel</Text>
+                            <Text style={styles.buttonText}>Photos</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={[styles.cameraOutline, disabledStyle]}>
@@ -437,44 +429,31 @@ class MobileScanner extends PureComponent {
                                 styles.buttonActionGroup, 
                                 { 
                                     justifyContent: 'flex-end', 
-                                    marginBottom: this.props.hideSkip ? 0 : 16 }]}>
+                                    marginBottom : 16 
+                                }]}>
                             <View style={{ 
                                 flexDirection: 'column', 
                                 justifyContent: 'flex-end' }}> 
                                 {null}
-                                <View style={{
-                                    backgroundColor: '#00000080',
-                                    flexDirection: isPhone ? 'column' : 'row',
-                                    borderRadius: 30, 
-                                    margin: 8,}}>
-                                    <Switch
-                                        trackColor={{ false: "#767577", true: "#81b0ff" }}
-                                        thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
-                                        ios_backgroundColor="#3e3e3e"
-                                        onValueChange={this.toggleSwitch}
-                                        value={this.state.captureMultiple}
-                                        style={{
-                                            paddingHorizontal: 14, 
-                                            paddingVertical: 13, 
-                                            height: 50, 
-                                            width: 50, 
-                                        }}/>
-                                </View>
                             </View>
                             {this.renderFlashControl()}
                         </View>
                         <View style={styles.buttonGroup}>
-                            <TouchableOpacity
-                                style={[styles.button, disabledStyle]}
-                                onPress={cameraIsDisabled ? () => null : this.props.onSkip}
-                                activeOpacity={0.8}>
-                                <Icon 
-                                    name="md-arrow-round-forward" 
-                                    size={40} 
-                                    color="white" 
-                                    style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Skip</Text>
-                            </TouchableOpacity>
+                            {this.renderDoneButton()}
+                            <View
+                                style = {styles.button}>
+                                <Switch
+                                    trackColor={{ false: "#767577", true: "#81b0ff" }}
+                                    thumbColor={this.state.captureMultiple ? "#f5dd4b" : "#f4f3f4"}
+                                    ios_backgroundColor="#3e3e3e"
+                                    onValueChange={this.toggleSwitch}
+                                    value={this.state.captureMultiple}
+                                    style={{
+                                        marginBottom : 3,
+                                        alignSelf : 'center',
+                                    }}/>     
+                                <Text style={styles.buttonText}>Multiple</Text>
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -483,7 +462,7 @@ class MobileScanner extends PureComponent {
     }
 
     // Renders the camera controls or a loading/processing state
-    renderCameraOverlay() {
+    renderCameraOverlay(){
         let loadingState = null;
         if (this.state.loadingCamera) {
             //console.log('this');
@@ -604,10 +583,10 @@ class MobileScanner extends PureComponent {
                             onPress={this.props.onCancel}
                             activeOpacity={0.8}>
                             <Icon 
-                                name="ios-close-circle" 
+                                name="md-photos" 
                                 size={40} 
                                 style={styles.buttonIcon} />
-                            <Text style={styles.buttonText}>Cancel</Text>
+                            <Text style={styles.buttonText}>Photos</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.buttonGroup}>

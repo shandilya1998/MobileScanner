@@ -309,6 +309,8 @@ PODS:
     - React
   - RNGestureHandler (1.6.1):
     - React
+  - RNImageToPdf (1.2.0):
+    - React
   - RNPermissions (2.1.5):
     - React
   - RNReanimated (1.9.0):
@@ -380,6 +382,7 @@ DEPENDENCIES:
   - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNImageToPdf (from `../node_modules/react-native-image-to-pdf`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNRectangleScanner (from `../node_modules/react-native-rectangle-scanner/ios`)
@@ -468,6 +471,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNImageToPdf:
+    :path: "../node_modules/react-native-image-to-pdf"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReanimated:
@@ -527,6 +532,7 @@ SPEC CHECKSUMS:
   RNCMaskedView: f5c7d14d6847b7b44853f7acb6284c1da30a3459
   RNFS: 2bd9eb49dc82fa9676382f0585b992c424cd59df
   RNGestureHandler: 8f09cd560f8d533eb36da5a6c5a843af9f056b38
+  RNImageToPdf: 81660dde20e7f2cdbf67bdbac773374dd0805efa
   RNPermissions: 1888705aebcc81714efa5dbff94351e4388ae012
   RNReanimated: b5ccb50650ba06f6e749c7c329a1bc3ae0c88b43
   RNRectangleScanner: f735b7425c64ab1c4f6930fc334e30b2c78aa4a5
