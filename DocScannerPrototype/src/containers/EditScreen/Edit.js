@@ -163,7 +163,13 @@ class Edit extends Component{
                 <View 
                     style = {styles.buttonGroup}>
                     <TouchableOpacity
-                        style = {styles.button}>
+                        style = {[
+                            styles.button,
+                            {   
+                                height : 35, 
+                                width : 32.5
+                            }   
+                        ]}>
                         <Icon 
                             name = 'md-more'
                             size = {40}
@@ -175,7 +181,13 @@ class Edit extends Component{
                     style = {styles.buttonGroup}>
                     <TouchableOpacity
                         onPress = {()=>this.onPressDone()}
-                        style = {styles.button}>
+                        style = {[
+                            styles.button,
+                            {   
+                                height : 35, 
+                                width : 32.5
+                            }   
+                        ]}>
                         <Icon 
                             name = 'md-done-all'
                             size = {40}

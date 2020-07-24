@@ -1,5 +1,6 @@
 import {ADD_SCANNED_PAGE,
-        UPDATE_DOCUMENT_CROP} from '../reducers/reducer';
+        UPDATE_DOCUMENT_CROP,
+        FLUSH_SCANNED_DOCUMENT} from '../reducers/reducer';
 
 export function onPictureProcessed({originalImage, detectedImage, rectCoord}){
     const payload = {
@@ -11,6 +12,12 @@ export function onPictureProcessed({originalImage, detectedImage, rectCoord}){
     return {
         'type' : ADD_SCANNED_PAGE,
         'payload' : payload,
+    };
+}
+
+export function flushDoc(){
+    return {
+        'type' : FLUSH_SCANNED_DOCUMENT,
     };
 }
 

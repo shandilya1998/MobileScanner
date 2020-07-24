@@ -84,6 +84,8 @@ target 'DocScannerPrototype' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'react-native-cameraroll', :path => '../node_modules/@react-native-community/cameraroll'
+
   target 'DocScannerPrototypeTests' do
     inherit! :complete
     # Pods for testing
