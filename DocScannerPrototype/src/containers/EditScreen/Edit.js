@@ -193,7 +193,6 @@ class Edit extends Component{
                             size = {40}
                             color = {'white'}
                             style={styles.buttonIcon} />
-                        <Text style={styles.buttonText}>Done</Text>
                     </TouchableOpacity>
                 </View>
             </View>

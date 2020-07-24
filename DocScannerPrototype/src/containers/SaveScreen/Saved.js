@@ -20,6 +20,7 @@ class Saved extends Component{
         super(props);
         //console.log(props);
         this.state = {
+            preview : this.props.doc[0].detectedDocument,
             fileName : 'MobScannerPDF.pdf',
             detectedViewDimensions : {
                 width : dimensions.width*0.35,
@@ -84,8 +85,8 @@ class Saved extends Component{
     }
     
     onPressClose(){
-        this.props.flush();
         this.props.navigation.navigate('scan'); 
+        this.props.flush();
     }
 
     renderHeader(){
@@ -153,7 +154,7 @@ class Saved extends Component{
             }); 
         };  
         Image.getSize(
-            this.props.doc[0].detectedDocument,
+            this.state.preview,
             setDimensions,
             (err)=> console.log(err)
         );  
@@ -195,7 +196,7 @@ class Saved extends Component{
                             alignSelf : 'center',
                         }}>
                         <Image 
-                            source = {{uri : this.props.doc[0].detectedDocument}}
+                            source = {{uri : this.state.preview}}
                             style = {{
                                 height : this.state.detectedViewDimensions.height,
                                 width : this.state.detectedViewDimensions.width,
@@ -313,8 +314,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        flush : () => dispatch(flushDoc()),
+        flush : () => {dispatch(flushDoc())},
     };
 };
 //export default Saved;
-export default connect(mapStateToProps, null)(Saved);
+export default connect(mapStateToProps, mapDispatchToProps)(Saved);
