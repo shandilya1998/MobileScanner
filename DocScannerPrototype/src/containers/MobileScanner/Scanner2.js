@@ -533,12 +533,12 @@ class MobileScanner extends PureComponent {
             return (
                 <View 
                     style={{ 
+                        flex : 1,
                         backgroundColor: 'rgba(0, 0, 0, 0)', 
                         position: 'relative', 
-                        marginTop: previewSize.marginTop, 
-                        marginLeft: previewSize.marginLeft, 
-                        height: `${previewSize.height * 100}%`, 
-                        width: `${previewSize.width * 100}%` }}>
+                        marginTop: 0,//previewSize.marginTop, 
+                        marginLeft: previewSize.marginLeft,
+                    }}> 
                     <Scanner
                         onErrorProcessingImage = {(err)=>console.log(err)}
                         onPictureTaken={this.onPictureTaken}
@@ -636,7 +636,7 @@ class MobileScanner extends PureComponent {
                 } else {
                     this.setState({ didLoadInitialLayout: true });
                 }}}>
-                <StatusBar backgroundColor="black" barStyle="light-content" hidden={Platform.OS !== 'android'} />
+                <StatusBar backgroundColor="black" barStyle="light-content" hidden={true} />
                 {this.renderCameraView()}
             </View>
         );

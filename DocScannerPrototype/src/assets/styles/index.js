@@ -139,7 +139,7 @@ export const styles = StyleSheet.create({
         width: 70,
     },
     container: {
-        backgroundColor: 'black',
+        backgroundColor: 'white',
         flex: 1,
     },
     flashControl: {
