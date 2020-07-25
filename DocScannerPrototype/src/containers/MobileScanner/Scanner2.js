@@ -172,6 +172,7 @@ class MobileScanner extends PureComponent {
     onPictureTaken = (event) => {
         this.setState({ takingPicture: false });
         this.props.onPictureTaken(event);
+        //this.camera.current.stop();
     }
 
     // The picture was taken and cached. You can now go on to using it.
@@ -184,7 +185,7 @@ class MobileScanner extends PureComponent {
             takingPicture: false,
             processingImage: false,
             showScannerView: this.state.captureMultiple ? true : false,
-            cameraLoading : false,
+            //cameraLoading : false,
         });
         if(!this.state.captureMultiple){
             this.props.navigation.navigate('edit',
@@ -210,7 +211,6 @@ class MobileScanner extends PureComponent {
         if (shouldUninitializeCamera && this.state.device.initialized) {
             this.setState(({ device }) => ({
                 showScannerView: false,
-                loadingCamera : false,
                 device: { ...device, initialized: false },
             }));
         } else if (this.state.showScannerView) {
@@ -226,7 +226,7 @@ class MobileScanner extends PureComponent {
             //this.camera.start();        
             this.setState({
                 showScannerView: true,
-                //loadingCamera: false,
+                loadingCamera: true,
             });
         }
     }
@@ -588,13 +588,13 @@ class MobileScanner extends PureComponent {
                     <View style={styles.buttonGroup}>
                         <TouchableOpacity
                             style={styles.button}
-                            onPress={this.props.onCancel}
+                            onPress={()=>{}}
                             activeOpacity={0.8}>
                             <Icon 
-                                name="md-photos" 
+                                name="ios-close-circle" 
                                 size={40} 
                                 style={styles.buttonIcon} />
-                            <Text style={styles.buttonText}>Photos</Text>
+                            <Text style={styles.buttonText}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                     <View style={styles.buttonGroup}>

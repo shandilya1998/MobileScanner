@@ -17,6 +17,7 @@ const writeDir = `${cachesDir}/RNRectangleScanner/`;
 //console.log(cachesDir);
 import {updateDoc} from '../../actions/actions';
 //console.log(Platform.OS);
+
 class Edit extends Component{
     constructor(props){
         super(props);
@@ -224,12 +225,14 @@ class Edit extends Component{
     }
 
     onPressPrevious(){
+        console.log('previous');
         if(this.state.currentPage.pageNum>0){
             const currentPageDimensions = {
                 'width' : dimensions.width,
                 'height' : dimensions.height,
                 'set' : false,
             };
+            console.log('previous');
             const currentPage = {
                 pageNum : this.state.currentPage.pageNum-1,
                 updated : false,
@@ -259,7 +262,7 @@ class Edit extends Component{
                         styles.buttonGroup, 
                         { marginLeft : 8 }]}>
                     <TouchableOpacity
-                        onPress = {()=>this.onPressPrevious()}
+                        onPress = {()=>{this.onPressPrevious()}}
                         style={[
                             styles.button,
                             {
@@ -451,7 +454,7 @@ class Edit extends Component{
     }
 
     render(){ 
-        //console.log(this.updateImage);
+        console.log(this.state);
         return(
             <View 
                 style = {[
