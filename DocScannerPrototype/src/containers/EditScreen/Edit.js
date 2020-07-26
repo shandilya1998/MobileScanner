@@ -363,7 +363,17 @@ class Edit extends Component{
 
     renderCropper(){
         return(
-            <View>
+            <View
+                style = {{
+                    flex : 1,
+                    //marginVertical : 15,
+                    flexDirection : 'column',
+                    //marginHorizontal : 10,
+                    //height : dimensions.height,
+                    //width : dimensions.width,
+                    justifyContent : 'center',
+                    alignSelf : 'center',
+                }}>
                 <CustomCrop
                     updateImage={this.updateImage}
                     initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}

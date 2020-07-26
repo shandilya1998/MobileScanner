@@ -35,6 +35,7 @@ class MobileScanner extends PureComponent {
             showScannerView: false,
             didLoadInitialLayout: false,
             detectedRectangle: false,
+            candidateRectangle : undefined,
             isMultiTasking: false,
             loadingCamera: true,
             captureMultiple : false,
@@ -156,7 +157,12 @@ class MobileScanner extends PureComponent {
     capture = () => {
         if (this.state.takingPicture) return;
         if (this.state.processingImage) return;
-        this.setState({ takingPicture: true, processingImage: true });
+        const {detectedRectangle} = this.state;
+        this.setState({ 
+            takingPicture: true, 
+            processingImage: true, 
+            candidateRectangle : detectedRectangle,
+        });
         this.camera.current.capture();
         this.triggerSnapAnimation();
         //this.turnOffCamera();
@@ -169,7 +175,7 @@ class MobileScanner extends PureComponent {
     }
 
     // The picture was captured but still needs to be processed.
-    onPictureTaken = (event) => {
+    onPictureTaken(event){
         this.setState({ takingPicture: false });
         this.props.onPictureTaken(event);
         //this.camera.current.stop();
@@ -180,7 +186,7 @@ class MobileScanner extends PureComponent {
         //console.log(event);
         this.props.onPictureProcessed({originalImage : event.initialImage,
                                        detectedImage : event.croppedImage, 
-                                       rectCoords : this.state.detectedRectangle});
+                                       rectCoords : this.state.candidateRectangle});
         this.setState({
             takingPicture: false,
             processingImage: false,
@@ -533,11 +539,13 @@ class MobileScanner extends PureComponent {
             return (
                 <View 
                     style={{ 
-                        flex : 1,
+                        //flex : 1,
                         backgroundColor: 'rgba(0, 0, 0, 0)', 
                         position: 'relative', 
-                        marginTop: 0,//previewSize.marginTop, 
-                        marginLeft: previewSize.marginLeft,
+                        margin:  previewSize.marginTop, 
+                        margin: previewSize.marginLeft,
+                        height: `${previewSize.height * 100}%`, 
+                        width: `${previewSize.width * 100}%`,
                     }}> 
                     <Scanner
                         onErrorProcessingImage = {(err)=>console.log(err)}
@@ -546,7 +554,7 @@ class MobileScanner extends PureComponent {
                         enableTorch={this.state.flashEnabled}
                         ref={this.camera}
                         capturedQuality={0.6}
-                        onRectangleDetected={({ detectedRectangle }) => this.setState({ detectedRectangle })}
+                        onRectangleDetected={({ detectedRectangle }) => {this.setState({ detectedRectangle })}}
                         onDeviceSetup={this.onDeviceSetup}
                         onTorchChanged={({ enabled }) => this.setState({ flashEnabled: enabled })}
                         style={styles.scanner}/>
