@@ -502,12 +502,13 @@ class MobileScanner extends PureComponent {
         }
 
         return (
-            <>
+            <SafeAreaView
+                style = {{width : Dimensions.get('window').width}}>
                 {loadingState}
                 <SafeAreaView style={[styles.overlay]}>
                     {this.renderCameraControls()}
                 </SafeAreaView>
-            </>
+            </SafeAreaView>
         );
     }
 
@@ -515,7 +516,9 @@ class MobileScanner extends PureComponent {
     // letting the user know why camera use is not allowed
     renderCameraView() {
         if (this.state.showScannerView) {
-            const previewSize = this.getPreviewSize();
+            let previewSize = this.getPreviewSize();
+            previewSize.width = 1/previewSize.height;
+            previewSize.height = 1;
             let rectangleOverlay = null;
             if (!this.state.loadingCamera && !this.state.processingImage) {
                 rectangleOverlay = (
