@@ -1,18 +1,20 @@
 package com.docscannerprototype;
 //import com.rnfs.RNFSPackage;
+import com.reactlibraryblurryimagecheck.RNBlurryImageCheckPackage;
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
-import com.reactnativecommunity.cameraroll.CameraRollPackage;
-import com.rnfs.RNFSPackage;
-import com.rectanglescanner.RectangleScannerPackage;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.soloader.SoLoader;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import android.util.Log;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -28,7 +30,7 @@ public class MainApplication extends Application implements ReactApplication {
           @SuppressWarnings("UnnecessaryLocalVariable")
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
-          // packages.add(new MyReactNativePackage());
+          packages.add(new RNBlurryImageCheckPackage());
           //packages.add(new RNFSPackage());
           return packages;
         }
@@ -49,6 +51,9 @@ public class MainApplication extends Application implements ReactApplication {
     super.onCreate();
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
+    if (!OpenCVLoader.initDebug()) {
+      Log.d("OpenCv", "Error while init");
+    } 
   }
 
   /**
@@ -79,6 +84,33 @@ public class MainApplication extends Application implements ReactApplication {
       } catch (InvocationTargetException e) {
         e.printStackTrace();
       }
+    }
+  }
+    
+  private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+    @Override
+    public void onManagerConnected(int status) {
+      switch (status) {
+        case LoaderCallbackInterface.SUCCESS:
+        {
+          Log.i("OpenCV", "OpenCV loaded successfully");
+        } break;
+        default:
+        {
+          super.onManagerConnected(status);
+        } break;
+      }
+    }
+  };
+
+  public void onResume()
+  {
+    if (!OpenCVLoader.initDebug()) {
+      Log.d("OpenCV", "Internal OpenCV library not found. Using OpenCV Manager for initialization");
+      OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_0_0, this, mLoaderCallback);
+    } else {
+      Log.d("OpenCV", "OpenCV library found inside package. Using it!");
+      mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
     }
   }
 }
