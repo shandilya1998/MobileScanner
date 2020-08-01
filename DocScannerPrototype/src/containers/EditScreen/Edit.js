@@ -365,12 +365,12 @@ class Edit extends Component{
         return(
             <View
                 style = {{
-                    flex : 1,
+                    //flex : 1,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    //height : dimensions.height,
-                    //width : dimensions.width,
+                    height : this.state.currentPage.dimensions.height,
+                    width : this.state.currentPage.dimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
                 }}>
@@ -445,20 +445,12 @@ class Edit extends Component{
             <View
                 style = {[
                     styles.overlay, 
-                    {justifyContent : 'space-between'}
-                ]}> 
-                {this.renderHeader()}
-                <View
-                    style = {{
-                        //flex : 1,
-                        flexDirection : 'column',
-                        jusitfyContent : 'space-between',
-                        alignItems : 'center',
-                        height : 150,
-                    }}>
-                    {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
-                    {this.renderToolBar()}
-                </View>
+                    {
+                        justifyContent : 'flex-end'
+                    }
+                ]}>
+                {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
+                {this.renderToolBar()}
             </View>
         );
     }
@@ -473,6 +465,7 @@ class Edit extends Component{
                         backgroundColor : 'white', 
                         paddingVertical : 0,
                     }]}>
+                {this.renderHeader()}
                 {this.renderItem()}
                 {this.renderOverlay()}
             </View>
