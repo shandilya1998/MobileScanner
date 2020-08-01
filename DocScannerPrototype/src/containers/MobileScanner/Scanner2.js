@@ -481,7 +481,13 @@ class MobileScanner extends PureComponent {
         if (this.state.loadingCamera) {
             //console.log('this');
             loadingState = (
-                <View style={styles.overlay}>
+                <View 
+                    style={[
+                        styles.overlay, 
+                        {
+                            backgroundColor : 'black',
+                            //width : Dimensions.get('window').width, 
+                        }]}>
                     <View style={styles.loadingContainer}>
                         <ActivityIndicator color="white" />
                         <Text style={styles.loadingCameraMessage}>Loading Camera</Text>
@@ -490,7 +496,7 @@ class MobileScanner extends PureComponent {
             );
         } else if (this.state.processingImage) {
             loadingState = (
-                <View style={styles.overlay}>
+                <View style={[styles.overlay, {backgroundColor : 'black'}]}>
                     <View style={styles.loadingContainer}>
                         <View style={styles.processingContainer}>
                             <ActivityIndicator color="#333333" size="large" />
@@ -503,11 +509,31 @@ class MobileScanner extends PureComponent {
 
         return (
             <SafeAreaView
-                style = {{width : Dimensions.get('window').width}}>
+                style = {[
+                    styles.overlay,
+                    {
+                        //width : Dimensions.get('window').width,
+                        //alignSelf : 'center',
+                        alignItems : 'center',
+                        //justifyContent : 'center',
+                        //flexDirection : 'column',
+                    }
+                ]}>
                 {loadingState}
-                <SafeAreaView style={[styles.overlay]}>
+                <View 
+                    style={[
+                        styles.overlay,
+                        {
+                            position : 'relative',
+                            //flex : 1,
+                            width : Dimensions.get('window').width,
+                            //alignItems : 'center',
+                            //alignSelf : 'center',
+                            //backgroundColor : 'red',
+                        }  
+                    ]}>
                     {this.renderCameraControls()}
-                </SafeAreaView>
+                </View>
             </SafeAreaView>
         );
     }
@@ -545,6 +571,8 @@ class MobileScanner extends PureComponent {
                         //flex : 1,
                         backgroundColor: 'rgba(0, 0, 0, 0)', 
                         position: 'relative', 
+                        //justifyContent : 'center',
+                        alignSelf : 'center',
                         margin:  previewSize.marginTop, 
                         margin: previewSize.marginLeft,
                         height: `${previewSize.height * 100}%`, 

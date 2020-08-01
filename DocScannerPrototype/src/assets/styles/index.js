@@ -43,6 +43,8 @@ export const styles = StyleSheet.create({
     scanner: {
         flex: 1,
         aspectRatio: undefined,
+        //justifyContent : 'center',
+        //alignSelf : 'center'
     },
     button: {
         alignSelf: 'center',
@@ -90,6 +92,7 @@ export const styles = StyleSheet.create({
     },
     buttonContainer: {
         alignItems: 'flex-end',
+        //width : DIMENSION_WIDTH,
         bottom: 25,
         flexDirection: 'column',
         justifyContent: 'space-between',
