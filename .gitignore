@@ -1,3 +1,5 @@
 DocScannerPrototype/node_modules/
 .DS_Store
+**/*.icloud
+**/*.swp
 DocScannerPrototype/android/java_pid731.hprof
