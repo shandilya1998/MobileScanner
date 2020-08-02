@@ -17,6 +17,7 @@ const writeDir = `${cachesDir}/RNRectangleScanner/`;
 //console.log(cachesDir);
 import {updateDoc} from '../../actions/actions';
 //console.log(Platform.OS);
+import Cropper from '../../components/Cropper';
 
 class Edit extends Component{
     constructor(props){
@@ -33,6 +34,13 @@ class Edit extends Component{
                 pageNum : 0,
                 updated : false,
                 dimensions : currentPageDimensions,
+            },
+            cropper : {
+                set : false,
+                minX : 0,
+                minY : 0,
+                maxX : dimensions.width,
+                maxY : dimensions.height,
             },
             toggle : {
                 crop : false,
@@ -52,7 +60,7 @@ class Edit extends Component{
         this.renderItem = this.renderItem.bind(this);
         this.crop = this.crop.bind(this);
         this.onPressDone = this.onPressDone.bind(this);
-        this.renderOverlay = this.renderOverlay.bind(this);
+        this.renderFooter = this.renderFooter.bind(this);
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
         this.onPressNext = this.onPressNext.bind(this);
         this.onPressPrevious = this.onPressPrevious.bind(this);
@@ -152,49 +160,91 @@ class Edit extends Component{
     renderHeader(){
         return(
             <View style = {
-                    styles.overlay,
                     {
+                        flex : 0.5,
                         flexDirection : 'row',
                         justifyContent : 'space-between',
                         alignItems : 'center',
-                        marginHorizontal : 10,
-                        marginVertical : 10,
-                        paddingVertical : 10,
+                        margin : 5,
+                        padding : 5,
+                        backgroundColor : 'blue'
+                    }}
+                >
+                <View style = {{
                     }}>
-                <View 
-                    style = {styles.buttonGroup}>
-                    <TouchableOpacity
-                        style = {[
-                            styles.button,
-                            {   
-                                height : 35, 
-                                width : 32.5
-                            }   
-                        ]}>
-                        <Icon 
-                            name = 'md-more'
-                            size = {40}
-                            color = {'white'}
-                            style={[styles.buttonIcon, {fontSize:40}]} />
-                    </TouchableOpacity>
+                    <View 
+                        style = {
+                            styles.buttonGroup
+                        }>
+                        <TouchableOpacity
+                            style = {[
+                                styles.button,
+                                {   
+                                    height : 35, 
+                                    width : 32.5
+                                }   
+                            ]}>
+                            <Icon 
+                                name = 'md-more'
+                                size = {40}
+                                color = {'white'}
+                                style={[
+                                    styles.buttonIcon, 
+                                    {fontSize:40}]}/>
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <View
-                    style = {styles.buttonGroup}>
-                    <TouchableOpacity
-                        onPress = {()=>this.onPressDone()}
+                    style = {{
+                        flexDirection : 'row',
+                    }}>
+                    <View
                         style = {[
-                            styles.button,
-                            {   
-                                height : 35, 
-                                width : 32.5
-                            }   
+                            styles.buttonGroup,
+                            {
+                                marginHorizontal : 5,
+                                //paddingHorizontal : 5,
+                            }
                         ]}>
-                        <Icon 
-                            name = 'md-done-all'
-                            size = {40}
-                            color = {'white'}
-                            style={styles.buttonIcon} />
-                    </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress = {()=>this.onPressDone()}
+                            style = {[
+                                styles.button,
+                                { 
+                                    height : 35,
+                                    width : 32.5
+                                } 
+                            ]}>
+                            <Icon
+                                name = 'md-trash'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                        </TouchableOpacity>
+                    </View>
+                    <View
+                        style = {[
+                            styles.buttonGroup,
+                            {
+                                marginLeft : 5,
+                            }
+                        ]}>
+                        <TouchableOpacity
+                            onPress = {()=>this.onPressDone()}
+                            style = {[
+                                styles.button,
+                                {   
+                                    height : 35, 
+                                    width : 32.5
+                                }   
+                            ]}>
+                            <Icon 
+                                name = 'md-done-all'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         );
@@ -220,6 +270,13 @@ class Edit extends Component{
             };
             this.setState({
                 'currentPage' : currentPage,
+                'cropper' : {
+                    'minX' : 0,
+                    'minY' : 0,
+                    'maxX' : dimensions.width,
+                    'maxY' : dimensions.height,
+                    'set' : false,
+                }
             });
         }    
     }
@@ -240,6 +297,13 @@ class Edit extends Component{
             };
             this.setState({
                 'currentPage' : currentPage,
+                'cropper' : { 
+                    'minX' : 0,
+                    'minY' : 0,
+                    'maxX' : dimensions.width,
+                    'maxY' : dimensions.height,
+                    'set' : false,
+                }
             });
         }
     }
@@ -248,7 +312,6 @@ class Edit extends Component{
         return(
             <View
                 style = {
-                    styles.overlay,
                     {
                         width : dimensions.width,
                         flex : 1.5,
@@ -309,7 +372,6 @@ class Edit extends Component{
         return(
             <View 
                 style = {
-                    styles.overlay,
                     {
                         flex : 1.5,
                         justifyContent : 'center',
@@ -365,26 +427,40 @@ class Edit extends Component{
         return(
             <View
                 style = {{
-                    //flex : 1,
+                    flex : 8,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    height : this.state.currentPage.dimensions.height,
-                    width : this.state.currentPage.dimensions.width,
+                    height : (dimensions.height*0.8-10),
+                    width : (dimensions.height*0.8-10)*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height,
+                    margin : 5, 
+                    //padding : 5,
+                    backgroundColor : 'red',
                     justifyContent : 'center',
                     alignSelf : 'center',
+                }}
+                onLayout = {(event)=>{
+                    if(!this.state.cropper.set){
+                        this.setState({
+                            'cropper' : {
+                                'minX' : event.nativeEvent.layout.x,
+                                'minY' : event.nativeEvent.layout.y,
+                                'maxX' : event.nativeEvent.layout.x+event.nativeEvent.layout.width,
+                                'maxY' : event.nativeEvent.layout.y + event.nativeEvent.layout.height,
+                                'set' : true,
+                            }
+                        })  
+                    } 
                 }}>
-                <CustomCrop
-                    updateImage={this.updateImage}
+                <Cropper 
                     initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}
-                    height = {this.state.currentPage.dimensions.height}
-                    width = {this.state.currentPage.dimensions.width}
-                    rectangleCoordinates={this.state.doc[this.state.currentPage.pageNum].rectCoords}
-                    ref={ref => (this.customCrop = ref)}
-                    overlayColor="rgba(18,190,210, 1)"
-                    overlayStrokeColor="rgba(20,190,210, 1)"
-                    handlerColor="rgba(20,150,160, 1)"
-                    enablePanStrict={true}/>
+                    viewHeight = {(dimensions.height*0.8-10)}
+                    viewWidth = {(dimensions.height*0.8-10)*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height} 
+                    viewPadding = {5}
+                    minX = {this.state.cropper.minX}
+                    minY = {this.state.cropper.minY}
+                    maxX = {this.state.cropper.maxX}
+                    maxY = {this.state.cropper.maxY}/>
             </View>
         );
     }
@@ -395,8 +471,8 @@ class Edit extends Component{
             console.log(width);
             console.log(height);
             const detectedViewDimensions = {
-                width : dimensions.width,
-                height : dimensions.width*height/width,
+                width : (dimensions.height*0.8-10)*width/height,
+                height : (dimensions.height*0.8-10),
             };
             this.setState({
                 'detectedViewDimensions' : detectedViewDimensions,
@@ -418,7 +494,7 @@ class Edit extends Component{
             //this.computeDetectedViewDimensions();
             return(
                 <View style = {{
-                    flex : 1,
+                    flex : 8,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
@@ -426,10 +502,14 @@ class Edit extends Component{
                     //width : dimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
+                    margin : 5,
+                    padding : 5,
+                    backgroundColor : 'red', 
                 }}> 
                     <Image
                         source = {{
                             uri : this.state.doc[this.state.currentPage.pageNum].detectedDocument}}
+                        
                         style = {{
                             height : this.state.detectedViewDimensions.height,
                             width : this.state.detectedViewDimensions.width,
@@ -440,13 +520,14 @@ class Edit extends Component{
         }
     }
  
-    renderOverlay(){
+    renderFooter(){
         return(
             <View
-                style = {[
-                    styles.overlay, 
+                style = {[ 
                     {
-                        justifyContent : 'flex-end'
+                        flex : 1.5,
+                        justifyContent : 'flex-end',
+                        backgroundColor : 'green',
                     }
                 ]}>
                 {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
@@ -456,7 +537,7 @@ class Edit extends Component{
     }
 
     render(){ 
-        console.log(this.state);
+        //console.log(this.state);
         return(
             <View 
                 style = {[
@@ -467,7 +548,7 @@ class Edit extends Component{
                     }]}>
                 {this.renderHeader()}
                 {this.renderItem()}
-                {this.renderOverlay()}
+                {this.renderFooter()}
             </View>
         );
     }
