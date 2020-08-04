@@ -1,6 +1,7 @@
 package com.docscannerprototype;
 //import com.rnfs.RNFSPackage;
 import com.reactlibraryblurryimagecheck.RNBlurryImageCheckPackage;
+import com.reactlibrarycustomcrop.RNCustomCropPackage;
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
@@ -31,6 +32,7 @@ public class MainApplication extends Application implements ReactApplication {
           List<ReactPackage> packages = new PackageList(this).getPackages();
           // Packages that cannot be autolinked yet can be added manually here, for example:
           packages.add(new RNBlurryImageCheckPackage());
+          packages.add(new RNCustomCropPackage());
           //packages.add(new RNFSPackage());
           return packages;
         }

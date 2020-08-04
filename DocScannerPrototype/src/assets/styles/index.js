@@ -178,5 +178,42 @@ export const styles = StyleSheet.create({
         height: 140,
         justifyContent: 'center',
         width: 200,
+    },
+    handlerI: {
+        borderRadius: 0,
+        height: 20,
+        width: 20,
+    },
+    handlerRound: {
+        width: 39,
+        position: 'absolute',
+        height: 39,
+        borderRadius: 100,
+    },
+    image: {
+        position: 'absolute',
+    },
+    bottomButton: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'blue',
+        width: 70,
+        height: 70,
+        borderRadius: 100,
+    },
+    handler: {
+        height: 140,
+        width: 140,
+        overflow: 'visible',
+        marginLeft: -70,
+        marginTop: -70,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'absolute',
+    },
+    cropContainer: {
+        position: 'absolute',
+        left: 0,
+        top: 0,
     },  
 });

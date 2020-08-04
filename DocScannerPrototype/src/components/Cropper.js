@@ -6,7 +6,7 @@ import {
     Image, 
     View, 
     Animated} from 'react-native';
-
+import {styles} from '../assets/styles';
 import Svg, {Polygon} from 'react-native-svg';
 
 const AnimatedPolygon = Animated.createAnimatedComponent(Polygon);
@@ -16,6 +16,9 @@ class Cropper extends Component{
     constructor(props){
         super(props);
         //the X and Y range assumt centering of the cropper
+        this.imageCoordinatesToViewCoordinates = this.imageCoordinatesToViewCoordinates.bind(this);
+        this.viewCoordinatesToImageCoordinates = this.viewCoordinatesToImageCoordinates.bind(this);
+        this.createPanResponser = this.createPanResponser.bind(this);
         this.state = {
             moving : false,
             topLeft: new Animated.ValueXY(
@@ -80,15 +83,19 @@ class Cropper extends Component{
         return PanResponder.create({
             onStartShouldSetPanResponder: () => true,
             onPanResponderMove: (e, gesture) => { 
-                console.log(gesture);
-                console.log(this.props.minX);
-                console.log(this.props.minY);
-                console.log(this.props.maxX);
-                console.log(this.props.maxY);
+                //console.log('minX');
+                //console.log(this.props.minX);
+                //console.log('minY');
+                //console.log(this.props.minY);
+                //console.log('maxX');
+                //console.log(this.props.maxX);
+                //console.log('maxY');
+                //console.log(this.props.maxY);
                 if(gesture.moveX >= this.props.minX && gesture.moveX <= this.props.maxX && gesture.moveY >= this.props.minY && gesture.moveY <= this.props.maxY){
-                    console.log('coords');
-                    console.log(gesture.moveX);
-                    console.log(gesture.moveY);
+                    //console.log('coord X');
+                    //console.log(gesture.moveX);
+                    //console.log('coord Y')
+                    //console.log(gesture.moveY);
                     return(
                         Animated.event([
                             null,
@@ -111,6 +118,30 @@ class Cropper extends Component{
         });
     }
 
+    crop() {
+        const coordinates = { 
+            topLeft: this.viewCoordinatesToImageCoordinates(
+                this.state.topLeft
+            ),            
+            topRight: this.viewCoordinatesToImageCoordinates(
+                this.state.topRight,
+            ),      
+            bottomLeft: this.viewCoordinatesToImageCoordinates(
+                this.state.bottomLeft,
+            ),      
+            bottomRight: this.viewCoordinatesToImageCoordinates(
+                this.state.bottomRight,
+            ),      
+            height: this.props.height,
+            width: this.props.width,
+        };      
+        NativeModules.CustomCropManager.crop(
+            coordinates,
+            this.props.initialImage,
+            (err, res) => this.props.updateImage(res.image, coordinates),
+        );      
+    }
+
     updateOverlayString() {
         this.setState({
             overlayPositions: `${this.state.topLeft.x._value},${
@@ -123,22 +154,43 @@ class Cropper extends Component{
         });
     }
 
-    
+    imageCoordinatesToViewCoordinates(corner){
+        return {
+            x : (corner.x*this.props.viewWidth)/this.props.width+this.props.minX,
+            y : (corner.y*this.props.viewHeight)/this.props.height+this.props.minY, 
+        };
+    }
+
+    viewCoordinatesToImageCoordinates(corner){
+        return {
+            x : ((corner.x._value - this.props.minX)/this.props.viewWidth)*this.props.width,
+            y : ((corner.y._value - this.props.minY)/this.props.viewHeight)*this.props.height,
+        };
+    }
 
     render(){
         return(
-            <View>
+            <View
+                style = {{
+                    flex : 1,
+                    alignItems : 'center',
+                    justifyContent : 'flex-end',
+                }}>
                 <View
-                    style = {{
-                        height :  this.props.viewHeight+this.props.viewPadding,
-                        width : this.props.viewWidth+this.props.viewPadding,
-                    }}>
+                    style = {[
+                        styles.cropContainer,
+                        {
+                            height :  this.props.viewHeight,
+                            width : this.props.viewWidth,
+                        }]}>
                     <Image
                         source = {{uri : this.props.initialImage}}
-                        style = {{
-                            height : this.props.viewHeight,
-                            width : this.props.viewWidth
-                        }}/>
+                        style = {[
+                            styles.images,
+                            {
+                                height : this.props.viewHeight,
+                                width : this.props.viewWidth
+                            }]}/>
                     <Svg
                         height={this.props.viewHeight}
                         width={this.props.viewWidth}
@@ -157,19 +209,27 @@ class Cropper extends Component{
                         {...this.panResponderTopLeft.panHandlers}
                         style={[
                             this.state.topLeft.getLayout(),
-                            s(this.props).handler,
+                            styles.handler,
                         ]}
                     >
                         <View
                             style={[
-                                s(this.props).handlerI,
-                                { left: -10, top: -10 },
+                                styles.handlerI,
+                                { 
+                                    left: -10, 
+                                    top: -10,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                         <View
                             style={[
-                                s(this.props).handlerRound,
-                                { left: 31, top: 31 },
+                                styles.handlerRound,
+                                { 
+                                    left: 31, 
+                                    top: 31,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                     </Animated.View>
@@ -177,19 +237,26 @@ class Cropper extends Component{
                         {...this.panResponderTopRight.panHandlers}
                         style={[
                             this.state.topRight.getLayout(),
-                            s(this.props).handler,
+                            styles.handler,
                         ]}
                     >
                         <View
                             style={[
-                                s(this.props).handlerI,
-                                { left: 10, top: -10 },
+                                styles.handlerI,
+                                { 
+                                    left: 10, 
+                                    top: -10,
+                                    backgroundColor: this.props.handlerColor || 'blue' },
                             ]}
                         />
                         <View
                             style={[
-                                s(this.props).handlerRound,
-                                { right: 31, top: 31 },
+                                styles.handlerRound,
+                                { 
+                                    right: 31, 
+                                    top: 31,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                     </Animated.View>
@@ -197,19 +264,27 @@ class Cropper extends Component{
                         {...this.panResponderBottomLeft.panHandlers}
                         style={[
                             this.state.bottomLeft.getLayout(),
-                            s(this.props).handler,
+                            styles.handler,
                         ]}
                     >
                         <View
                             style={[
-                                s(this.props).handlerI,
-                                { left: -10, top: 10 },
+                                styles.handlerI,
+                                { 
+                                    left: -10, 
+                                    top: 10,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                         <View
                             style={[
-                                s(this.props).handlerRound,
-                                { left: 31, bottom: 31 },
+                                styles.handlerRound,
+                                { 
+                                    left: 31, 
+                                    bottom: 31,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                     </Animated.View>
@@ -217,19 +292,27 @@ class Cropper extends Component{
                         {...this.panResponderBottomRight.panHandlers}
                         style={[
                             this.state.bottomRight.getLayout(),
-                            s(this.props).handler,
+                            styles.handler,
                         ]}
                     >
                         <View
                             style={[
-                                s(this.props).handlerI,
-                                { left: 10, top: 10 },
+                                styles.handlerI,
+                                { 
+                                    left: 10, 
+                                    top: 10,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                         <View
                             style={[
-                                s(this.props).handlerRound,
-                                { right: 31, bottom: 31 },
+                                styles.handlerRound,
+                                { 
+                                    right: 31, 
+                                    bottom: 31,
+                                    backgroundColor: this.props.handlerColor || 'blue',
+                                },
                             ]}
                         />
                     </Animated.View>
@@ -238,49 +321,5 @@ class Cropper extends Component{
         );
     }
 }
-
-const s = (props) => ({
-    handlerI: {
-        borderRadius: 0,
-        height: 20,
-        width: 20,
-        backgroundColor: props.handlerColor || 'blue',
-    },
-    handlerRound: {
-        width: 39,
-        position: 'absolute',
-        height: 39,
-        borderRadius: 100,
-        backgroundColor: props.handlerColor || 'blue',
-    },
-    image: {
-        width: props.viewWidth,
-        position: 'absolute',
-    },
-    bottomButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'blue',
-        width: 70,
-        height: 70,
-        borderRadius: 100,
-    },
-    handler: {
-        height: 140,
-        width: 140,
-        overflow: 'visible',
-        marginLeft: -70,
-        marginTop: -70,
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'absolute',
-    },
-    cropContainer: {
-        position: 'absolute',
-        left: 0,
-        width: props.viewWidth,
-        top: 0,
-    },
-});
 
 export default Cropper;

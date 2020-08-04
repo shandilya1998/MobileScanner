@@ -15,7 +15,9 @@ class MainApp extends Component{
     render(){
         return(
             <NavigationContainer ref = {navigatorRef}>
-                <MainStack.Navigator initialRouteName = {'Scanner'}>
+                <MainStack.Navigator 
+                    initialRouteName = {'Scanner'}
+                    options = {{swipeEnabled : false,}}>
                     <MainStack.Screen 
                         name = {'Scanner'}
                         component = {ScanContainer}/>

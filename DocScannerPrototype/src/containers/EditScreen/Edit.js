@@ -68,9 +68,9 @@ class Edit extends Component{
 
     componentDidMount(){ 
         const setDimensions = (width, height)=>{
-            console.log('success');
-            console.log(width);
-            console.log(height);
+            //console.log('success');
+            //console.log(width);
+            //console.log(height);
             let {currentPage} = this.state;
             currentPage.dimensions = {
                 height : height,
@@ -92,9 +92,9 @@ class Edit extends Component{
     componentDidUpdate(){
         if(!this.state.currentPage.dimensions.set){
             const setDimensions = (width, height)=>{
-                console.log('success');
-                console.log(width);
-                console.log(height);
+                //console.log('success');
+                //console.log(width);
+                //console.log(height);
                 let {currentPage} = this.state;
                 currentPage.dimensions = { 
                     height : height,
@@ -427,12 +427,12 @@ class Edit extends Component{
         return(
             <View
                 style = {{
-                    flex : 8,
+                    //flex : 8,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    height : (dimensions.height*0.8-10),
-                    width : (dimensions.height*0.8-10)*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height,
+                    height : dimensions.height*0.8,
+                    width : dimensions.height*0.8*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height,
                     margin : 5, 
                     //padding : 5,
                     backgroundColor : 'red',
@@ -454,13 +454,15 @@ class Edit extends Component{
                 }}>
                 <Cropper 
                     initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}
-                    viewHeight = {(dimensions.height*0.8-10)}
-                    viewWidth = {(dimensions.height*0.8-10)*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height} 
+                    viewHeight = {dimensions.height*0.8}
+                    viewWidth = {dimensions.height*0.8*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height} 
                     viewPadding = {5}
                     minX = {this.state.cropper.minX}
                     minY = {this.state.cropper.minY}
                     maxX = {this.state.cropper.maxX}
-                    maxY = {this.state.cropper.maxY}/>
+                    maxY = {this.state.cropper.maxY}
+                    height = {this.state.currentPage.dimensions.height}
+                    width = {this.state.currentPage.dimensions.width}/>
             </View>
         );
     }
@@ -471,8 +473,8 @@ class Edit extends Component{
             console.log(width);
             console.log(height);
             const detectedViewDimensions = {
-                width : (dimensions.height*0.8-10)*width/height,
-                height : (dimensions.height*0.8-10),
+                width : dimensions.height*0.8*width/height,
+                height : dimensions.height*0.8,
             };
             this.setState({
                 'detectedViewDimensions' : detectedViewDimensions,
@@ -494,16 +496,16 @@ class Edit extends Component{
             //this.computeDetectedViewDimensions();
             return(
                 <View style = {{
-                    flex : 8,
+                    //flex : 8,
                     //marginVertical : 15,
                     flexDirection : 'column',
                     //marginHorizontal : 10,
-                    //height : dimensions.height,
-                    //width : dimensions.width,
+                    height : this.state.detectedViewDimensions.height,
+                    width : this.state.detectedViewDimensions.width,
                     justifyContent : 'center',
                     alignSelf : 'center',
-                    margin : 5,
-                    padding : 5,
+                    margin : 8,
+                    //padding : 5,
                     backgroundColor : 'red', 
                 }}> 
                     <Image
