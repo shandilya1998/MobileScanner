@@ -15,7 +15,8 @@ let RNFS = require('react-native-fs');
 const cachesDir = RNFS.CachesDirectoryPath;
 const writeDir = `${cachesDir}/RNRectangleScanner/`;
 //console.log(cachesDir);
-import {updateDoc} from '../../actions/actions';
+import {updateDoc,
+        flushDoc,} from '../../actions/actions';
 //console.log(Platform.OS);
 import Cropper from '../../components/Cropper';
 
@@ -567,7 +568,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        updateDoc : (doc) => dispatch(updateDoc),
+        updateDoc : (doc) => {dispatch(updateDoc(doc))},
+        flush : () => {dispatch(flushDoc())}
     };
 };
 

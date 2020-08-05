@@ -34,6 +34,8 @@ class Saved extends Component{
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
         this.onPressPDF = this.onPressPDF.bind(this);
         this.onPressImage = this.onPressImage.bind(this);
+        this.renderPreview = this.renderPreview.bind(this);
+        this.renderLibrary = this.renderLibrary.bind(this);
     }
 
     componentDidMount(){
@@ -92,13 +94,14 @@ class Saved extends Component{
     renderHeader(){
         return(
             <View style = { 
-                    styles.overlay,
-                    {   
+                    { 
+                        flex : 0.5,  
                         flexDirection : 'row',
                         justifyContent : 'space-between',
                         alignItems : 'center',
-                        marginHorizontal : 10, 
-                        paddingVertical : 10, 
+                        margin : 5, 
+                        padding : 5, 
+                        backgroundColor : 'blue',
                     }}> 
                 <View 
                     style = {styles.buttonGroup}>
@@ -145,8 +148,8 @@ class Saved extends Component{
             console.log(width);
             console.log(height);
             const detectedViewDimensions = { 
-                width : dimensions.width*0.35,
-                height : dimensions.width*0.35*height/width,
+                width : dimensions.width*0.3*height/width,
+                height : dimensions.height*0.3,
                 set : true,
             };  
             this.setState({
@@ -175,131 +178,156 @@ class Saved extends Component{
             'Image' : !Image,
         });
     }
+
+    renderPreview(){
+        return(
+            <View 
+                style = {{
+                    flex : 3,
+                    flexDirection : 'row',
+                    alignItems : 'center',
+                    justifyContent : 'center',
+                    margin : 5,
+                    padding : 5,
+                    backgroundColor : 'red',
+                }}>
+                <View
+                    style = {{
+                        flex : 1,
+                        justifyContents : 'center',
+                        alignSelf : 'center',
+                    }}>
+                    <Image 
+                        source = {{uri : this.state.preview}}
+                        style = {{
+                            alignSelf : 'center',
+                            height : this.state.detectedViewDimensions.height,
+                            width : this.state.detectedViewDimensions.width,
+                        }}
+                        resizeMode = {'contain'}/>
+                </View>
+                <View style = {{flex : 1}}>
+                    <View style = {{
+                        //flex : 1,
+                        backgroundColor : '#00000080',
+                        opacity : 0.8,
+                        height : 50,
+                        margin : 5,
+                        padding : 5,
+                    }}>
+                        <TextInput
+                            onChangeText = {this.onChangeText}
+                            placeholder = {'Add PDF name here'} 
+                            style = {{
+                                flex : 1,
+                                margin : 2,
+                                padding : 3, 
+                                opacity : 1,
+                                height : 50,
+                                backgroundColor : 'white', }}
+                            placeholderTextColor = {'black'}/>
+                    </View>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            flexDirection : 'row',
+                            justifyContent : 'space-around',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5,
+                        }}>
+                        <View 
+                            style = {{
+                                flex : 1,
+                                justifyContent : 'center',
+                                alignItems : 'center',
+                                padding : 5,
+                                margin : 5,
+                            }}>
+                            <View
+                                style = {[
+                                    styles.buttonGroup,
+                                    {backgroundColor : this.state.PDF?  '#008000' : '#00000080'}
+                                ]}>
+                                <TouchableOpacity
+                                    onPress = {()=>this.onPressPDF()}
+                                    style = {styles.button}>
+                                    <Icon
+                                        name = 'md-document'
+                                        size = {40}
+                                        color = {'white'}
+                                        style={styles.buttonIcon} />
+                                    <Text style={styles.buttonText}>PDF</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <View 
+                            style = {{
+                                flex : 1,
+                                justifyContent : 'center',
+                                alignItems : 'center',
+                                padding : 5,
+                                margin : 5,
+                            }}> 
+                            <View
+                                style = {[
+                                    styles.buttonGroup,
+                                    {backgroundColor : this.state.Image?'#008000' : '#00000080'}
+                                ]}>
+                                <TouchableOpacity
+                                    onPress = {()=>this.onPressImage()}
+                                    style = {styles.button}>
+                                    <Icon
+                                        name = 'md-image'
+                                        size = {40}
+                                        color = {'white'}
+                                        style={styles.buttonIcon} />
+                                    <Text style={styles.buttonText}>Image</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            justifyContent : 'center',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5
+                        }}>
+                        <View
+                            style = {styles.buttonGroup}>
+                            <TouchableOpacity
+                                onPress = {()=>this.onPressDone()}
+                                style = {styles.button}>
+                                <Icon 
+                                    name = 'md-done-all'
+                                    size = {40}
+                                    color = {'white'}
+                                    style={styles.buttonIcon} />
+                                <Text style={styles.buttonText}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </View>
+        );
+    }
+    
+    renderLibrary(){
+        return(
+            <View style = {{flex : 6.5}}>
+            </View>
+        );
+    }
     
     render(){
         console.log(this.state);
         return(
             <View style = {[styles.container, {backgroundColor : 'white'}]}>
                 {this.renderHeader()}
-                <View 
-                    style = {{
-                        flexDirection : 'row',
-                        alignItems : 'center',
-                        justifyContent : 'center',
-                        padding : 10,
-                        //backgroundColor : 'red',
-                    }}>
-                    <View
-                        style = {{
-                            flex : 1,
-                            justifyContents : 'center',
-                            alignSelf : 'center',
-                        }}>
-                        <Image 
-                            source = {{uri : this.state.preview}}
-                            style = {{
-                                height : this.state.detectedViewDimensions.height,
-                                width : this.state.detectedViewDimensions.width,
-                            }}
-                            resizeMode = {'contain'}/>
-                    </View>
-                    <View style = {{flex : 1}}>
-                        <View style = {{
-                            flex : 1,
-                            backgroundColor : '#00000080',
-                            opacity : 0.8,
-                            margin : 8
-                        }}>
-                            <TextInput
-                                onChangeText = {this.onChangeText}
-                                placeholder = {'Add PDF name here'} 
-                                style = {{
-                                    flex : 1,
-                                    margin : 5,
-                                    padding : 8, 
-                                    opacity : 1,
-                                    backgroundColor : 'white', }}
-                                placeholderTextColor = {'black'}/>
-                        </View>
-                        <View 
-                            style = {{
-                                flex : 1,
-                                flexDirection : 'row',
-                                justifyContent : 'space-around',
-                                alignItems : 'center',
-                                padding : 8,
-                            }}>
-                            <View 
-                                style = {{
-                                    flex : 1,
-                                    justifyContent : 'center',
-                                    alignItems : 'center',
-                                    padding : 8,
-                                }}>
-                                <View
-                                    style = {[
-                                        styles.buttonGroup,
-                                        {backgroundColor : this.state.PDF?  '#008000' : '#00000080'}
-                                    ]}>
-                                    <TouchableOpacity
-                                        onPress = {()=>this.onPressPDF()}
-                                        style = {styles.button}>
-                                        <Icon
-                                            name = 'md-document'
-                                            size = {40}
-                                            color = {'white'}
-                                            style={styles.buttonIcon} />
-                                        <Text style={styles.buttonText}>PDF</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            <View 
-                                style = {{
-                                    flex : 1,
-                                    justifyContent : 'center',
-                                    alignItems : 'center',
-                                    padding : 8,
-                                }}> 
-                                <View
-                                    style = {[
-                                        styles.buttonGroup,
-                                        {backgroundColor : this.state.Image?'#008000' : '#00000080'}
-                                    ]}>
-                                    <TouchableOpacity
-                                        onPress = {()=>this.onPressImage()}
-                                        style = {styles.button}>
-                                        <Icon
-                                            name = 'md-image'
-                                            size = {40}
-                                            color = {'white'}
-                                            style={styles.buttonIcon} />
-                                        <Text style={styles.buttonText}>Image</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                        <View style = {{
-                                flex : 1,
-                                justifyContent : 'center',
-                                alignItems : 'center',
-                                padding : 8,
-                            }}>
-                            <View
-                                style = {styles.buttonGroup}>
-                                <TouchableOpacity
-                                    onPress = {()=>this.onPressDone()}
-                                    style = {styles.button}>
-                                    <Icon 
-                                        name = 'md-done-all'
-                                        size = {40}
-                                        color = {'white'}
-                                        style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>Save</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </View>
+                {this.renderPreview()}
+                {this.renderLibrary()}
             </View>
         );  
     }
