@@ -6,7 +6,7 @@ import {View,
         TouchableOpacity,
         Platform} from 'react-native';
 import {connect} from 'react-redux';
-import CustomCrop from 'react-native-perspective-image-cropper';
+//import CustomCrop from 'react-native-perspective-image-cropper';
 import {styles} from '../../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 const dimensions = Dimensions.get('window');
@@ -453,6 +453,8 @@ class Edit extends Component{
                     } 
                 }}>
                 <Cropper 
+                    updateImage = {this.updateImage}
+                    ref = {ref => {this.customCrop = ref}}
                     initialImage = {this.state.doc[this.state.currentPage.pageNum].originalImage}
                     viewHeight = {dimensions.height*0.8}
                     viewWidth = {dimensions.height*0.8*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height} 

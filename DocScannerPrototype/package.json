@@ -24,7 +24,6 @@
     "react-native-gesture-handler": "^1.6.1",
     "react-native-image-to-pdf": "^1.2.0",
     "react-native-permissions": "^2.1.5",
-    "react-native-perspective-image-cropper": "^0.4.4",
     "react-native-reanimated": "^1.9.0",
     "react-native-rectangle-scanner": "^1.0.10",
     "react-native-safe-area-context": "^3.0.5",
