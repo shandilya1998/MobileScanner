@@ -158,6 +158,12 @@ class Edit extends Component{
         });
     }
 
+    onPressDelete(){
+        this.props.navigation.navigate('scan');
+        this.props.flush();
+
+    }
+
     renderHeader(){
         return(
             <View style = {
@@ -208,7 +214,7 @@ class Edit extends Component{
                             }
                         ]}>
                         <TouchableOpacity
-                            onPress = {()=>this.onPressDone()}
+                            onPress = {()=>this.onPressDelete()}
                             style = {[
                                 styles.button,
                                 { 

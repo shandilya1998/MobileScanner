@@ -8,12 +8,13 @@ import {View,
 import {connect} from 'react-redux';
 import RNImageToPdf from 'react-native-image-to-pdf';
 let RNFS = require('react-native-fs');
-const DocDir = RNFS.DocumentDirectoryPath;
-console.log(DocDir);
+const DocDir = RNFS.DownloadDirectoryPath+'/MobScanner';
+//console.log(DocDir);
 const dimensions = Dimensions.get('window');
 import {styles} from '../../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {flushDoc} from '../../actions/actions';
+import Library from '../../components/Library';
 
 class Saved extends Component{
     constructor(props){
@@ -66,12 +67,12 @@ class Saved extends Component{
 		    };
 		    const pdf = await RNImageToPdf.createPDFbyImages(options);
 		
-		    console.log(pdf.filePath);
+		    //console.log(pdf.filePath);
             const DestPath = `${DocDir}/${this.state.fileName}`;
-            console.log(DestPath);
+            //console.log(DestPath);
             const exists = await RNFS.exists(DestPath);
             if(exists){
-                console.log('delete');
+                //console.log('delete');
                 await RNFS.unlink(DestPath);
             }
             await RNFS.copyFile(pdf.filePath, DestPath ).then(
@@ -145,8 +146,8 @@ class Saved extends Component{
     computeDetectedViewDimensions(){
         const setDimensions = (width, height)=>{
             console.log('success');
-            console.log(width);
-            console.log(height);
+            //console.log(width);
+            //console.log(height);
             const detectedViewDimensions = { 
                 width : dimensions.width*0.3*height/width,
                 height : dimensions.height*0.3,
@@ -317,12 +318,13 @@ class Saved extends Component{
     renderLibrary(){
         return(
             <View style = {{flex : 6.5}}>
+                <Library/>
             </View>
         );
     }
     
     render(){
-        console.log(this.state);
+        //console.log(this.state);
         return(
             <View style = {[styles.container, {backgroundColor : 'white'}]}>
                 {this.renderHeader()}

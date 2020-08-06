@@ -10,12 +10,19 @@ import {checkMultiple,
         request} from 'react-native-permissions';
 
 MainStack = createDrawerNavigator();
+let RNFS = require('react-native-fs');
+let appSharedDir = '';
+if(Platform.OS=='android'){
+    appSharedDir = RNFS.DownloadDirectoryPath+'/MobScanner';
+}
 
 class MainApp extends Component{
     constructor(props){
         super(props);
         this.permissionsAndroid = this.permissionsAndroid.bind(this);
         this.getPermissions = this.getPermissions.bind(this);
+        this.permissionsIos = this.permissionsIos.bind(this);
+        this.appSharedFolder = this.appSharedFolder.bind(this);
     }
 
     permissionsAndroid(statuses){
@@ -81,10 +88,18 @@ class MainApp extends Component{
                 rationale).then(result=>console.log(result));
         }
     }
-
+    
+    async appSharedFolder(){
+        const exists = await RNFS.exists(appSharedDir);
+        console.log(exists);
+        if(!exists){
+            await RNFS.mkdir(appSharedDir);
+        } 
+    }
     
     componentDidMount(){
         this.getPermissions();
+        this.appSharedFolder();
     }
 
     getPermissions(){
