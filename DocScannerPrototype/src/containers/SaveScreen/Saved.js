@@ -318,7 +318,9 @@ class Saved extends Component{
     renderLibrary(){
         return(
             <View style = {{flex : 6.5}}>
-                <Library/>
+                <Library 
+                    width = {'100%'}
+                    numColumns = {2}/>
             </View>
         );
     }

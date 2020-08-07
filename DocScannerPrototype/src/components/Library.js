@@ -6,6 +6,7 @@ import {styles} from '../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 const dir = RNFS.ExternalStorageDirectoryPath;
 
+
 class Library extends Component{
     constructor(props){
         super(props);
@@ -13,11 +14,15 @@ class Library extends Component{
             'currentDir' : {
                 'path' : dir,
                 'contents' : [],
+                'history' : [],
             }
         }
         this.getFolderContentsData = this.getFolderContentsData.bind(this);
         this.setCurrentDir = this.setCurrentDir.bind(this);
         this.renderItem = this.renderItem.bind(this);
+        this.listHeaderComponent = this.listHeaderComponent.bind(this);
+        this.onPressBack = this.onPressBack.bind(this);
+        this.renderPreviousButton = this.renderPreviousButton.bind(this);
     }
 
     componentDidMount(){
@@ -27,13 +32,15 @@ class Library extends Component{
     async setCurrentDir(Dir){
         const contents = await RNFS.readDir(dir);
         this.setState(
-            ({currentDir})=>({
-                'currentDir' : {
-                    ...currentDir,
-                    'path' : Dir, 
-                    'contents' : contents,
-                  }
-            })
+            ({currentDir})=>{
+                return {
+                    'currentDir' : {
+                        'path' : Dir, 
+                        'contents' : contents,
+                        'history' : currentDir.history,
+                    }
+                }
+            }
         );
     }
     
@@ -69,6 +76,43 @@ class Library extends Component{
         return contents;
     }
 
+    async traverseToDir(Dir){
+        const contents = await RNFS.readDir(Dir);
+        this.setState(
+            ({currentDir})=>{
+                currentDir.history.push(currentDir.path);
+                return {
+                    'currentDir' : { 
+                        'path' : Dir, 
+                        'contents' : contents,
+                        'history' : currentDir.history,
+                    }   
+                }   
+            }   
+        );    
+    }
+ 
+    onPressBack(){
+        const {currentDir} = this.state;
+        const Dir = currentDir.history[currentDir.history.length-1];
+        currentDir.history.pop();
+        RNFS.readDir(Dir).then(
+            (contents) => {
+                this.setState({
+                    'currentDir' : {
+                        'path' : Dir,
+                        'contents' : contents,
+                        'history' : currentDir.history
+                    },
+                });
+            }
+        );
+    }
+
+    onPressItem(item){
+        this.traverseToDir(item.path);
+    }
+
     renderItem({item, index, separators}){
         let icon = 'md-document';
         if(item.type == 'pdf'){
@@ -83,25 +127,104 @@ class Library extends Component{
                     alignItems : 'center',
                     justifyContents : 'center',
                     flex : 1,
+                    margin : 10,
+                    padding : 5
                 }}>
                 <View
                     style = {[
                         styles.buttonGroup,
-                        {backgroundColor : this.state.Image?'#008000' : '#00000080'}
                     ]}> 
                     <TouchableOpacity
-                        onPress = {()=>this.onPressImage()}
-                        style = {styles.button}>
+                        onPress = {()=>this.onPressItem(item)}
+                        style = {[
+                            styles.button,
+                            styles.libraryItem,
+                        ]}>
                         <Icon
                             name = {icon}
                             size = {40}
                             color = {'white'}
-                            style={styles.buttonIcon} />
+                            style={[
+                                styles.buttonIcon,
+                                styles.libraryItemIcon,
+                            ]} />
                             <Text style={styles.buttonText}>{item.name}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
         );
+    }
+
+    listHeaderComponent(){
+        return(
+            <View 
+                style = {styles.libraryHeaderTextContainer}>
+                <View
+                    style = {styles.libraryHeaderTextContainer}>
+                    <Text style = {styles.libraryHeaderTextStyle}>All Files</Text>
+                </View>
+                <View>
+                    {this.renderPreviousButton()}
+                </View>
+            </View>
+        );
+    }
+
+    renderPreviousButton(){
+        if(this.state.currentDir.history.length<=0){
+            return(
+                <View
+                    style = {
+                        {
+                            width : '100%',
+                            height : 70,
+                            flexDirection : 'row',
+                            justifyContent : 'space-between',
+                            alignItems : 'center',
+                            paddingHorizontal : 10,
+                        }
+                    }>
+                    <View
+                        style={[
+                            styles.buttonGroup,
+                            { marginLeft : 8 }
+                        ]}/>
+                </View>
+            );
+        }
+        else{
+            return(
+                <View
+                    style = {{
+                        alignItems : 'center',
+                        justifyContents : 'center',
+                        flex : 1,
+                        margin : 10,
+                        padding : 5
+                    }}>
+                    <View
+                        style = {[
+                            styles.buttonGroup,
+                        ]}>
+                        <TouchableOpacity
+                            onPress = {()=>this.onPressBack()}
+                            style = {[
+                                styles.button,
+                                {   
+                                    height : 35, 
+                                    width : 32.5,
+                                }
+                            ]}>
+                            <Icon
+                                name = {'md-arrow-round-back'}
+                                size = {50}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                        </TouchableOpacity>
+                    </View>
+                </View> 
+            );
+        } 
     }
 
     render(){
@@ -112,6 +235,7 @@ class Library extends Component{
                     styles.container,
                     {
                         backgroundColor : 'white',
+                        //width : '100%',
                     }
                 ]}>
                 <View
@@ -119,9 +243,17 @@ class Library extends Component{
                         flex : 1,
                         justifyContent : 'center',
                         alignItems : 'center',
+                        width : this.props.width,
                     }}>
                     <FlatList
+                        style = {
+                            {
+                                width : this.props.width,
+                            }
+                        }
                         data = {this.getFolderContentsData(this.state.currentDir.contents)}
+                        ListHeaderComponent = {this.listHeaderComponent()}
+                        numColumns = {this.props.numColumns}
                         renderItem = {this.renderItem}/>
                 </View>
             </View>

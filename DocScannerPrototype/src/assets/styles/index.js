@@ -215,5 +215,25 @@ export const styles = StyleSheet.create({
         position: 'absolute',
         left: 0,
         top: 0,
+    },
+    libraryHeaderTextStyle : {
+        color : 'black',
+        fontSize : 25
+    },
+    libraryHeaderTextContainer : {
+        flex: 1,
+        flexDirection : 'row',
+        justifyContent : 'space-between',
+        alignItems : 'center',
+        padding : 5,
+        margin : 5,
+    },
+    libraryItem : {
+        'width' : 110,
+        'height' : 120,
+    },
+    libraryItemIcon : {
+        fontSize : 40,
+
     },  
 });
