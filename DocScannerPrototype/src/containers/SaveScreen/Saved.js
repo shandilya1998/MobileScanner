@@ -103,7 +103,7 @@ class Saved extends Component{
         this.setState({
             'mode' : 'reader',
             'readerSource' : {
-                'uri' : item.path,
+                'uri' : `file://${item.path}`,
                 'cache' : true,
             },
         });
@@ -356,10 +356,10 @@ class Saved extends Component{
 
     renderReader(){
         return(
-            <View>
-                <Reader
-                    source = {this.state.readerSource}/>
-            </View>
+            <Reader
+                width = {dimensions.width}
+                height = {dimensions.height}
+                source = {this.state.readerSource}/>
         );
     }
   

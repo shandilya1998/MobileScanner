@@ -67,7 +67,8 @@ class Reader extends Component{
         this.setState({horizontal: !this.state.horizontal, page: this.state.page});
     };
 
-    render() {
+    render(){
+        console.log(this.props.source);
         return (
             <SafeAreaView 
                 style={[
@@ -76,6 +77,7 @@ class Reader extends Component{
                         justifyContent: 'flex-start',
                         alignItems: 'center',
                         marginTop: 25,
+                        backgroundColor : 'white',
                     }
                 ]}>
                 <View 
