@@ -110,7 +110,13 @@ class Library extends Component{
     }
 
     onPressItem(item){
-        this.traverseToDir(item.path);
+        if(item.type=='directory'){
+            this.traverseToDir(item.path);
+        }
+        else if(item.type=='pdf'){
+            //console.log('pdf');
+            this.props.onPressPDFFile(item);
+        }
     }
 
     renderItem({item, index, separators}){

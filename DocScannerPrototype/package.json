@@ -13,6 +13,8 @@
     "@react-native-community/cameraroll": "^4.0.0",
     "@react-native-community/image-editor": "^2.3.0",
     "@react-native-community/masked-view": "^0.1.10",
+    "@react-native-community/progress-bar-android": "^1.0.3",
+    "@react-native-community/progress-view": "^1.1.0",
     "@react-navigation/bottom-tabs": "^5.5.2",
     "@react-navigation/drawer": "^5.3.4",
     "@react-navigation/native": "^5.5.1",
@@ -23,6 +25,8 @@
     "react-native-fs": "^2.16.6",
     "react-native-gesture-handler": "^1.6.1",
     "react-native-image-to-pdf": "^1.2.0",
+    "react-native-orientation-locker": "^1.2.0",
+    "react-native-pdf": "^6.2.0",
     "react-native-permissions": "^2.1.5",
     "react-native-reanimated": "^1.9.0",
     "react-native-rectangle-scanner": "^1.0.10",
@@ -33,7 +37,8 @@
     "react-native-vector-icons": "^6.6.0",
     "react-redux": "^7.2.0",
     "redux": "^4.0.5",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "rn-fetch-blob": "^0.12.0"
   },
   "devDependencies": {
     "@babel/core": "^7.10.2",

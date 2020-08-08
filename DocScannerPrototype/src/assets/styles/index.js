@@ -235,5 +235,19 @@ export const styles = StyleSheet.create({
     libraryItemIcon : {
         fontSize : 40,
 
-    },  
+    },
+    btn: {
+        margin: 2,
+        padding: 2,
+        backgroundColor: "aqua",
+    },
+    btnDisable: {
+        margin: 2,
+        padding: 2,
+        backgroundColor: "gray",
+    },
+    btnText: {
+        margin: 2,
+        padding: 2,
+    }  
 });

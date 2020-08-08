@@ -16,6 +16,8 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import android.util.Log;
+import org.wonday.orientation.OrientationPackage;
+import org.wonday.orientation.OrientationActivityLifecycle;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -33,6 +35,7 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           packages.add(new RNBlurryImageCheckPackage());
           packages.add(new RNCustomCropPackage());
+          //packages.add(new OrientationPackage());
           //packages.add(new RNFSPackage());
           return packages;
         }
@@ -55,7 +58,8 @@ public class MainApplication extends Application implements ReactApplication {
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
     if (!OpenCVLoader.initDebug()) {
       Log.d("OpenCv", "Error while init");
-    } 
+    }
+    registerActivityLifecycleCallbacks(OrientationActivityLifecycle.getInstance()); 
   }
 
   /**

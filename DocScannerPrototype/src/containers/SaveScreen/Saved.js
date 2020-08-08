@@ -15,6 +15,7 @@ import {styles} from '../../assets/styles';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {flushDoc} from '../../actions/actions';
 import Library from '../../components/Library';
+import Reader from '../../components/Reader';
 
 class Saved extends Component{
     constructor(props){
@@ -30,6 +31,11 @@ class Saved extends Component{
             },
             PDF : true,
             Image : false,
+            mode : 'saver',
+            readerSource : {
+                uri : undefined,
+                cache : true
+            }
         };
         this.onPressDone = this.onPressDone.bind(this);
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
@@ -37,6 +43,7 @@ class Saved extends Component{
         this.onPressImage = this.onPressImage.bind(this);
         this.renderPreview = this.renderPreview.bind(this);
         this.renderLibrary = this.renderLibrary.bind(this);
+        this.onPressPDFFile = this.onPressPDFFile.bind(this);
     }
 
     componentDidMount(){
@@ -90,6 +97,16 @@ class Saved extends Component{
     onPressClose(){
         this.props.navigation.navigate('scan'); 
         this.props.flush();
+    }
+
+    onPressPDFFile(item){
+        this.setState({
+            'mode' : 'reader',
+            'readerSource' : {
+                'uri' : item.path,
+                'cache' : true,
+            },
+        });
     }
 
     renderHeader(){
@@ -320,12 +337,13 @@ class Saved extends Component{
             <View style = {{flex : 6.5}}>
                 <Library 
                     width = {'100%'}
-                    numColumns = {2}/>
+                    numColumns = {2}
+                    onPressPDFFile = {(item)=>this.onPressPDFFile(item)}/>
             </View>
         );
     }
     
-    render(){
+    renderSaver(){
         //console.log(this.state);
         return(
             <View style = {[styles.container, {backgroundColor : 'white'}]}>
@@ -333,7 +351,25 @@ class Saved extends Component{
                 {this.renderPreview()}
                 {this.renderLibrary()}
             </View>
-        );  
+        );
+    }
+
+    renderReader(){
+        return(
+            <View>
+                <Reader
+                    source = {this.state.readerSource}/>
+            </View>
+        );
+    }
+  
+    render(){
+        if(this.state.mode == 'saver'){
+            return this.renderSaver();
+        }
+        else if(this.state.mode == 'reader'){
+            return this.renderReader();
+        }
     }
 }
 
