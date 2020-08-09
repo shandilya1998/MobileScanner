@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {StyleSheet,
         TouchableHighlight,
         Dimensions,
+        ActivityIndicator,
         SafeAreaView,
         View,
         PanResponder,
@@ -19,7 +20,9 @@ class Reader extends Component{
             scale: 1,
             numberOfPages: 0,
             horizontal: false,
-            width: this.props.width
+            loading : true,
+            pdfWidth : this.props.width,
+            pdfHeight : this.props.height,
         };
         this.pdf = null;
         this.PanResponder = PanResponder.create({
@@ -28,18 +31,18 @@ class Reader extends Component{
                 let x = gestureState.dx;
                 let y = gestureState.dy;
                 if (Math.abs(x) > Math.abs(y)) {
-                    if (x >= 0) {
+                    if (x > 0) {
                         this.onSwipePerformed('right')
                     }
-                    else {
+                    else if(x<0)  {
                         this.onSwipePerformed('left')
                     }
                 }
                 else {
-                    if (y >= 0) {
+                    if (y > 0) {
                         this.onSwipePerformed('down')
                     }
-                    else {
+                    else if(y<0) {
                         this.onSwipePerformed('up')
                     }
                 }
@@ -100,9 +103,68 @@ class Reader extends Component{
     switchHorizontal = () => {
         this.setState({horizontal: !this.state.horizontal, page: this.state.page});
     };
+    
+    renderPdf(){
+        return(
+            <Pdf 
+                ref={(pdf) => {
+                    this.pdf = pdf;
+                }}  
+                source={this.props.source}
+                scale={this.state.scale}
+                horizontal={this.state.horizontal}
+                onLoadComplete={(
+                    numberOfPages, 
+                    filePath,
+                    {   
+                        width,
+                        height
+                    },  
+                    tableContents
+                ) => {
+                    this.setState({
+                        numberOfPages: numberOfPages 
+                    }); 
+                }}  
+                onPageChanged={(page, numberOfPages) => {
+                    this.setState({
+                        page: page
+                    }); 
+                }}  
+                onError={(error) => {
+                    console.log(error);
+                }}  
+                enablePaging = {true} 
+                    style={{
+                        marginVertical : 5,
+                        alignSelf : 'center',
+                        width : this.state.pdfWidth,
+                        height : this.state.pdfHeight,
+                }}/>
+        ); 
+    }
 
     render(){
         console.log(this.props.source);
+        const loading = () => {
+            return (
+                <View
+                    style={[
+                        styles.overlay,
+                        {   
+                            backgroundColor : 'black',
+                            //width : Dimensions.get('window').width, 
+                        }]}>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator color="white" />
+                        <Text 
+                            style={styles.loadingCameraMessage}>
+                            Loading Image
+                        </Text>
+                    </View>
+                </View>
+            );
+        };
         return (
             <SafeAreaView 
                 style={[
@@ -114,44 +176,42 @@ class Reader extends Component{
                         backgroundColor : 'white',
                     }
                 ]}>
+                <View 
+                    style={
+                        {
+                            flexDirection: 'row'
+                        }
+                    }>
+                    <View 
+                        style={styles.btnText}>
+                        <Text 
+                            style={styles.btnText}>
+                            Page {this.state.page}
+                        </Text>
+                    </View>
+                </View>
                 <Animated.View
                     {...this.PanResponder.panHandlers}>
-                    <View  
-                        style={{flex:1,width: this.state.width}}>
-                        <Pdf ref={(pdf) => {
-                            this.pdf = pdf;
-                        }}
-                            source={this.props.source}
-                            scale={this.state.scale}
-                            horizontal={this.state.horizontal}
-                            onLoadComplete={(
-                                numberOfPages, 
-                                filePath,
-                                {
-                                    width,
-                                    height
-                                },
-                                tableContents
-                            ) => {
-                                this.setState({
-                                    numberOfPages: numberOfPages 
-                                }); 
-                                console.log(`total page count: ${numberOfPages}`);
-                                console.log(tableContents);
-                            }}
-                            onPageChanged={(page, numberOfPages) => {
-                                this.setState({
-                                    page: page
-                                });
-                                console.log(`current page: ${page}`);
-                            }}
-                            onError={(error) => {
-                                console.log(error);
-                            }}
-                            style={{flex:1}}
-                            />
+                    <View
+                        onLayout={(event)=>{
+                            this.setState({
+                                pdfHeight : event.nativeEvent.layout.height,
+                                pdfWidth : event.nativeEvent.layout.width,
+                                loading : false
+                            })
+                        }}> 
+                        {this.state.loading?loading():this.renderPdf()} 
                     </View>
                 </Animated.View>
+                <View style={{flexDirection: 'row'}}>
+                    <View 
+                        style={styles.btnText}>
+                        <Text 
+                            style={styles.btnText}>
+                            Page {this.state.page}
+                        </Text>
+                    </View>
+                </View>
             </SafeAreaView>
         )
     }

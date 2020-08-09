@@ -44,6 +44,17 @@ class Saved extends Component{
         this.renderPreview = this.renderPreview.bind(this);
         this.renderLibrary = this.renderLibrary.bind(this);
         this.onPressPDFFile = this.onPressPDFFile.bind(this);
+        this.onPressReaderBack = this.onPressReaderBack.bind(this);
+    }
+
+    onPressReaderBack(){
+        this.setState({
+            mode : 'saver',
+            readerSource : {
+                uri : undefined,
+                cache : true,
+            }
+        });
     }
 
     componentDidMount(){
@@ -357,6 +368,7 @@ class Saved extends Component{
     renderReader(){
         return(
             <Reader
+                onPressBack = {()=>this.onPressReaderBack()}
                 width = {dimensions.width}
                 height = {dimensions.height}
                 source = {this.state.readerSource}/>
