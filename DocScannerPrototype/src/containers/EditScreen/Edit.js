@@ -1,7 +1,9 @@
 import React, {Component} from 'react';
 import {View,
-        Text, 
+        Text,
+        SafeAreaView, 
         Image, 
+        ActivityIndicator,
         Dimensions,
         TouchableOpacity,
         Platform} from 'react-native';
@@ -36,6 +38,7 @@ class Edit extends Component{
                 updated : false,
                 dimensions : currentPageDimensions,
             },
+            loading : true,
             cropper : {
                 set : false,
                 minX : 0,
@@ -118,6 +121,7 @@ class Edit extends Component{
             currentPage.updated = false;
             this.setState({
                 'currentPage' : currentPage,
+                'loading' : true,
             });            
             this.computeDetectedViewDimensions();
         }
@@ -487,6 +491,7 @@ class Edit extends Component{
             };
             this.setState({
                 'detectedViewDimensions' : detectedViewDimensions,
+                'loading' : false,
             }); 
         };  
         Image.getSize(
@@ -530,6 +535,36 @@ class Edit extends Component{
             );
         }
     }
+
+    renderScreenOverlay(){
+        console.log('overlay');
+        let loadingState = null;
+        if (this.state.loading) {
+            console.log('this');
+            loadingState = (
+                <View
+                    style={[
+                        styles.overlay,
+                        {
+                            backgroundColor : 'black',
+                            //width : Dimensions.get('window').width, 
+                        }]}>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator color="white" />
+                        <Text style={styles.loadingCameraMessage}>Loading Image</Text>
+                    </View>
+                </View>
+            );
+        }
+        return (
+            <SafeAreaView
+                style = {[
+                    styles.overlay,
+                ]}>
+                {loadingState}
+            </SafeAreaView>
+        );
+    }    
  
     renderFooter(){
         return(
@@ -560,6 +595,7 @@ class Edit extends Component{
                 {this.renderHeader()}
                 {this.renderItem()}
                 {this.renderFooter()}
+                {this.renderScreenOverlay()}
             </View>
         );
     }
