@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {StyleSheet,
-        TouchableHighlight,
+        TouchableOpacity,
         Dimensions,
         ActivityIndicator,
         SafeAreaView,
@@ -11,6 +11,7 @@ import {StyleSheet,
 import Pdf from 'react-native-pdf';
 import Orientation from 'react-native-orientation-locker';
 import {styles} from '../assets/styles';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 class Reader extends Component{
     constructor(props) {
@@ -47,7 +48,10 @@ class Reader extends Component{
                     }
                 }
             }
-        })
+        });
+        this.renderPdf = this.renderPdf.bind(this);
+        this.onSwipePerformed = this.onSwipePerformed.bind(this);
+        this._onOrientationDidChange = this._onOrientationDidChange.bind(this);
     }
 
     onSwipePerformed(direction){
@@ -59,7 +63,7 @@ class Reader extends Component{
         }
     }
 
-    _onOrientationDidChange = (orientation) => {
+    _onOrientationDidChange(orientation){
         if (orientation == 'LANDSCAPE-LEFT'||orientation == 'LANDSCAPE-RIGHT') {
           this.setState({width:this.props.height>this.props.width?this.props.height:this.props.width,horizontal:true});
         } else {
@@ -123,7 +127,7 @@ class Reader extends Component{
                     tableContents
                 ) => {
                     this.setState({
-                        numberOfPages: numberOfPages 
+                        numberOfPages: numberOfPages,
                     }); 
                 }}  
                 onPageChanged={(page, numberOfPages) => {
@@ -134,18 +138,15 @@ class Reader extends Component{
                 onError={(error) => {
                     console.log(error);
                 }}  
-                enablePaging = {true} 
-                    style={{
-                        marginVertical : 5,
-                        alignSelf : 'center',
-                        width : this.state.pdfWidth,
-                        height : this.state.pdfHeight,
+                enablePaging = {true}
+                fitPolicy = {1} 
+                style={{
+                    flex : 1,
                 }}/>
         ); 
     }
 
     render(){
-        console.log(this.props.source);
         const loading = () => {
             return (
                 <View
@@ -159,7 +160,7 @@ class Reader extends Component{
                         <ActivityIndicator color="white" />
                         <Text 
                             style={styles.loadingCameraMessage}>
-                            Loading Image
+                            Loading Reader
                         </Text>
                     </View>
                 </View>
@@ -172,38 +173,38 @@ class Reader extends Component{
                     {
                         justifyContent: 'flex-start',
                         alignItems: 'center',
-                        marginTop: 25,
                         backgroundColor : 'white',
                     }
                 ]}>
                 <View 
                     style={
                         {
-                            flexDirection: 'row'
+                            flex : 0.5,
+                            width : this.props.width,
+                            flexDirection: 'row',
+                            justifyContent : 'space-between',
+                            marginHorizontal : 5,
+                            padding : 5,
+                            alignItems : 'center',
                         }
                     }>
                     <View 
-                        style={styles.btnText}>
-                        <Text 
-                            style={styles.btnText}>
-                            Page {this.state.page}
-                        </Text>
+                        style = {styles.buttonGroup}>
+                        <TouchableOpacity
+                            style = {[
+                                styles.button,
+                                {   
+                                    height : 35, 
+                                    width : 32.5
+                                }   
+                            ]}> 
+                            <Icon 
+                                name = 'md-more'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                        </TouchableOpacity>
                     </View>
-                </View>
-                <Animated.View
-                    {...this.PanResponder.panHandlers}>
-                    <View
-                        onLayout={(event)=>{
-                            this.setState({
-                                pdfHeight : event.nativeEvent.layout.height,
-                                pdfWidth : event.nativeEvent.layout.width,
-                                loading : false
-                            })
-                        }}> 
-                        {this.state.loading?loading():this.renderPdf()} 
-                    </View>
-                </Animated.View>
-                <View style={{flexDirection: 'row'}}>
                     <View 
                         style={styles.btnText}>
                         <Text 
@@ -211,7 +212,46 @@ class Reader extends Component{
                             Page {this.state.page}
                         </Text>
                     </View>
+                    <View 
+                        style = {styles.buttonGroup}>
+                        <TouchableOpacity
+                            style = {[
+                                styles.button,
+                                {   
+                                    height : 35, 
+                                    width : 32.5
+                                }   
+                            ]}> 
+                            <Icon 
+                                name = 'md-close'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                        </TouchableOpacity>
+                    </View>
                 </View>
+                <Animated.View
+                    {...this.PanResponder.panHandlers}
+                    style = {{
+                        flex : 9,
+                    }}>
+                    <View
+                        onLayout = {
+                            (event) => {
+                                this.setState({
+                                    loading : false,
+                                    pdfHeight : event.nativeEvent.layout.height,
+                                    pdfWidth : event.nativeEvent.layout.width,
+                                })}
+                        }
+                        style = {{
+                            width : this.state.pdfWidth,
+                            height : this.state.pdfHeight,
+                        }}> 
+                        {this.renderPdf()} 
+                    </View>
+                </Animated.View>
+                {this.state.loading?loading():null}
             </SafeAreaView>
         )
     }

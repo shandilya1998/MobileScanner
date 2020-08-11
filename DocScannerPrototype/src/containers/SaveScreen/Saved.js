@@ -173,7 +173,7 @@ class Saved extends Component{
 
     computeDetectedViewDimensions(){
         const setDimensions = (width, height)=>{
-            console.log('success');
+            //console.log('success');
             //console.log(width);
             //console.log(height);
             const detectedViewDimensions = { 
