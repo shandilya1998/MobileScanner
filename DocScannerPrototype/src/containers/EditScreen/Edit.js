@@ -128,12 +128,12 @@ class Edit extends Component{
     }
 
     async updateImage(image, rectCoords){
-        console.log('code coordinates');
+        console.log('rectangle coordinates');
         console.log(rectCoords);
         const type = Platform.OS=='android'?'png':'jpeg'
         const now = Date.now()
         const writeFile = `${writeDir}page${this.state.currentPage.pageNum}_${now}.${type}`
-        console.log(writeFile);
+        //console.log(writeFile);
         let exists = await RNFS.exists(writeFile);
         if(exists){
             console.log('image deleted')
@@ -267,7 +267,7 @@ class Edit extends Component{
     }
 
     onPressNext(){
-        console.log('next');
+        //console.log('next');
         if(this.state.currentPage.pageNum<this.state.doc.length-1){
             const currentPageDimensions = { 
                 'width' : dimensions.width,
@@ -300,7 +300,6 @@ class Edit extends Component{
                 'height' : dimensions.height,
                 'set' : false,
             };
-            console.log('previous');
             const currentPage = {
                 pageNum : this.state.currentPage.pageNum-1,
                 updated : false,
@@ -429,7 +428,6 @@ class Edit extends Component{
             const toggle = {
                 'crop' : true,
             };
-            console.log(toggle);
             this.setState({'toggle' : toggle});
         }
     }
@@ -470,6 +468,7 @@ class Edit extends Component{
                     viewHeight = {dimensions.height*0.8}
                     viewWidth = {dimensions.height*0.8*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height} 
                     viewPadding = {5}
+                    rectangleCoordinates = {this.state.doc[this.state.currentPage.pageNum].rectCoords}
                     minX = {this.state.cropper.minX}
                     minY = {this.state.cropper.minY}
                     maxX = {this.state.cropper.maxX}
@@ -482,9 +481,9 @@ class Edit extends Component{
 
     computeDetectedViewDimensions(){
         const setDimensions = (width, height)=>{
-            console.log('success');
-            console.log(width);
-            console.log(height);
+            //console.log('success');
+            //console.log(width);
+            //console.log(height);
             const detectedViewDimensions = {
                 width : dimensions.height*0.8*width/height,
                 height : dimensions.height*0.8,
@@ -537,10 +536,10 @@ class Edit extends Component{
     }
 
     renderScreenOverlay(){
-        console.log('overlay');
+        //console.log('overlay');
         let loadingState = null;
         if (this.state.loading) {
-            console.log('this');
+            //console.log('this');
             loadingState = (
                 <View
                     style={[
@@ -615,4 +614,4 @@ const mapDispatchToProps = (dispatch) => {
     };
 };
 
-export default connect( mapStateToProps, mapDispatchToProps)(Edit);
+export default connect( mapStateToProps, mapDispatchToProps)(Edit); 

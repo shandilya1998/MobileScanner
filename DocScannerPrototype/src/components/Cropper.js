@@ -78,7 +78,18 @@ class Cropper extends Component{
             this.state.bottomRight,
         ); 
     }
-
+    /* 
+    componentDidUpdate(){
+        console.log('top left');
+        console.log(this.state.topLeft);
+        console.log('top right');
+        console.log(this.state.topRight);
+        console.log('bottom left');
+        console.log(this.state.bottomLeft);
+        console.log('bottom right');
+        console.log(this.state.bottomRight);
+    }
+    */
     createPanResponser(corner) {
         return PanResponder.create({
             onStartShouldSetPanResponder: () => true,
@@ -92,10 +103,6 @@ class Cropper extends Component{
                 //console.log('maxY');
                 //console.log(this.props.maxY);
                 if(gesture.moveX >= this.props.minX && gesture.moveX <= this.props.maxX && gesture.moveY >= this.props.minY && gesture.moveY <= this.props.maxY){
-                    //console.log('coord X');
-                    //console.log(gesture.moveX);
-                    //console.log('coord Y')
-                    //console.log(gesture.moveY);
                     return(
                         Animated.event([
                             null,
@@ -134,7 +141,9 @@ class Cropper extends Component{
             ),      
             height: this.props.height,
             width: this.props.width,
-        };      
+        };     
+        console.log('view to image coords');
+        console.log(coordinates);
         NativeModules.CustomCropManager.crop(
             coordinates,
             this.props.initialImage,
@@ -156,15 +165,15 @@ class Cropper extends Component{
 
     imageCoordinatesToViewCoordinates(corner){
         return {
-            x : (corner.x*this.props.viewWidth)/this.props.width+this.props.minX,
-            y : (corner.y*this.props.viewHeight)/this.props.height+this.props.minY, 
+            x : (corner.x*this.props.viewWidth)/this.props.width,
+            y : (corner.y*this.props.viewHeight)/this.props.height, 
         };
     }
 
     viewCoordinatesToImageCoordinates(corner){
         return {
-            x : ((corner.x._value - this.props.minX)/this.props.viewWidth)*this.props.width,
-            y : ((corner.y._value - this.props.minY)/this.props.viewHeight)*this.props.height,
+            x : ((corner.x._value)/this.props.viewWidth)*this.props.width,
+            y : ((corner.y._value)/this.props.viewHeight)*this.props.height,
         };
     }
 

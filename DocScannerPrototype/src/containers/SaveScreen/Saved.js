@@ -4,6 +4,7 @@ import {View,
         Dimensions, 
         TextInput, 
         Image,
+        ActivityIndicator,
         TouchableOpacity} from 'react-native';
 import {connect} from 'react-redux';
 import RNImageToPdf from 'react-native-image-to-pdf';
@@ -35,7 +36,9 @@ class Saved extends Component{
             readerSource : {
                 uri : undefined,
                 cache : true
-            }
+            },
+            saved : false,
+            saving : false,
         };
         this.onPressDone = this.onPressDone.bind(this);
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
@@ -45,6 +48,11 @@ class Saved extends Component{
         this.renderLibrary = this.renderLibrary.bind(this);
         this.onPressPDFFile = this.onPressPDFFile.bind(this);
         this.onPressReaderBack = this.onPressReaderBack.bind(this);
+        this.renderSaveOptions = this.renderSaveOptions.bind(this);
+        this.convertToPDF = this.convertToPDF.bind(this);
+        this.onPressClose = this.onPressClose.bind(this);
+        this.renderHeader = this.renderHeader.bind(this);
+        this.renderSaver = this.renderSaver.bind(this);
     }
 
     onPressReaderBack(){
@@ -94,15 +102,19 @@ class Saved extends Component{
                 await RNFS.unlink(DestPath);
             }
             await RNFS.copyFile(pdf.filePath, DestPath ).then(
-            ()=>console.log('done successfully!'),
+            ()=>{
+                this.setState(({saving, saved})=>({'saving' : !saving, 'saved' : !saved}));
+                console.log('done successfully!')
+            },
             ()=>console.log('error'));
         } catch(e) {
 		    console.log(e);
 	    }
     }
 
-    onPressDone(){
-        this.convertToPDF();
+    async onPressDone(){
+        this.setState(({saving})=>({'saving' : !saving}))
+        await this.convertToPDF();
     }
     
     onPressClose(){
@@ -204,8 +216,264 @@ class Saved extends Component{
         const {PDF, Image} = this.state;
         this.setState({
             'PDF' : !PDF,
+
             'Image' : !Image,
         });
+    }
+
+    renderSaveOptions(){
+        let loadingState = null;
+        if (this.state.saving) {
+            //console.log('this');
+            loadingState = ( 
+                <View 
+                    style={[
+                        styles.overlay, 
+                        {   
+                            backgroundColor : 'black',
+                            //width : Dimensions.get('window').width, 
+                        }]}>
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator color="white" />
+                        <Text style={styles.loadingCameraMessage}>Saving Document</Text>
+                    </View>
+                </View>
+            );  
+        }
+        return(
+            <View style = {{flex : 1}}>
+                <View 
+                    style = {{
+                        //flex : 1,
+                        backgroundColor : '#00000080',
+                        opacity : 0.8,
+                        height : 50,
+                        margin : 5,
+                        padding : 5,
+                    }}>
+                    <TextInput
+                        onChangeText = {this.onChangeText}
+                        placeholder = {'Add PDF name here'} 
+                        style = {{
+                            flex : 1,
+                            margin : 2,
+                            padding : 3, 
+                            opacity : 1,
+                            height : 50,
+                            backgroundColor : 'white', }}
+                        placeholderTextColor = {'black'}/>
+                </View>
+                <View 
+                    style = {{
+                        flex : 1,
+                        flexDirection : 'row',
+                        justifyContent : 'space-around',
+                        alignItems : 'center',
+                        padding : 5,
+                        margin : 5,
+                    }}>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            justifyContent : 'center',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5,
+                        }}>
+                        <View
+                            style = {[
+                                styles.buttonGroup,
+                                {backgroundColor : this.state.PDF?  '#008000' : '#00000080'}
+                            ]}>
+                            <TouchableOpacity
+                                onPress = {()=>this.onPressPDF()}
+                                style = {styles.button}>
+                                <Icon
+                                    name = 'md-document'
+                                    size = {40}
+                                    color = {'white'}
+                                    style={styles.buttonIcon} />
+                                <Text style={styles.buttonText}>PDF</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            justifyContent : 'center',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5,
+                        }}> 
+                        <View
+                            style = {[
+                                styles.buttonGroup,
+                                {backgroundColor : this.state.Image?'#008000' : '#00000080'}
+                            ]}>
+                            <TouchableOpacity
+                                onPress = {()=>this.onPressImage()}
+                                style = {styles.button}>
+                                <Icon
+                                    name = 'md-image'
+                                    size = {40}
+                                    color = {'white'}
+                                    style={styles.buttonIcon} />
+                                <Text style={styles.buttonText}>Image</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+                <View 
+                    style = {{
+                        flex : 1,
+                        justifyContent : 'center',
+                        alignItems : 'center',
+                        padding : 5,
+                        margin : 5
+                    }}>
+                    <View
+                        style = {styles.buttonGroup}>
+                        <TouchableOpacity
+                            onPress = {()=>this.onPressDone()}
+                            style = {styles.button}>
+                            <Icon 
+                                name = 'md-done-all'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                            <Text style={styles.buttonText}>Save</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                {loadingState}
+            </View>
+        );
+    }
+
+    renderPreviewOptions(){
+        let previewButton = null;
+        if(this.state.PDF){
+            previewButton = (
+                <View
+                    style = {styles.buttonGroup}>
+                    <TouchableOpacity
+                        onPress = {()=>{}}
+                        style = {styles.button}>
+                        <Icon 
+                            name = 'md-book'
+                            size = {40}
+                            color = {'white'}
+                            style={styles.buttonIcon} />
+                        <Text style={styles.buttonText}>Read</Text>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+        else if(this.state.Image){
+            previewButton = (
+               <View
+                    style = {styles.buttonGroup}>
+                    <TouchableOpacity
+                        onPress = {()=>{}}
+                        style = {styles.button}>
+                        <Icon 
+                            name = 'md-photos'
+                            size = {40}
+                            color = {'white'}
+                            style={styles.buttonIcon} />
+                        <Text style={styles.buttonText}>Reader</Text>
+                    </TouchableOpacity>
+                </View> 
+            );
+        }
+        return(
+            <View style = {{flex : 1}}>
+                <View 
+                    style = {{
+                        flex : 1,
+                        flexDirection : 'row',
+                        justifyContent : 'space-around',
+                        alignItems : 'center',
+                        padding : 5,
+                        margin : 5,
+                    }}>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            justifyContent : 'center',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5,
+                        }}>
+                        <View
+                            style = {[
+                                styles.buttonGroup,
+                                {backgroundColor : '#00000080'}
+                            ]}>
+                            <TouchableOpacity
+                                onPress = {()=>{}}
+                                style = {styles.button}>
+                                <Icon
+                                    name = 'md-share'
+                                    size = {40}
+                                    color = {'white'}
+                                    style={styles.buttonIcon} />
+                                <Text style={styles.buttonText}>Share</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View 
+                        style = {{
+                            flex : 1,
+                            justifyContent : 'center',
+                            alignItems : 'center',
+                            padding : 5,
+                            margin : 5,
+                        }}> 
+                        <View
+                            style = {[
+                                styles.buttonGroup,
+                                {backgroundColor : '#00000080'}
+                            ]}>
+                            <TouchableOpacity
+                                onPress = {()=>{}}
+                                style = {styles.button}>
+                                <Icon
+                                    name = 'md-print'
+                                    size = {40}
+                                    color = {'white'}
+                                    style={styles.buttonIcon} />
+                                <Text style={styles.buttonText}>Print</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+                <View 
+                    style = {{
+                        flex : 1,
+                        flexDirection : 'row',
+                        justifyContent : 'space-around',
+                        alignItems : 'center',
+                        padding : 5,
+                        margin : 5
+                    }}>
+                    <View
+                        style = {styles.buttonGroup}>
+                        <TouchableOpacity
+                            onPress = {()=>{}}
+                            style = {styles.button}>
+                            <Icon 
+                                name = 'md-cloud-upload'
+                                size = {40}
+                                color = {'white'}
+                                style={styles.buttonIcon} />
+                            <Text style={styles.buttonText}>Upload</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {previewButton}
+                </View>                
+            </View>
+        );
     }
 
     renderPreview(){
@@ -235,110 +503,7 @@ class Saved extends Component{
                         }}
                         resizeMode = {'contain'}/>
                 </View>
-                <View style = {{flex : 1}}>
-                    <View style = {{
-                        //flex : 1,
-                        backgroundColor : '#00000080',
-                        opacity : 0.8,
-                        height : 50,
-                        margin : 5,
-                        padding : 5,
-                    }}>
-                        <TextInput
-                            onChangeText = {this.onChangeText}
-                            placeholder = {'Add PDF name here'} 
-                            style = {{
-                                flex : 1,
-                                margin : 2,
-                                padding : 3, 
-                                opacity : 1,
-                                height : 50,
-                                backgroundColor : 'white', }}
-                            placeholderTextColor = {'black'}/>
-                    </View>
-                    <View 
-                        style = {{
-                            flex : 1,
-                            flexDirection : 'row',
-                            justifyContent : 'space-around',
-                            alignItems : 'center',
-                            padding : 5,
-                            margin : 5,
-                        }}>
-                        <View 
-                            style = {{
-                                flex : 1,
-                                justifyContent : 'center',
-                                alignItems : 'center',
-                                padding : 5,
-                                margin : 5,
-                            }}>
-                            <View
-                                style = {[
-                                    styles.buttonGroup,
-                                    {backgroundColor : this.state.PDF?  '#008000' : '#00000080'}
-                                ]}>
-                                <TouchableOpacity
-                                    onPress = {()=>this.onPressPDF()}
-                                    style = {styles.button}>
-                                    <Icon
-                                        name = 'md-document'
-                                        size = {40}
-                                        color = {'white'}
-                                        style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>PDF</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                        <View 
-                            style = {{
-                                flex : 1,
-                                justifyContent : 'center',
-                                alignItems : 'center',
-                                padding : 5,
-                                margin : 5,
-                            }}> 
-                            <View
-                                style = {[
-                                    styles.buttonGroup,
-                                    {backgroundColor : this.state.Image?'#008000' : '#00000080'}
-                                ]}>
-                                <TouchableOpacity
-                                    onPress = {()=>this.onPressImage()}
-                                    style = {styles.button}>
-                                    <Icon
-                                        name = 'md-image'
-                                        size = {40}
-                                        color = {'white'}
-                                        style={styles.buttonIcon} />
-                                    <Text style={styles.buttonText}>Image</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                    <View 
-                        style = {{
-                            flex : 1,
-                            justifyContent : 'center',
-                            alignItems : 'center',
-                            padding : 5,
-                            margin : 5
-                        }}>
-                        <View
-                            style = {styles.buttonGroup}>
-                            <TouchableOpacity
-                                onPress = {()=>this.onPressDone()}
-                                style = {styles.button}>
-                                <Icon 
-                                    name = 'md-done-all'
-                                    size = {40}
-                                    color = {'white'}
-                                    style={styles.buttonIcon} />
-                                <Text style={styles.buttonText}>Save</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
+                {this.state.saved?this.renderPreviewOptions():this.renderSaveOptions()}
             </View>
         );
     }
