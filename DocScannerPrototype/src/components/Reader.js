@@ -197,12 +197,13 @@ class Reader extends Component{
                                     height : 35, 
                                     width : 32.5
                                 }   
-                            ]}> 
+                            ]}
+                            onPress = {()=>{this.props.onPressMore()}}>
                             <Icon 
                                 name = 'md-more'
                                 size = {40}
                                 color = {'white'}
-                                style={styles.buttonIcon} />
+                                style={styles.buttonIcon} /> 
                         </TouchableOpacity>
                     </View>
                     <View 
@@ -221,7 +222,8 @@ class Reader extends Component{
                                     height : 35, 
                                     width : 32.5
                                 }   
-                            ]}> 
+                            ]}
+                            onPress = {()=>{this.props.onPressClose()}}> 
                             <Icon 
                                 name = 'md-close'
                                 size = {40}

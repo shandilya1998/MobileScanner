@@ -368,7 +368,7 @@ class Saved extends Component{
     renderReader(){
         return(
             <Reader
-                onPressBack = {()=>this.onPressReaderBack()}
+                onPressClose = {()=>this.onPressReaderBack()}
                 width = {dimensions.width}
                 height = {dimensions.height}
                 source = {this.state.readerSource}/>
