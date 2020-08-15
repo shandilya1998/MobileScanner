@@ -32,6 +32,40 @@ class Edit extends Component{
             'height' : dimensions.height,
             'set' : false,
         };
+        
+        const tools =  [ 
+            {   
+                key : '0',
+                name : 'Brush',
+                icon : 'md-brush',
+                onPress : ()=>{},
+            },  
+            {   
+                key : '1',
+                name : 'Brightness',
+                icon : 'md-sunny',
+                onPress : ()=>{},
+            },  
+            {   
+                key : '2',
+                name : 'Crop',
+                icon : 'md-crop',
+                onPress : ()=>this.onPressTool('crop')
+            },  
+            {   
+                key : '3',
+                name : 'Contrast',
+                icon : 'md-contrast',
+                onPress : ()=>{},
+            },  
+            {   
+                key : '4',
+                name : 'Filter',
+                icon : 'ios-color-filter',
+                onPress : ()=>{}
+            }   
+        ]; 
+        
         this.state = {
             doc : props.doc,
             currentPage : {
@@ -56,45 +90,19 @@ class Edit extends Component{
                 width : dimensions.width,
                 height : dimensions.height,
             },
-            tools : [
-                {
-                    key : '0',
-                    name : 'Brush',
-                    icon : 'md-brush',
-                    onPress : ()=>{},
-                },
-                {
-                    key : '1',
-                    name : 'Brightness',
-                    icon : 'md-sunny',
-                    onPress : ()=>{},
-                },
-                {
-                    key : '2',
-                    name : 'Crop',
-                    icon : 'md-crop',
-                    onPress : ()=>this.onPressCrop()
-                },
-                {
-                    key : '3',
-                    name : 'Contrast',
-                    icon : 'md-contrast',
-                    onPress : ()=>{},
-                },
-                {
-                    key : '4',
-                    name : 'Filter',
-                    icon : 'ios-color-filter',
-                    onPress : ()=>{}
-                }
-            ]
+            tools : tools,
+            currentTool : {
+                item : tools[(tools.length-1)/2], 
+                index : (tools.length-1)/2
+            },
+            preview : true,
         };
         this.updateImage = this.updateImage.bind(this);
         this.renderSwiperButtons = this.renderSwiperButtons.bind(this);
         this.renderHeader = this.renderHeader.bind(this);
         this.renderToolBar = this.renderToolBar.bind(this);
         this.renderTool = this.renderTool.bind(this);
-        this.onPressCrop = this.onPressCrop.bind(this);
+        this.onPressTool = this.onPressTool.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.crop = this.crop.bind(this);
         this.onPressDone = this.onPressDone.bind(this);
@@ -102,6 +110,7 @@ class Edit extends Component{
         this.computeDetectedViewDimensions = this.computeDetectedViewDimensions.bind(this);
         this.onPressNext = this.onPressNext.bind(this);
         this.onPressPrevious = this.onPressPrevious.bind(this);
+        this.onSnapToTool = this.onSnapToTool.bind(this);
     }
 
     componentDidMount(){ 
@@ -413,12 +422,13 @@ class Edit extends Component{
 
     renderTool({item, index}){
         return(
-            <View>
+            <View
+                style = {{alignItems : 'center'}}>
                 <View  
                     style={[
                     styles.buttonGroup, 
                     {   
-                        backgroundColor : '#00000080',
+                        backgroundColor : this.state.preview?'#00000080':'#008000',
                         margin : 10,  
                         zIndex : 1,
                     }]}>
@@ -436,6 +446,15 @@ class Edit extends Component{
                 </View>  
             </View>
         );
+    }
+
+    onSnapToTool(index){
+        this.setState({
+            currentTool : {
+                item : this.state.tools[index],
+                index : index,
+            }        
+        });
     }
 
     renderToolBar(){
@@ -457,30 +476,31 @@ class Edit extends Component{
                     renderItem = {this.renderTool}
                     tools = {this.state.tools}
                     width = {dimensions.width}
+                    margin = {10}
                     containerStyle = {{
                         //backgroundColor : 'red', 
                         justifyContent : 'center',    
                         alignItems : 'center',
-                    }}/>
+                    }}
+                    onSnapToItem = {this.onSnapToTool}/>
             </View>
         );
     }
 
-    onPressCrop(){
-        //console.log('pressed')
-        //console.log(this.state.toggle.crop);
-        if(this.state.toggle.crop){
-            this.crop();
-            const toggle = {crop : false, contrast : false};
-            this.setState({'toggle' : toggle});
-            
-        }
-        else{
-            const toggle = {
-                crop : true,
-                contrast : false,
-            };
-            this.setState({'toggle' : toggle});
+    onPressTool(tool){
+        if(tool=='crop'){
+            if(this.state.toggle.crop){
+                this.crop();
+                const toggle = {crop : false, contrast : false};
+                this.setState({toggle : toggle, preview : true});
+            }   
+            else{
+                const toggle = { 
+                    crop : true,
+                    contrast : false,
+                };  
+                this.setState({'toggle' : toggle, preview : false});
+            } 
         }
     }
 
@@ -618,19 +638,34 @@ class Edit extends Component{
     }    
  
     renderFooter(){
-        return(
-            <View
-                style = {[ 
-                    {
-                        flex : 1.5,
-                        justifyContent : 'flex-end',
-                        backgroundColor : 'green',
-                    }
-                ]}>
-                {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
-                {this.renderToolBar()}
-            </View>
-        );
+        if(this.state.toggle.crop){
+            return(
+                <View
+                    style = {[
+                        {
+                            flex : 1.5,
+                            jusitifyContent : 'flex-end',
+                        }
+                    ]}>
+                    {this.renderTool(this.state.currentTool)}
+                </View>
+            );
+        }
+        else{
+            return(
+                <View
+                    style = {[ 
+                        {
+                            flex : 1.5,
+                            justifyContent : 'flex-end',
+                            //backgroundColor : 'green',
+                        }
+                    ]}>
+                    {this.props.route.params.captureMultiple?this.renderSwiperButtons():null}
+                    {this.renderToolBar()}
+                </View>
+            );
+        }
     }
 
     render(){ 
