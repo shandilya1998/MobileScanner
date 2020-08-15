@@ -21,6 +21,7 @@ import {updateDoc,
         flushDoc,} from '../../actions/actions';
 //console.log(Platform.OS);
 import Cropper from '../../components/Cropper';
+import ToolBar from '../../components/ToolBar';
 
 class Edit extends Component{
     constructor(props){
@@ -55,11 +56,44 @@ class Edit extends Component{
                 width : dimensions.width,
                 height : dimensions.height,
             },
+            tools : [
+                {
+                    key : '0',
+                    name : 'Brush',
+                    icon : 'md-brush',
+                    onPress : ()=>{},
+                },
+                {
+                    key : '1',
+                    name : 'Brightness',
+                    icon : 'md-sunny',
+                    onPress : ()=>{},
+                },
+                {
+                    key : '2',
+                    name : 'Crop',
+                    icon : 'md-crop',
+                    onPress : ()=>this.onPressCrop()
+                },
+                {
+                    key : '3',
+                    name : 'Contrast',
+                    icon : 'md-contrast',
+                    onPress : ()=>{},
+                },
+                {
+                    key : '4',
+                    name : 'Filter',
+                    icon : 'ios-color-filter',
+                    onPress : ()=>{}
+                }
+            ]
         };
         this.updateImage = this.updateImage.bind(this);
         this.renderSwiperButtons = this.renderSwiperButtons.bind(this);
         this.renderHeader = this.renderHeader.bind(this);
         this.renderToolBar = this.renderToolBar.bind(this);
+        this.renderTool = this.renderTool.bind(this);
         this.onPressCrop = this.onPressCrop.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.crop = this.crop.bind(this);
@@ -377,6 +411,33 @@ class Edit extends Component{
         );
     }
 
+    renderTool({item, index}){
+        return(
+            <View>
+                <View  
+                    style={[
+                    styles.buttonGroup, 
+                    {   
+                        backgroundColor : '#00000080',
+                        margin : 10,  
+                        zIndex : 1,
+                    }]}>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={item.onPress} 
+                        activeOpacity={0.8}>
+                        <Icon 
+                            name={item.icon} 
+                            size={50} 
+                            color={'white'} 
+                            style={styles.buttonIcon} />
+                        <Text style={styles.buttonText}>{item.name}</Text>
+                    </TouchableOpacity>
+                </View>  
+            </View>
+        );
+    }
+
     renderToolBar(){
         //console.log(this.state.toggle.crop);
         return(
@@ -390,27 +451,17 @@ class Edit extends Component{
                         flexDirection : 'row',
                         paddingBottom : 10,
                         marginBottom : 10,
-                    }}>
-                <View  
-                    style={[
-                        styles.buttonGroup, 
-                        { 
-                            backgroundColor : this.state.toggle.crop ? '#008000' :'#00000080',
-                            margin: 8, 
-                            zIndex : 1,
-                        }]}>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={()=>this.onPressCrop()} 
-                        activeOpacity={0.8}>
-                        <Icon 
-                            name="md-crop" 
-                            size={50} 
-                            color={'white'} 
-                            style={styles.buttonIcon} />
-                        <Text style={styles.buttonText}>Crop</Text>
-                    </TouchableOpacity>
-                </View>   
+                    }
+                }>
+                <ToolBar
+                    renderItem = {this.renderTool}
+                    tools = {this.state.tools}
+                    width = {dimensions.width}
+                    containerStyle = {{
+                        //backgroundColor : 'red', 
+                        justifyContent : 'center',    
+                        alignItems : 'center',
+                    }}/>
             </View>
         );
     }
@@ -420,13 +471,14 @@ class Edit extends Component{
         //console.log(this.state.toggle.crop);
         if(this.state.toggle.crop){
             this.crop();
-            const toggle = {crop : false};
+            const toggle = {crop : false, contrast : false};
             this.setState({'toggle' : toggle});
             
         }
         else{
             const toggle = {
-                'crop' : true,
+                crop : true,
+                contrast : false,
             };
             this.setState({'toggle' : toggle});
         }

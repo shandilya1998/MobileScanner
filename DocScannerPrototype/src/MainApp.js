@@ -7,7 +7,7 @@ import MobileScanner from './containers/MobileScanner';
 import ScanContainer from './containers/ScanContainer';
 import {checkMultiple, 
         PERMISSIONS,
-        request} from 'react-native-permissions';
+        requestMultiple} from 'react-native-permissions';
 
 MainStack = createDrawerNavigator();
 let RNFS = require('react-native-fs');
@@ -27,66 +27,40 @@ class MainApp extends Component{
 
     permissionsAndroid(statuses){
         console.log(statuses)
+        const permissions = new Array();
         if(statuses[PERMISSIONS.ANDROID.CAMERA]=='denied'){
-            const rationale = {
-                title : 'Camera Permissions',
-                message : 'Please Grant Camera Permissions to be able to Scan',
-                buttonPositive : 'Allow',
-                buttonNegative : 'Deny',
-            };
-            request(
-                PERMISSIONS.ANDROID.CAMERA,
-                rationale).then(result=>console.log(result));
+            permissions.push(PERMISSIONS.ANDROID.CAMERA);
         }
         if(statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]=='denied'){
-            const rationale = { 
-                title : 'Camera Permissions',
-                message : 'Please Grant Camera Permissions to be able to Scan',
-                buttonPositive : 'Allow',
-                buttonNegative : 'Deny',
-            };  
-            request(
-                PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
-                rationale).then(result=>console.log(result));
+            permissions.push(PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE);
         }
         if(statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE]=='denied'){
-            const rationale = { 
-                title : 'Camera Permissions',
-                message : 'Please Grant Camera Permissions to be able to Scan',
-                buttonPositive : 'Allow',
-                buttonNegative : 'Deny',
-            };      
-            console.log('asking');
-            request(
-                PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
-                rationale).then(result=>console.log(result));
-        }  
+            permissions.push(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        } 
+        requestMultiple(permissions).then(
+            (statuses) => {
+                console.log(statuses[PERMISSIONS.ANDROID.CAMERA]);
+                console.log(statuses[PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE]);
+                console.log(statuses[PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE]);
+            }
+        ); 
     }
 
     permissionsIos(statuses){
+        const permissions = new Array();
         if(statuses[PERMISSIONS.IOS.CAMERA]=='denied'){
-            const rationale = {
-                title : 'Camera Permissions',
-                message : 'Please Grant Camera Permissions to be able to Scan',
-                buttonPositive : 'Allow',
-                buttonNegative : 'Deny',
-            };
-            request(
-                PERMISSIONS.ANDROID.CAMERA,
-                rationale).then(result=>console.log(result));
+            permissions.push(PERMISSIONS.IOS.CAMERA);
         }
         if(statuses[PERMISSIONS.IOS.MEDIA_LIBRARY]=='denied'){
-            const rationale = {
-                title : 'Camera Permissions',
-                message : 'Please Grant Camera Permissions to be able to Scan',
-                buttonPositive : 'Allow',
-                buttonNegative : 'Deny',
-            };
-            console.log('asking');
-            request(
-                PERMISSIONS.IOS.MEDIA_LIBRARY,
-                rationale).then(result=>console.log(result));
+            permissions.push(PERMISSIONS.IOS.MEDIA_LIBRARY);
         }
+        requestMultiple(permissions).then(
+            (statuses) => {
+                console.log(statuses[PERMISSIONS.IOS.CAMERA]);
+                console.log(statuses[PERMISSIONS.IOS.MEDIA_LIBRARY]);
+            }   
+        ); 
+        
     }
     
     async appSharedFolder(){
