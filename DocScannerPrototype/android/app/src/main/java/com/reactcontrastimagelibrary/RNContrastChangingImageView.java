@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.ParcelFileDescriptor;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
@@ -22,17 +23,29 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.concurrent.ExecutionException;
+import java.util.UUID;
 
 import com.facebook.react.bridge.WritableMap;
 
 public class RNContrastChangingImageView extends AppCompatImageView {
-
+    private String cacheFolderName = "RNContrastChangingImage";
     private Bitmap imageData = null;
+    private Bitmap modifiedData = null;
     private String imageUri = null;
     private double contrast = 1;
+    protected Context mContext;
+    public static RNContrastChangingImageView instance = null;
 
     public RNContrastChangingImageView(Context context) {
         super(context);
+    }
+
+    public static MainView getInstance() {
+        return instance;
+    }
+
+    public static void createInstance(Context context, Activity activity) {
+        instance = new RNContrastChangingImageView(context, activity);
     }
 
     public void setImageUri(String imgUri) {
@@ -67,6 +80,21 @@ public class RNContrastChangingImageView extends AppCompatImageView {
         }
     }
 
+    private String generateStoredFileName() throws Exception {
+        String folderDir = this.mContext.getCacheDir().toString();
+        File folder = new File( folderDir + "/" + this.cacheFolderName);
+        if (!folder.exists()) {
+            boolean result = folder.mkdirs();
+            if (result) {
+                Log.d(TAG, "wrote: created folder " + folder.getPath());
+            } else {
+                Log.d(TAG, "Not possible to create folder");
+                throw new Exception("Failed to create the cache directory");
+            }   
+        }   
+        return folderDir + "/" + this.cacheFolderName + "/" + name + UUID.randomUUID() + ".png"; 
+    } 
+
     private void updateImageContrast() {
         try {
             Mat matImage = new Mat();
@@ -86,11 +114,26 @@ public class RNContrastChangingImageView extends AppCompatImageView {
                 this.imageData.getHeight(),
                 this.imageData.getConfig()
             );
+            this.modifiedData = resultImage;
             Utils.matToBitmap(matImage, resultImage);
 
             this.setImageBitmap(resultImage);
+            this.image
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private String saveImage(){
+        String fileName = this.generateStoredFileName();
+        Mat matImage = new Mat();
+        Utils.bitmapToMat(this.modifiedData, matImage);
+        boolean success = Imgcodecs.imwrite(fileName, matImage);
+        matImage.release();
+        if(success){ 
+            return fileName;
+        } else {
+            return null;
         }
     }
 }
