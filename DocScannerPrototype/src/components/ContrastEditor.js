@@ -9,11 +9,18 @@ import PropTypes from 'prop-types';
 class ContrastEditor extends Component{
     constructor(props){
         super(props);
+        this.state = {
+            constrast : 1;
+        };
     }   
 
     render(){
         return(
             <View>
+                <RNContrastChangingImage 
+                    source = {this.props.source}
+                    contrast = {this.state.contrast}
+                    resizeMode = {'contain'}> 
             </View>
         );  
     }   
