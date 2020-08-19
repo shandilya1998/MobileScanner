@@ -2,6 +2,7 @@ package com.docscannerprototype;
 //import com.rnfs.RNFSPackage;
 import com.reactlibraryblurryimagecheck.RNBlurryImageCheckPackage;
 import com.reactlibrarycustomcrop.RNCustomCropPackage;
+import com.reactcontrastimagelibrary.RNContrastChangingImagePackage;
 import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
@@ -35,6 +36,7 @@ public class MainApplication extends Application implements ReactApplication {
           // Packages that cannot be autolinked yet can be added manually here, for example:
           packages.add(new RNBlurryImageCheckPackage());
           packages.add(new RNCustomCropPackage());
+          packages.add(new RNContrastChangingImagePackage());
           //packages.add(new OrientationPackage());
           //packages.add(new RNFSPackage());
           return packages;

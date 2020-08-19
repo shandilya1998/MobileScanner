@@ -1,11 +1,13 @@
-package com.reactlibrary;
+package com.reactcontrastimagelibrary;
 
 import android.content.Context;
+import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.ParcelFileDescriptor;
+import android.net.Uri;
 
-import android.support.v7.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
@@ -21,10 +23,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.concurrent.ExecutionException;
 
+import com.facebook.react.bridge.WritableMap;
 
 public class RNContrastChangingImageView extends AppCompatImageView {
 
-    private Bitmap fetchedImageData = null;
+    private Bitmap imageData = null;
     private String imageUri = null;
     private double contrast = 1;
 
@@ -35,28 +38,16 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     public void setImageUri(String imgUri) {
         if (imgUri != this.imageUri) {
             this.imageUri = imgUri;
-            File file = new File(imgUri);
-            uriToBitmap(file.toURI());
-        }
-    }
-
-    private void uriToBitmap(Uri selectedFileUri) {
-        try {
-            ParcelFileDescriptor parcelFileDescriptor = 
-                getContentResolver().openFileDescriptor(selectedFileUri, "r");
-            FileDescriptor fileDescriptor = parcelFileDescriptor.getFileDescriptor();
-            Bitmap image = BitmapFactory.decodeFileDescriptor(fileDescriptor);
-            this.setImageBitmap(resultImage);
-            parcelFileDescriptor.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+            Bitmap bitmap = BitmapFactory.decodeFile(imgUri);
+            this.imageData = bitmap;
+            this.setImageBitmap(bitmap);
         }
     }
 
     public void setContrast(double contrastVal) {
         this.contrast = contrastVal;
 
-        if (this.fetchedImageData != null) {
+        if (this.imageData != null) {
             this.updateImageContrast();
         }
     }
@@ -79,7 +70,7 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     private void updateImageContrast() {
         try {
             Mat matImage = new Mat();
-            Utils.bitmapToMat(this.fetchedImageData, matImage);
+            Utils.bitmapToMat(this.imageData, matImage);
 
             Scalar imgScalVec = Core.sumElems(matImage);
             double[] imgAvgVec = imgScalVec.val;
@@ -91,9 +82,9 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             matImage.convertTo(matImage, matImage.type(), this.contrast, brightness);
 
             Bitmap resultImage = Bitmap.createBitmap(
-                this.fetchedImageData.getWidth(),
-                this.fetchedImageData.getHeight(),
-                this.fetchedImageData.getConfig()
+                this.imageData.getWidth(),
+                this.imageData.getHeight(),
+                this.imageData.getConfig()
             );
             Utils.matToBitmap(matImage, resultImage);
 

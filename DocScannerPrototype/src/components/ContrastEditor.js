@@ -1,19 +1,37 @@
 import React, {Component} from 'react';
 import {View,
-        Image} from 'react-native';
+        Image,
+        requireNativeComponent} from 'react-native';
+import PropTypes from 'prop-types';
 
 //https://productcrafters.io/blog/creating-custom-react-native-ui-components-android/
-// use the above link for creating the contrast editable image
-// Need to create a callback for setting initial contrast value, which is to be calculated using openCV in the custom imageview component
+
 class ContrastEditor extends Component{
     constructor(props){
         super(props);
-    }
+    }   
 
     render(){
         return(
             <View>
             </View>
-        );
-    }
+        );  
+    }   
 }
+
+ContrastEditor.propTypes = {
+    source: PropTypes.string.isRequired,
+    contrast: PropTypes.number.isRequired,
+    resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),
+}
+
+ContrastEditor.defaultProps = {
+    resizeMode: 'contain',
+}
+
+let RNContrastChangingImage = requireNativeComponent(
+    'RNContrastChangingImage', 
+    ContrastEditor
+);
+
+export default ContrastEditor;
