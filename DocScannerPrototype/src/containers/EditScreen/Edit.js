@@ -22,6 +22,7 @@ import {updateDoc,
 //console.log(Platform.OS);
 import Cropper from '../../components/Cropper';
 import ToolBar from '../../components/ToolBar';
+import ContrastEditor from '../../components/ContrastEditor';
 
 class Edit extends Component{
     constructor(props){
@@ -56,7 +57,7 @@ class Edit extends Component{
                 key : '3',
                 name : 'Contrast',
                 icon : 'md-contrast',
-                onPress : ()=>{},
+                onPress : ()=>this.onPressTool('contrast'),
             },  
             {   
                 key : '4',
@@ -81,10 +82,18 @@ class Edit extends Component{
                 maxX : dimensions.width,
                 maxY : dimensions.height,
             },
+            contrast : {
+                set : false,
+                minX : 0,
+                minY : 0,
+                maxX : dimensions.width,
+                maxY : dimensions.height,
+            },
             toggle : {
                 crop : false,
+                contrast : false,
                 },
-            tools : ['crop'],
+            tools : ['crop', 'contrast'],
             saving : false,
             detectedViewDimensions : {
                 width : dimensions.width,
@@ -97,6 +106,7 @@ class Edit extends Component{
             },
             preview : true,
         };
+        this.modifyContrast = this.modifyContrast.bind(this);
         this.updateImage = this.updateImage.bind(this);
         this.renderSwiperButtons = this.renderSwiperButtons.bind(this);
         this.renderHeader = this.renderHeader.bind(this);
@@ -111,6 +121,7 @@ class Edit extends Component{
         this.onPressNext = this.onPressNext.bind(this);
         this.onPressPrevious = this.onPressPrevious.bind(this);
         this.onSnapToTool = this.onSnapToTool.bind(this);
+        this.renderContrastEditor = this.renderContrastEditor.bind(this);
     }
 
     componentDidMount(){ 
@@ -330,6 +341,9 @@ class Edit extends Component{
                     'maxX' : dimensions.width,
                     'maxY' : dimensions.height,
                     'set' : false,
+                },
+                'contrast' : {
+                    'set' : false,
                 }
             });
         }    
@@ -355,6 +369,9 @@ class Edit extends Component{
                     'minY' : 0,
                     'maxX' : dimensions.width,
                     'maxY' : dimensions.height,
+                    'set' : false,
+                },
+                'contrast' : {
                     'set' : false,
                 }
             });
@@ -487,6 +504,10 @@ class Edit extends Component{
         );
     }
 
+    modifyContrast(){
+        console.log('pressed');
+    }
+
     onPressTool(tool){
         if(tool=='crop'){
             if(this.state.toggle.crop){
@@ -502,6 +523,56 @@ class Edit extends Component{
                 this.setState({'toggle' : toggle, preview : false});
             } 
         }
+        else if(tool == 'contrast'){
+            if(this.state.toggle.contrast){
+                this.modifyContrast();
+                const toggle = {crop : false, contrast : false};
+                this.setState({toggle : toggle, preview : true});
+            }   
+            else{
+                const toggle = { 
+                    crop : false,
+                    contrast : true,
+                };  
+                this.setState({'toggle' : toggle, preview : false});
+            } 
+        }
+    }
+
+    renderContrastEditor(){
+        //console.log('test2');
+        return(
+            <View
+                style = {{
+                    //flex : 8,
+                    //marginVertical : 15,
+                    flexDirection : 'column',
+                    //marginHorizontal : 10,
+                    height : dimensions.height*0.8,
+                    width : dimensions.height*0.8*this.state.currentPage.dimensions.width/this.state.currentPage.dimensions.height,
+                    margin : 5,
+                    //padding : 5,
+                    backgroundColor : 'yellow',
+                    justifyContent : 'center',
+                    alignSelf : 'center',
+                }}
+                onLayout = {(event)=>{
+                    if(!this.state.contrast.set){
+                        this.setState({
+                            'contrast' : {
+                                'minX' : event.nativeEvent.layout.x,
+                                'minY' : event.nativeEvent.layout.y,
+                                'maxX' : event.nativeEvent.layout.x+event.nativeEvent.layout.width,
+                                'maxY' : event.nativeEvent.layout.y + event.nativeEvent.layout.height,
+                                'set' : true,
+                            }
+                        })
+                    }
+                }}>
+                <ContrastEditor
+                    source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument}/>
+            </View>
+        );
     }
 
     renderCropper(){
@@ -577,6 +648,10 @@ class Edit extends Component{
         if(this.state.toggle.crop){
             return this.renderCropper();
         }
+        else if(this.state.toggle.contrast){
+            console.log('rendering contrast editor');
+            return this.renderContrastEditor();
+        }
         else{
             //this.computeDetectedViewDimensions();
             return(
@@ -638,7 +713,7 @@ class Edit extends Component{
     }    
  
     renderFooter(){
-        if(this.state.toggle.crop){
+        if(this.state.toggle.crop || this.state.toggle.contrast){
             return(
                 <View
                     style = {[

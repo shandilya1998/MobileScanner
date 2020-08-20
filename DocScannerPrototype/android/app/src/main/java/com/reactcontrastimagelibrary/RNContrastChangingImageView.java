@@ -14,6 +14,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,6 +29,7 @@ import java.util.UUID;
 import com.facebook.react.bridge.WritableMap;
 
 public class RNContrastChangingImageView extends AppCompatImageView {
+    public static final String TAG = "ContrastEditor";
     private String cacheFolderName = "RNContrastChangingImage";
     private Bitmap imageData = null;
     private Bitmap modifiedData = null;
@@ -40,12 +42,12 @@ public class RNContrastChangingImageView extends AppCompatImageView {
         super(context);
     }
 
-    public static MainView getInstance() {
+    public static RNContrastChangingImageView getInstance() {
         return instance;
     }
 
-    public static void createInstance(Context context, Activity activity) {
-        instance = new RNContrastChangingImageView(context, activity);
+    public static void createInstance(Context context) {
+        instance = new RNContrastChangingImageView(context);
     }
 
     public void setImageUri(String imgUri) {
@@ -92,7 +94,7 @@ public class RNContrastChangingImageView extends AppCompatImageView {
                 throw new Exception("Failed to create the cache directory");
             }   
         }   
-        return folderDir + "/" + this.cacheFolderName + "/" + name + UUID.randomUUID() + ".png"; 
+        return folderDir + "/" + this.cacheFolderName + "/" + "contrast_editted" + UUID.randomUUID() + ".png"; 
     } 
 
     private void updateImageContrast() {
@@ -118,14 +120,19 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             Utils.matToBitmap(matImage, resultImage);
 
             this.setImageBitmap(resultImage);
-            this.image
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
     
-    private String saveImage(){
-        String fileName = this.generateStoredFileName();
+    public String saveImage(){
+        String fileName = null;
+        try{
+            fileName = generateStoredFileName();
+        }
+        catch (Exception e){
+            Log.d(TAG, "failed to create folder");
+        }
         Mat matImage = new Mat();
         Utils.bitmapToMat(this.modifiedData, matImage);
         boolean success = Imgcodecs.imwrite(fileName, matImage);

@@ -4,9 +4,9 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
-public class RNRectangleScannerModule extends ReactContextBaseJavaModule{
+public class RNContrastChangingImageModule extends ReactContextBaseJavaModule{
 
-    public RNRectangleScannerModule(ReactApplicationContext reactContext){
+    public RNContrastChangingImageModule(ReactApplicationContext reactContext){
         super(reactContext);
     }
 

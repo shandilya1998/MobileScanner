@@ -14,7 +14,7 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
     @Override
     protected RNContrastChangingImageView createViewInstance(ThemedReactContext reactContext) {
         RNContrastChangingImageView.createInstance(reactContext);
-        view = RNContrastChangingImageView.getInstance();
+        RNContrastChangingImageView view = RNContrastChangingImageView.getInstance();
         return view;
     }
 
