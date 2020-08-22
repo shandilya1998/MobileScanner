@@ -10,7 +10,6 @@ import Slider from '@react-native-community/slider';
 class ContrastEditor extends Component{
     constructor(props){
         super(props);
-        console.log('test');
         this.state = {
             constrast : 1,
         };
@@ -22,17 +21,19 @@ class ContrastEditor extends Component{
     }
 
     onSlidingComplete(value){
-        console.log(value);
+        this.setState({contrast : value});
     }
 
     render(){
-        console.log('source', this.props.source.slice(7));
         return(
             <View
                 style = {{
                     flex : 1,
                 }}>
                 <RNContrastChangingImage 
+                    style = {{
+                        flex : 1
+                    }}
                     source = {this.props.source.slice(7)}
 
                     contrast = {this.state.contrast}

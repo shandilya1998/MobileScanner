@@ -182,8 +182,8 @@ class Edit extends Component{
     }
 
     async updateImage(image, rectCoords){
-        console.log('rectangle coordinates');
-        console.log(rectCoords);
+        //console.log('rectangle coordinates');
+        //console.log(rectCoords);
         const type = Platform.OS=='android'?'png':'jpeg'
         const now = Date.now()
         const writeFile = `${writeDir}page${this.state.currentPage.pageNum}_${now}.${type}`
@@ -350,7 +350,7 @@ class Edit extends Component{
     }
 
     onPressPrevious(){
-        console.log('previous');
+        //console.log('previous');
         if(this.state.currentPage.pageNum>0){
             const currentPageDimensions = {
                 'width' : dimensions.width,
@@ -457,7 +457,7 @@ class Edit extends Component{
                             name={item.icon} 
                             size={50} 
                             color={'white'} 
-                            style={styles.buttonIcon} />
+          e                 style={styles.buttonIcon} />
                         <Text style={styles.buttonText}>{item.name}</Text>
                     </TouchableOpacity>
                 </View>  

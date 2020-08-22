@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileDescriptor;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.MalformedURLException;
@@ -40,6 +42,7 @@ public class RNContrastChangingImageView extends AppCompatImageView {
 
     public RNContrastChangingImageView(Context context) {
         super(context);
+        this.mContext = context;
     }
 
     public static RNContrastChangingImageView getInstance() {
@@ -51,11 +54,22 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     }
 
     public void setImageUri(String imgUri) {
+        //Log.d(TAG, "set image");
+        //Log.d(TAG, "image source : " + imgUri);
+        //Log.d(TAG, "cache dir :" + this.mContext.getCacheDir() );
         if (imgUri != this.imageUri) {
             this.imageUri = imgUri;
-            Bitmap bitmap = BitmapFactory.decodeFile(imgUri);
-            this.imageData = bitmap;
-            this.setImageBitmap(bitmap);
+            try{
+                File imgFile = new File(imgUri);
+                Bitmap bitmap = BitmapFactory.decodeStream(
+                    new FileInputStream(imgFile)
+                );
+                //Log.d(TAG, "set image source");
+                this.imageData = bitmap;
+                this.setImageBitmap(bitmap);
+            } catch(FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 
