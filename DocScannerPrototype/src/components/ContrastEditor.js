@@ -14,7 +14,37 @@ class ContrastEditor extends Component{
             constrast : 1,
         };
         this.onValueChange = this.onValueChange.bind(this);
+        this.onChange = this.onChange.bind(this);
+        this.subscriptions = [];
+    }
+    
+    onChange(event) {
+        if(event.nativeEvent.fileName){
+
+            if (!this.props.onSaveEvent) {
+                return;
+            }
+            this.props.onSaveEvent({
+                pathName: event.nativeEvent.fileName,
+                encoded: event.nativeEvent.saveStatus,
+            });
+        }
+    }
+ 
+    componentDidMount(){
+        if (this.props.onSaveEvent) {
+            let sub = DeviceEventEmitter.addListener(
+                'onSaveEvent',
+                this.props.onSaveEvent
+            );
+            this.subscriptions.push(sub);
+        }
     }   
+    
+    componentWillUnmount() {
+        this.subscriptions.forEach(sub => sub.remove());
+        this.subscriptions = [];
+    }
     
     onValueChange(value){
         this.setState({contrast : value});
@@ -24,20 +54,38 @@ class ContrastEditor extends Component{
         this.setState({contrast : value});
     }
 
+    saveImage() {
+        UIManager.dispatchViewManagerCommand(
+            ReactNative.findNodeHandle(this),
+            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.saveImage,
+            [],
+        );
+    }
+
+    resetImage() {
+        UIManager.dispatchViewManagerCommand(
+            ReactNative.findNodeHandle(this),
+            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.resetImage,
+            [],
+        );
+    }
+
     render(){
         return(
             <View
                 style = {{
                     flex : 1,
                 }}>
-                <RNContrastChangingImage 
+                <RNContrastChangingImageView 
                     style = {{
                         flex : 1
                     }}
                     source = {this.props.source.slice(7)}
 
                     contrast = {this.state.contrast}
-                    resizeMode = {'contain'}/>
+                    resizeMode = {'contain'}
+                    onChange = {this.onChange}
+                    {...this.props}/>
                 <Slider
                     minimumValue = {-1}
                     maximumValue = {3}
@@ -65,9 +113,12 @@ ContrastEditor.defaultProps = {
     resizeMode: 'contain',
 }
 
-let RNContrastChangingImage = requireNativeComponent(
-    'RNContrastChangingImage', 
-    ContrastEditor
+let RNContrastChangingImageView = requireNativeComponent(
+    'RNContrastChangingImageView', 
+    ContrastEditor,
+    {
+       nativeOnly: { onChange: true }
+    }
 );
 
 export default ContrastEditor;

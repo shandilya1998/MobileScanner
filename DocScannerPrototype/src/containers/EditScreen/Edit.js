@@ -211,9 +211,12 @@ class Edit extends Component{
         this.customCrop.crop();
         let {currentPage} = this.state;
         currentPage.updated = true;
-        this.setState({
-            'currentPage' : currentPage,
-        });
+        this.setState((currentPage)=>({
+            'currentPage' : {
+                ...currentPage,
+                updated : true
+            },
+        }));
     }
 
     onPressDelete(){
@@ -506,6 +509,7 @@ class Edit extends Component{
 
     modifyContrast(){
         console.log('pressed');
+        console.log(this.contrastEditor.save);
     }
 
     onPressTool(tool){
@@ -570,6 +574,7 @@ class Edit extends Component{
                     }
                 }}>
                 <ContrastEditor
+                    ref = {(ref)=>{this.contrastEditor = ref;}}
                     source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument}/>
             </View>
         );

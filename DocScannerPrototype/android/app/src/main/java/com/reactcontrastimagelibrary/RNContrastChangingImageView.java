@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.os.ParcelFileDescriptor;
 import android.net.Uri;
 import android.util.Log;
+import android.app.Activity;
 
 import androidx.appcompat.widget.AppCompatImageView;
 
@@ -29,6 +30,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.UUID;
 
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.ReactContext;
+import com.facebook.react.uimanager.events.RCTEventEmitter;
 
 public class RNContrastChangingImageView extends AppCompatImageView {
     public static final String TAG = "ContrastEditor";
@@ -39,18 +45,22 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     private double contrast = 1;
     protected Context mContext;
     public static RNContrastChangingImageView instance = null;
+    protected Activity mActivity;
+    public String fileName = null;
 
-    public RNContrastChangingImageView(Context context) {
+    public RNContrastChangingImageView(Context context, Activity activity) {
         super(context);
         this.mContext = context;
+        this.mActivity = activity;
+        createInstance(context);
     }
 
     public static RNContrastChangingImageView getInstance() {
         return instance;
     }
 
-    public static void createInstance(Context context) {
-        instance = new RNContrastChangingImageView(context);
+    public static void createInstance(Context context. Activity activity) {
+        instance = new RNContrastChangingImageView(context, activity);
     }
 
     public void setImageUri(String imgUri) {
@@ -138,8 +148,13 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             e.printStackTrace();
         }
     }
+
+    public void reset(){
+        this.contrast = 1;
+        this.setImageBitmap(this.imageData);
+    }
     
-    public String saveImage(){
+    public void saveImage(){
         String fileName = null;
         try{
             fileName = generateStoredFileName();
@@ -152,9 +167,29 @@ public class RNContrastChangingImageView extends AppCompatImageView {
         boolean success = Imgcodecs.imwrite(fileName, matImage);
         matImage.release();
         if(success){ 
-            return fileName;
+            WritableMap event = Arguments.createMap();
+            event.putString("fileName", file.getAbsolutePath());
+            event.putString("saveStatus", "success");
+            ReactContext reactContext = (ReactContext) getContext();
+            reactContext.getJSModule(
+                RCTEventEmitter.class
+            ).receiveEvent(
+                getId(), 
+                "topChange", 
+                event
+            );
         } else {
-            return null;
+            WritableMap event = Arguments.createMap();
+            event.putString("fileName", "");
+            event.putString("saveStatus", "failure");
+            ReactContext reactContext = (ReactContext) getContext();
+            reactContext.getJSModule(
+                RCTEventEmitter.class
+            ).receiveEvent(
+                getId(), 
+                "topChange", 
+                event
+            );
         }
     }
 }

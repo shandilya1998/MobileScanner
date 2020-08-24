@@ -12,14 +12,12 @@ import java.util.Arrays;
 public class RNContrastChangingImagePackage implements ReactPackage  {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(
-            new RNContrastChangingImageModule(reactContext)
-        );
+        return Arrays.<NativeModule>asList();
     }
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Collections.<ViewManager>singletonList(
-            new RNContrastChangingImageManager()
+            new RNContrastChangingImageManager(reactContext)
         );
     }
 }

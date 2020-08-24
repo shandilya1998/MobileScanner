@@ -1,5 +1,7 @@
 package com.reactcontrastimagelibrary;
 
+import android.app.Activity;
+
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -12,13 +14,11 @@ public class RNContrastChangingImageModule extends ReactContextBaseJavaModule{
 
     @Override
     public String getName() {
-        return "RNContrastChangingImageManager";
+        return "RNContrastChangingImageModule";
     }
 
-    @ReactMethod
-    public String save(){
-        RNContrastChangingImageView view = RNContrastChangingImageView.getInstance();
-        String path = view.saveImage();
-        return path;        
+    public Activity getActivity() {
+        return this.getCurrentActivity();
     }
+
 }
