@@ -122,6 +122,7 @@ class Edit extends Component{
         this.onPressPrevious = this.onPressPrevious.bind(this);
         this.onSnapToTool = this.onSnapToTool.bind(this);
         this.renderContrastEditor = this.renderContrastEditor.bind(this);
+        this.onSaveContrastChangedImage = this.onSaveContrastChangedImage.bind(this);
     }
 
     componentDidMount(){ 
@@ -509,7 +510,7 @@ class Edit extends Component{
 
     modifyContrast(){
         console.log('pressed');
-        console.log(this.contrastEditor.save);
+        this.contrastEditor.saveImage();
     }
 
     onPressTool(tool){
@@ -541,6 +542,11 @@ class Edit extends Component{
                 this.setState({'toggle' : toggle, preview : false});
             } 
         }
+    }
+    
+    onSaveContrastChangedImage(fileName, saveStatus){
+        console.log(saveStatus);
+        console.log(fileName);
     }
 
     renderContrastEditor(){
@@ -574,8 +580,9 @@ class Edit extends Component{
                     }
                 }}>
                 <ContrastEditor
+                    onSaveEvent = {this.onSaveContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}
-                    source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument}/>
+                    source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument.slice(7)}/>
             </View>
         );
     }
@@ -654,7 +661,6 @@ class Edit extends Component{
             return this.renderCropper();
         }
         else if(this.state.toggle.contrast){
-            console.log('rendering contrast editor');
             return this.renderContrastEditor();
         }
         else{

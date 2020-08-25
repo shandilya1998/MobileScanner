@@ -39,8 +39,8 @@ import com.facebook.react.uimanager.events.RCTEventEmitter;
 public class RNContrastChangingImageView extends AppCompatImageView {
     public static final String TAG = "ContrastEditor";
     private String cacheFolderName = "RNContrastChangingImage";
+    private Bitmap initialData = null;
     private Bitmap imageData = null;
-    private Bitmap modifiedData = null;
     private String imageUri = null;
     private double contrast = 1;
     protected Context mContext;
@@ -52,21 +52,21 @@ public class RNContrastChangingImageView extends AppCompatImageView {
         super(context);
         this.mContext = context;
         this.mActivity = activity;
-        createInstance(context);
+        //createInstance(context, activity);
     }
 
     public static RNContrastChangingImageView getInstance() {
         return instance;
     }
 
-    public static void createInstance(Context context. Activity activity) {
+    public static void createInstance(Context context, Activity activity) {
         instance = new RNContrastChangingImageView(context, activity);
+        
     }
 
     public void setImageUri(String imgUri) {
-        //Log.d(TAG, "set image");
-        //Log.d(TAG, "image source : " + imgUri);
-        //Log.d(TAG, "cache dir :" + this.mContext.getCacheDir() );
+        Log.d(TAG, "set image");
+        Log.d(TAG, "image source : " + imgUri);
         if (imgUri != this.imageUri) {
             this.imageUri = imgUri;
             try{
@@ -74,8 +74,9 @@ public class RNContrastChangingImageView extends AppCompatImageView {
                 Bitmap bitmap = BitmapFactory.decodeStream(
                     new FileInputStream(imgFile)
                 );
-                //Log.d(TAG, "set image source");
+                Log.d(TAG, "set image source");
                 this.imageData = bitmap;
+                this.initialData = bitmap;
                 this.setImageBitmap(bitmap);
             } catch(FileNotFoundException e) {
                 e.printStackTrace();
@@ -124,7 +125,7 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     private void updateImageContrast() {
         try {
             Mat matImage = new Mat();
-            Utils.bitmapToMat(this.imageData, matImage);
+            Utils.bitmapToMat(this.initialData, matImage);
 
             Scalar imgScalVec = Core.sumElems(matImage);
             double[] imgAvgVec = imgScalVec.val;
@@ -140,9 +141,8 @@ public class RNContrastChangingImageView extends AppCompatImageView {
                 this.imageData.getHeight(),
                 this.imageData.getConfig()
             );
-            this.modifiedData = resultImage;
             Utils.matToBitmap(matImage, resultImage);
-
+            this.imageData = resultImage;
             this.setImageBitmap(resultImage);
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,7 +151,7 @@ public class RNContrastChangingImageView extends AppCompatImageView {
 
     public void reset(){
         this.contrast = 1;
-        this.setImageBitmap(this.imageData);
+        this.setImageBitmap(this.initialData);
     }
     
     public void saveImage(){
@@ -163,12 +163,12 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             Log.d(TAG, "failed to create folder");
         }
         Mat matImage = new Mat();
-        Utils.bitmapToMat(this.modifiedData, matImage);
+        Utils.bitmapToMat(this.imageData, matImage);
         boolean success = Imgcodecs.imwrite(fileName, matImage);
         matImage.release();
         if(success){ 
             WritableMap event = Arguments.createMap();
-            event.putString("fileName", file.getAbsolutePath());
+            event.putString("fileName", fileName);
             event.putString("saveStatus", "success");
             ReactContext reactContext = (ReactContext) getContext();
             reactContext.getJSModule(

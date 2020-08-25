@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
-import {View,
-        Image,
-        requireNativeComponent} from 'react-native';
+let ReactNative = require('react-native');
+let {View,
+     Image,
+     requireNativeComponent,
+     DeviceEventEmitter,
+     UIManager} = ReactNative;
 import PropTypes from 'prop-types';
 import Slider from '@react-native-community/slider';
 
@@ -25,13 +28,14 @@ class ContrastEditor extends Component{
                 return;
             }
             this.props.onSaveEvent({
-                pathName: event.nativeEvent.fileName,
-                encoded: event.nativeEvent.saveStatus,
+                fileName: event.nativeEvent.fileName,
+                saveStatus: event.nativeEvent.saveStatus,
             });
         }
     }
  
     componentDidMount(){
+        console.log(this.props.source);
         if (this.props.onSaveEvent) {
             let sub = DeviceEventEmitter.addListener(
                 'onSaveEvent',
@@ -47,7 +51,7 @@ class ContrastEditor extends Component{
     }
     
     onValueChange(value){
-        this.setState({contrast : value});
+        //this.setState({contrast : value});
     }
 
     onSlidingComplete(value){
@@ -80,7 +84,7 @@ class ContrastEditor extends Component{
                     style = {{
                         flex : 1
                     }}
-                    source = {this.props.source.slice(7)}
+                    source = {this.props.source}
 
                     contrast = {this.state.contrast}
                     resizeMode = {'contain'}

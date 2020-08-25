@@ -69,8 +69,8 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 		Assertions.assertNotNull(args);
 		switch (commandType) {
 			case COMMAND_SAVE_IMAGE: {
-				String fileName = view.saveImage();
-				return fileName;
+				view.saveImage();
+				return;
 			}
 			case COMMAND_RESET_IMAGE: {
 				view.reset();
