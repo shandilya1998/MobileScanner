@@ -154,15 +154,16 @@ class Edit extends Component{
                 //console.log('success');
                 //console.log(width);
                 //console.log(height);
-                let {currentPage} = this.state;
-                currentPage.dimensions = { 
-                    height : height,
-                    width : width,
-                    set : true,
-                };
-                this.setState({
-                    'currentPage' : currentPage,
-                }); 
+                this.setState(({currentPage}) => ({
+                    'currentPage' : {
+                        ...currentPage,
+                        'dimensions' : {
+                            'set' : true,
+                            'height' : height,
+                            'width' : width,  
+                        }
+                    },
+                })); 
             };  
             Image.getSize(
                 this.state.currentPage.originalImage,
@@ -172,12 +173,14 @@ class Edit extends Component{
         } 
         if(this.state.currentPage.updated){
             this.props.updateDoc(this.state.doc);
-            let {currentPage} = this.state;
-            currentPage.updated = false;
-            this.setState({
-                'currentPage' : currentPage,
-                'loading' : true,
-            });            
+            this.setState(({currentPage})=>(
+                {
+                    'currentPage' : {
+                        ...currentPage,
+                        'updated' : false,
+                    },
+                    'loading' : true,
+                }));            
             this.computeDetectedViewDimensions();
         }
     }
@@ -210,9 +213,7 @@ class Edit extends Component{
     
     crop(){
         this.customCrop.crop();
-        let {currentPage} = this.state;
-        currentPage.updated = true;
-        this.setState((currentPage)=>({
+        this.setState(({currentPage})=>({
             'currentPage' : {
                 ...currentPage,
                 updated : true
