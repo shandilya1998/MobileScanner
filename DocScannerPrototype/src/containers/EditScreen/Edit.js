@@ -545,7 +545,7 @@ class Edit extends Component{
         }
     }
     
-    onSaveContrastChangedImage(fileName, saveStatus){
+    onSaveContrastChangedImage({fileName, saveStatus}){
         console.log(saveStatus);
         console.log(fileName);
     }
@@ -581,7 +581,7 @@ class Edit extends Component{
                     }
                 }}>
                 <ContrastEditor
-                    onSaveEvent = {this.onSaveContrastChangedImage}
+                    onSave = {this.onSaveContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}
                     source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument.slice(7)}/>
             </View>

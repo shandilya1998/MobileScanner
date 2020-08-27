@@ -13,9 +13,11 @@ import com.facebook.react.uimanager.SimpleViewManager;
 import com.facebook.react.uimanager.ThemedReactContext;
 import com.facebook.react.uimanager.annotations.ReactProp;
 
+//Tutorial on RN bridge https://itnext.io/how-to-build-react-native-bridge-and-get-pdf-viewer-44614f11e08e
 
 public class RNContrastChangingImageManager extends SimpleViewManager<RNContrastChangingImageView> {
 
+    private static final String TAG = "ContrastEditor";
     public static final int COMMAND_SAVE_IMAGE = 1;
 	public static final int COMMAND_RESET_IMAGE = 2;
     
@@ -69,7 +71,8 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 		Assertions.assertNotNull(args);
 		switch (commandType) {
 			case COMMAND_SAVE_IMAGE: {
-				view.saveImage();
+				Log.d(TAG, "Command called");
+                view.saveImage();
 				return;
 			}
 			case COMMAND_RESET_IMAGE: {
@@ -84,4 +87,21 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 						getClass().getSimpleName()));
 		}
 	}
+
+    public Map getExportedCustomBubblingEventTypeConstants() {
+        return MapBuilder.builder(
+            ).put(
+                "onSave",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onSave")
+                )
+            ).put(
+                "onReset",
+                MapBuilder.of(
+                    "phasedRegistrationNames",
+                    MapBuilder.of("bubbled", "onReset")
+                )   
+            ).build();
+    }
 }

@@ -4,7 +4,8 @@ let {View,
      Image,
      requireNativeComponent,
      DeviceEventEmitter,
-     UIManager} = ReactNative;
+     UIManager,
+     ViewPropTypes} = ReactNative;
 import PropTypes from 'prop-types';
 import Slider from '@react-native-community/slider';
 
@@ -17,37 +18,34 @@ class ContrastEditor extends Component{
             constrast : 1,
         };
         this.onValueChange = this.onValueChange.bind(this);
-        this.onChange = this.onChange.bind(this);
-        this.subscriptions = [];
+        this._onSave = this._onSave.bind(this);
+        this._onReset = this._onReset.bind(this);
     }
     
-    onChange(event) {
+    _onSave(event) {
+        console.log(event);
         if(event.nativeEvent.fileName){
 
-            if (!this.props.onSaveEvent) {
+            if (!this.props.onSaveSuccess) {
                 return;
             }
-            this.props.onSaveEvent({
+            console.log('test');
+            this.props.onSaveSuccess({
                 fileName: event.nativeEvent.fileName,
                 saveStatus: event.nativeEvent.saveStatus,
             });
         }
     }
+    
+    _onReset(event){
+        console.log(event);
+    }
  
     componentDidMount(){
-        console.log(this.props.source);
-        if (this.props.onSaveEvent) {
-            let sub = DeviceEventEmitter.addListener(
-                'onSaveEvent',
-                this.props.onSaveEvent
-            );
-            this.subscriptions.push(sub);
-        }
+        //console.log(this.props.source);
     }   
     
     componentWillUnmount() {
-        this.subscriptions.forEach(sub => sub.remove());
-        this.subscriptions = [];
     }
     
     onValueChange(value){
@@ -60,7 +58,7 @@ class ContrastEditor extends Component{
 
     saveImage() {
         UIManager.dispatchViewManagerCommand(
-            ReactNative.findNodeHandle(this),
+            ReactNative.findNodeHandle(this.view),
             UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.saveImage,
             [],
         );
@@ -68,7 +66,7 @@ class ContrastEditor extends Component{
 
     resetImage() {
         UIManager.dispatchViewManagerCommand(
-            ReactNative.findNodeHandle(this),
+            ReactNative.findNodeHandle(this.view),
             UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.resetImage,
             [],
         );
@@ -81,6 +79,7 @@ class ContrastEditor extends Component{
                     flex : 1,
                 }}>
                 <RNContrastChangingImageView 
+                    ref = {(ref)=>{this.view = ref;}}
                     style = {{
                         flex : 1
                     }}
@@ -88,7 +87,8 @@ class ContrastEditor extends Component{
 
                     contrast = {this.state.contrast}
                     resizeMode = {'contain'}
-                    onChange = {this.onChange}
+                    onSave = {this._onSave}
+                    onReset = {this._onReset}
                     {...this.props}/>
                 <Slider
                     minimumValue = {-1}
@@ -109,20 +109,33 @@ class ContrastEditor extends Component{
 }
 
 ContrastEditor.propTypes = {
+    onSave: PropTypes.func,
+    onReset : PropTypes.func,
     source: PropTypes.string.isRequired,
     resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),
 }
 
 ContrastEditor.defaultProps = {
     resizeMode: 'contain',
+    onSave : ()=>{},
+    onReset : ()=>{},
 }
+
+const componentInterface = {
+ name: 'RNContrastChangingImageView',
+ propTypes: {
+    ...ViewPropTypes,
+    onSave : PropTypes.func,
+    onReset : PropTypes.func,
+    source : PropTypes.string,
+    contrast : PropTypes.number,
+    resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),    
+ },
+};
 
 let RNContrastChangingImageView = requireNativeComponent(
     'RNContrastChangingImageView', 
-    ContrastEditor,
-    {
-       nativeOnly: { onChange: true }
-    }
+    componentInterface,
 );
 
 export default ContrastEditor;

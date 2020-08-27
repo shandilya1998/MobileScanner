@@ -4,6 +4,7 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.uimanager.ViewManager;
+import com.facebook.react.bridge.JavaScriptModule;
 
 import java.util.Collections;
 import java.util.List;
@@ -19,5 +20,9 @@ public class RNContrastChangingImagePackage implements ReactPackage  {
         return Collections.<ViewManager>singletonList(
             new RNContrastChangingImageManager(reactContext)
         );
+    }
+    
+    public List<Class<? extends JavaScriptModule>> createJSModules() {
+        return Arrays.asList();
     }
 }

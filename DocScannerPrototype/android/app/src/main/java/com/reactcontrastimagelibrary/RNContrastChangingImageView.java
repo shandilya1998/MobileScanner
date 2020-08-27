@@ -167,27 +167,28 @@ public class RNContrastChangingImageView extends AppCompatImageView {
         boolean success = Imgcodecs.imwrite(fileName, matImage);
         matImage.release();
         if(success){ 
+            Log.d(TAG, "image saved, fileName: "+fileName);
             WritableMap event = Arguments.createMap();
             event.putString("fileName", fileName);
             event.putString("saveStatus", "success");
-            ReactContext reactContext = (ReactContext) getContext();
+            ReactContext reactContext = (ReactContext)getContext();
             reactContext.getJSModule(
                 RCTEventEmitter.class
             ).receiveEvent(
                 getId(), 
-                "topChange", 
+                "onSave", 
                 event
             );
         } else {
             WritableMap event = Arguments.createMap();
             event.putString("fileName", "");
             event.putString("saveStatus", "failure");
-            ReactContext reactContext = (ReactContext) getContext();
+            ReactContext reactContext = (ReactContext)getContext();
             reactContext.getJSModule(
                 RCTEventEmitter.class
             ).receiveEvent(
                 getId(), 
-                "topChange", 
+                "onSave", 
                 event
             );
         }
