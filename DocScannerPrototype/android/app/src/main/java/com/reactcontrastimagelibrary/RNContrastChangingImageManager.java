@@ -4,6 +4,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import android.util.Log;
+import android.content.Context;
 
 import com.facebook.infer.annotation.Assertions;
 import com.facebook.react.bridge.ReadableArray;
@@ -20,6 +21,8 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
     private static final String TAG = "ContrastEditor";
     public static final int COMMAND_SAVE_IMAGE = 1;
 	public static final int COMMAND_RESET_IMAGE = 2;
+    private Context mContext;
+    private RNContrastChangingImageView view = null;
     
     private RNContrastChangingImageModule mContextModule;    
 
@@ -29,12 +32,17 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
     }
 
     public RNContrastChangingImageManager(ReactApplicationContext reactContext) {
-		mContextModule = new RNContrastChangingImageModule(reactContext);
+	    mContext = reactContext;
+    	mContextModule = new RNContrastChangingImageModule(reactContext);
 	}
 
     @Override
     protected RNContrastChangingImageView createViewInstance(ThemedReactContext reactContext) {
-        return new RNContrastChangingImageView(reactContext, mContextModule.getActivity());
+        
+        if(view == null){
+            view = new RNContrastChangingImageView(reactContext, mContextModule.getActivity());     
+        }
+        return view;
     }
 
     @ReactProp(name = "source")
@@ -56,9 +64,9 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 	public Map<String,Integer> getCommandsMap() {
 		Log.d("React"," View manager getCommandsMap:");
 		return MapBuilder.of(
-				"saveImage",
+				"save",
 				COMMAND_SAVE_IMAGE,
-				"resetImage",
+				"reset",
 				COMMAND_RESET_IMAGE);
 	}
 
@@ -72,7 +80,7 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 		switch (commandType) {
 			case COMMAND_SAVE_IMAGE: {
 				Log.d(TAG, "Command called");
-                view.saveImage();
+                view.save();
 				return;
 			}
 			case COMMAND_RESET_IMAGE: {
@@ -88,20 +96,19 @@ public class RNContrastChangingImageManager extends SimpleViewManager<RNContrast
 		}
 	}
 
-    public Map getExportedCustomBubblingEventTypeConstants() {
-        return MapBuilder.builder(
-            ).put(
-                "onSave",
+    @Override
+    public @Nullable Map getExportedCustomDirectEventTypeConstants() {
+        return MapBuilder.of(
+                "save",
                 MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onSave")
-                )
-            ).put(
-                "onReset",
+                    "registrationName",
+                    "onSave"
+                ),
+                "reset",
                 MapBuilder.of(
-                    "phasedRegistrationNames",
-                    MapBuilder.of("bubbled", "onReset")
+                    "registrationName",
+                    "onReset"
                 )   
-            ).build();
+            );
     }
 }

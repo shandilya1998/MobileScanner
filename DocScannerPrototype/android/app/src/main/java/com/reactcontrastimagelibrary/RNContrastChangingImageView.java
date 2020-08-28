@@ -50,8 +50,8 @@ public class RNContrastChangingImageView extends AppCompatImageView {
 
     public RNContrastChangingImageView(Context context, Activity activity) {
         super(context);
-        this.mContext = context;
-        this.mActivity = activity;
+        mContext = context;
+        mActivity = activity;
         //createInstance(context, activity);
     }
 
@@ -152,9 +152,19 @@ public class RNContrastChangingImageView extends AppCompatImageView {
     public void reset(){
         this.contrast = 1;
         this.setImageBitmap(this.initialData);
+        WritableMap event = Arguments.createMap();
+        event.putString("resetStatus", "success");
+        ReactContext reactContext = (ReactContext) this.getContext();
+        reactContext.getJSModule(
+            RCTEventEmitter.class
+        ).receiveEvent(
+            this.getId(), 
+            "reset", 
+            event
+        );
     }
     
-    public void saveImage(){
+    public void save(){
         String fileName = null;
         try{
             fileName = generateStoredFileName();
@@ -171,24 +181,24 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             WritableMap event = Arguments.createMap();
             event.putString("fileName", fileName);
             event.putString("saveStatus", "success");
-            ReactContext reactContext = (ReactContext)getContext();
+            ReactContext reactContext = (ReactContext) this.getContext();
             reactContext.getJSModule(
                 RCTEventEmitter.class
             ).receiveEvent(
-                getId(), 
-                "onSave", 
+                this.getId(), 
+                "save", 
                 event
             );
         } else {
             WritableMap event = Arguments.createMap();
             event.putString("fileName", "");
             event.putString("saveStatus", "failure");
-            ReactContext reactContext = (ReactContext)getContext();
+            ReactContext reactContext = (ReactContext) this.getContext();
             reactContext.getJSModule(
                 RCTEventEmitter.class
             ).receiveEvent(
-                getId(), 
-                "onSave", 
+                this.getId(), 
+                "save", 
                 event
             );
         }

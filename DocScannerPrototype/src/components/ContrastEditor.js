@@ -11,34 +11,67 @@ import Slider from '@react-native-community/slider';
 
 //https://productcrafters.io/blog/creating-custom-react-native-ui-components-android/
 
-class ContrastEditor extends Component{
+//https://stackoverflow.com/questions/34739670/creating-custom-ui-component-for-android-on-react-native-how-to-send-data-to-js/44207488#44207488
+
+const componentInterface = { 
+ name: 'RNContrastChangingImageView',
+ propTypes: {
+    ...ViewPropTypes,
+    onSave : PropTypes.func,
+    onReset : PropTypes.func,
+    source : PropTypes.string,
+    contrast : PropTypes.number,
+    resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),    
+ },
+};
+
+let RNContrastChangingImageView = requireNativeComponent(
+    'RNContrastChangingImageView', 
+    componentInterface,
+);
+
+type Props = {
+    onSave: () => void,
+    onReset: () => void,
+    contrast: number, 
+    source: string,
+    resizeMode: 'contain' | 'cover' | 'stretch',
+};
+
+class ContrastEditor extends Component<Props, *>{
     constructor(props){
         super(props);
         this.state = {
             constrast : 1,
         };
         this.onValueChange = this.onValueChange.bind(this);
-        this._onSave = this._onSave.bind(this);
-        this._onReset = this._onReset.bind(this);
+        this.onSave = this.onSave.bind(this);
+        this.onReset = this.onReset.bind(this);
     }
     
-    _onSave(event) {
+    onSave(event:Event) {
         console.log(event);
         if(event.nativeEvent.fileName){
-
-            if (!this.props.onSaveSuccess) {
+            if (!this.props.onSave) {
                 return;
             }
             console.log('test');
-            this.props.onSaveSuccess({
+            this.props.onSave({
                 fileName: event.nativeEvent.fileName,
                 saveStatus: event.nativeEvent.saveStatus,
             });
         }
     }
     
-    _onReset(event){
+    onReset(event:Event){
         console.log(event);
+        if(event.nativeEvent.resetStatus){
+            if(!this.props.onReset){
+                return;
+            }
+            console.log('test2');
+            this.props.onReset({resetStatus});
+        }
     }
  
     componentDidMount(){
@@ -59,7 +92,7 @@ class ContrastEditor extends Component{
     saveImage() {
         UIManager.dispatchViewManagerCommand(
             ReactNative.findNodeHandle(this.view),
-            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.saveImage,
+            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.save,
             [],
         );
     }
@@ -67,7 +100,7 @@ class ContrastEditor extends Component{
     resetImage() {
         UIManager.dispatchViewManagerCommand(
             ReactNative.findNodeHandle(this.view),
-            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.resetImage,
+            UIManager.getViewManagerConfig('RNContrastChangingImageView').Commands.reset,
             [],
         );
     }
@@ -87,8 +120,8 @@ class ContrastEditor extends Component{
 
                     contrast = {this.state.contrast}
                     resizeMode = {'contain'}
-                    onSave = {this._onSave}
-                    onReset = {this._onReset}
+                    onSave = {this.onSave}
+                    onReset = {this.onReset}
                     {...this.props}/>
                 <Slider
                     minimumValue = {-1}
@@ -120,22 +153,5 @@ ContrastEditor.defaultProps = {
     onSave : ()=>{},
     onReset : ()=>{},
 }
-
-const componentInterface = {
- name: 'RNContrastChangingImageView',
- propTypes: {
-    ...ViewPropTypes,
-    onSave : PropTypes.func,
-    onReset : PropTypes.func,
-    source : PropTypes.string,
-    contrast : PropTypes.number,
-    resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),    
- },
-};
-
-let RNContrastChangingImageView = requireNativeComponent(
-    'RNContrastChangingImageView', 
-    componentInterface,
-);
 
 export default ContrastEditor;
