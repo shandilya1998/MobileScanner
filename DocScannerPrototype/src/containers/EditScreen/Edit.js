@@ -585,6 +585,7 @@ class Edit extends Component{
                     }
                 }}>
                 <ContrastEditor
+                    style = {{backgroundColor : 'red'}}
                     onSave = {this.onSaveContrastChangedImage}
                     onReset = {this.onResetContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}

@@ -10,15 +10,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Arrays;
 
-public class RNContrastChangingImagePackage implements ReactPackage  {
+public class  RNContrastChangingImageViewPackage implements ReactPackage { 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList();
+        return Collections.emptyList();
     }
-    @Override
+    
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.<ViewManager>singletonList(
-            new RNContrastChangingImageManager(reactContext)
-        );
-    } 
+        return Arrays.<ViewManager>asList(new RNContrastChangingImageViewManager(reactContext));
+    }
 }

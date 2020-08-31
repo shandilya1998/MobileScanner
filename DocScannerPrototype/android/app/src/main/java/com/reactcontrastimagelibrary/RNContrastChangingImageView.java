@@ -35,36 +35,24 @@ import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.uimanager.events.RCTEventEmitter;
+import com.facebook.react.uimanager.ThemedReactContext;
 
 public class RNContrastChangingImageView extends AppCompatImageView {
+    
     public static final String TAG = "ContrastEditor";
     private String cacheFolderName = "RNContrastChangingImage";
     private Bitmap initialData = null;
     private Bitmap imageData = null;
     private String imageUri = null;
     private double contrast = 1;
-    protected Context mContext;
-    public static RNContrastChangingImageView instance = null;
-    protected Activity mActivity;
-    public String fileName = null;
+    private ThemedReactContext context;
 
-    public RNContrastChangingImageView(Context context, Activity activity) {
+    public RNContrastChangingImageView(ThemedReactContext context) {
         super(context);
-        mContext = context;
-        mActivity = activity;
-        //createInstance(context, activity);
-    }
+        this.context = context;
+    } 
 
-    public static RNContrastChangingImageView getInstance() {
-        return instance;
-    }
-
-    public static void createInstance(Context context, Activity activity) {
-        instance = new RNContrastChangingImageView(context, activity);
-        
-    }
-
-    public void setImageUri(String imgUri) {
+    public void setSource(String imgUri) {
         Log.d(TAG, "set image");
         Log.d(TAG, "image source : " + imgUri);
         if (imgUri != this.imageUri) {
@@ -73,16 +61,16 @@ public class RNContrastChangingImageView extends AppCompatImageView {
                 File imgFile = new File(imgUri);
                 Bitmap bitmap = BitmapFactory.decodeStream(
                     new FileInputStream(imgFile)
-                );
+                );  
                 Log.d(TAG, "set image source");
                 this.imageData = bitmap;
                 this.initialData = bitmap;
                 this.setImageBitmap(bitmap);
             } catch(FileNotFoundException e) {
                 e.printStackTrace();
-            }
-        }
-    }
+            }   
+        }   
+    } 
 
     public void setContrast(double contrastVal) {
         this.contrast = contrastVal;
@@ -91,36 +79,6 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             this.updateImageContrast();
         }
     }
-
-    public void setResizeMode(String mode) {
-        switch (mode) {
-            case "cover":
-                this.setScaleType(ScaleType.CENTER_CROP);
-                break;
-            case "stretch":
-                this.setScaleType(ScaleType.FIT_XY);
-                break;
-            case "contain":
-            default:
-                this.setScaleType(ScaleType.FIT_CENTER);
-                break;
-        }
-    }
-
-    private String generateStoredFileName() throws Exception {
-        String folderDir = this.mContext.getCacheDir().toString();
-        File folder = new File( folderDir + "/" + this.cacheFolderName);
-        if (!folder.exists()) {
-            boolean result = folder.mkdirs();
-            if (result) {
-                Log.d(TAG, "wrote: created folder " + folder.getPath());
-            } else {
-                Log.d(TAG, "Not possible to create folder");
-                throw new Exception("Failed to create the cache directory");
-            }   
-        }   
-        return folderDir + "/" + this.cacheFolderName + "/" + "contrast_editted" + UUID.randomUUID() + ".png"; 
-    } 
 
     private void updateImageContrast() {
         try {
@@ -146,61 +104,6 @@ public class RNContrastChangingImageView extends AppCompatImageView {
             this.setImageBitmap(resultImage);
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    public void reset(){
-        this.contrast = 1;
-        this.setImageBitmap(this.initialData);
-        WritableMap event = Arguments.createMap();
-        event.putString("resetStatus", "success");
-        ReactContext reactContext = (ReactContext) this.getContext();
-        reactContext.getJSModule(
-            RCTEventEmitter.class
-        ).receiveEvent(
-            this.getId(), 
-            "reset", 
-            event
-        );
-    }
-    
-    public void save(){
-        String fileName = null;
-        try{
-            fileName = generateStoredFileName();
-        }
-        catch (Exception e){
-            Log.d(TAG, "failed to create folder");
-        }
-        Mat matImage = new Mat();
-        Utils.bitmapToMat(this.imageData, matImage);
-        boolean success = Imgcodecs.imwrite(fileName, matImage);
-        matImage.release();
-        if(success){ 
-            Log.d(TAG, "image saved, fileName: "+fileName);
-            WritableMap event = Arguments.createMap();
-            event.putString("fileName", fileName);
-            event.putString("saveStatus", "success");
-            ReactContext reactContext = (ReactContext) this.getContext();
-            reactContext.getJSModule(
-                RCTEventEmitter.class
-            ).receiveEvent(
-                this.getId(), 
-                "save", 
-                event
-            );
-        } else {
-            WritableMap event = Arguments.createMap();
-            event.putString("fileName", "");
-            event.putString("saveStatus", "failure");
-            ReactContext reactContext = (ReactContext) this.getContext();
-            reactContext.getJSModule(
-                RCTEventEmitter.class
-            ).receiveEvent(
-                this.getId(), 
-                "save", 
-                event
-            );
         }
     }
 }
