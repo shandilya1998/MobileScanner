@@ -14,15 +14,15 @@ import Slider from '@react-native-community/slider';
 //https://stackoverflow.com/questions/34739670/creating-custom-ui-component-for-android-on-react-native-how-to-send-data-to-js/44207488#44207488
 
 const componentInterface = { 
- name: 'RNContrastChangingImageView',
- propTypes: {
-    ...ViewPropTypes,
-    onSave : PropTypes.func,
-    onReset : PropTypes.func,
-    source : PropTypes.string,
-    contrast : PropTypes.number,
-    resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),    
- },
+    name: 'RNContrastChangingImageView',
+    propTypes: {
+        ...ViewPropTypes,
+        onSave : PropTypes.func,
+        onReset : PropTypes.func,
+        source : PropTypes.string,
+        contrast : PropTypes.number,
+        resizeMode: PropTypes.oneOf(['contain', 'cover', 'stretch']),    
+    },
 };
 
 let RNContrastChangingImageView = requireNativeComponent(
