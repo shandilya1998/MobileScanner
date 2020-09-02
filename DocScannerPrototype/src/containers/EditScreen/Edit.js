@@ -550,10 +550,6 @@ class Edit extends Component{
         console.log(fileName);
     }
 
-    onResetContrastChangedImage({resetStatus}){
-        console.log("reset status", resetStatus);
-    }
-
     renderContrastEditor(){
         //console.log('test2');
         return(
@@ -587,7 +583,6 @@ class Edit extends Component{
                 <ContrastEditor
                     style = {{backgroundColor : 'red'}}
                     onSave = {this.onSaveContrastChangedImage}
-                    onReset = {this.onResetContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}
                     source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument.slice(7)}/>
             </View>

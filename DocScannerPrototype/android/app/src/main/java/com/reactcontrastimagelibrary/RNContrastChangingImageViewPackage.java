@@ -20,5 +20,9 @@ public class RNContrastChangingImageViewPackage implements ReactPackage  {
         return Collections.<ViewManager>singletonList(
             new RNContrastChangingImageViewManager(reactContext)
         );
-    } 
+    }
+    
+    public List<Class<? extends JavaScriptModule>> createJSModules() {
+        return Arrays.asList();
+    }
 }
