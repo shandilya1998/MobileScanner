@@ -22,7 +22,7 @@ import {updateDoc,
 //console.log(Platform.OS);
 import Cropper from '../../components/Cropper';
 import ToolBar from '../../components/ToolBar';
-import ContrastEditor from '../../components/ContrastEditor';
+import CustomImageView from '../../components/CustomImageView';
 
 class Edit extends Component{
     constructor(props){
@@ -580,7 +580,7 @@ class Edit extends Component{
                         })
                     }
                 }}>
-                <ContrastEditor
+                <CustomImageView
                     style = {{backgroundColor : 'red'}}
                     onSave = {this.onSaveContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}
