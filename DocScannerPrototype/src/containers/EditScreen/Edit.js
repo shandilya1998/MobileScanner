@@ -88,6 +88,8 @@ class Edit extends Component{
                 minY : 0,
                 maxX : dimensions.width,
                 maxY : dimensions.height,
+                height : dimensions.height*0.75,
+                width : dimensions.width*0.75,
             },
             toggle : {
                 crop : false,
@@ -511,7 +513,7 @@ class Edit extends Component{
 
     modifyContrast(){
         console.log('pressed');
-        this.contrastEditor.saveImage();
+        this.contrastEditor.save();
     }
 
     onPressTool(tool){
@@ -576,15 +578,20 @@ class Edit extends Component{
                                 'maxX' : event.nativeEvent.layout.x+event.nativeEvent.layout.width,
                                 'maxY' : event.nativeEvent.layout.y + event.nativeEvent.layout.height,
                                 'set' : true,
+                                'height' : event.nativeEvent.layout.height*0.9,
+                                'width' : event.nativeEvent.layout.width*0.9
                             }
                         })
                     }
                 }}>
                 <CustomImageView
-                    style = {{backgroundColor : 'red'}}
+                    style = {{backgroundColor : 'red', flex : 1}}
                     onSave = {this.onSaveContrastChangedImage}
                     ref = {(ref)=>{this.contrastEditor = ref;}}
-                    source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument.slice(7)}/>
+                    height = {this.state.contrast.height}
+                    width = {this.state.contrast.width}
+                    controlledParam = {'contrast'}
+                    source = {this.state.doc[this.state.currentPage.pageNum].detectedDocument}/>
             </View>
         );
     }

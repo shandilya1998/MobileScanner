@@ -6,6 +6,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.os.Environment;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -26,6 +27,7 @@ public class RNCustomImageView extends ReactImageView {
     private Image sourceImage;
     private ImagesUtilities imgUtilities;
     private StorageSave saver;
+    private String TAG="RNCustomImageView";
 
     public RNCustomImageView(Context context, AbstractDraweeControllerBuilder draweeControllerBuilder, @Nullable GlobalImageLoadListener globalImageLoadListener, @Nullable Object callerContext) {
         super(context, draweeControllerBuilder, globalImageLoadListener, callerContext);
@@ -40,9 +42,11 @@ public class RNCustomImageView extends ReactImageView {
 
 
     public void triggerOnSaveEvent(String uri) {
+        Log.d(TAG, "called");
+        Log.d(TAG, "path: "+uri);
         WritableMap args = Arguments.createMap();
         args.putString("uri",uri);
-        ((ReactContext)getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(),"onSave",args);
+        ((ReactContext)getContext()).getJSModule(RCTEventEmitter.class).receiveEvent(getId(),"topChange",args);
     }
 
 

@@ -21,6 +21,7 @@ import java.util.Map;
 
 public class RNCustomImageViewManager extends SimpleViewManager<RNCustomImageView> {
 
+    private static final int COMMAND_SAVE = 1;
     ReactApplicationContext mCallerContext;
     float currentBright;
     float currentSat;
@@ -48,16 +49,19 @@ public class RNCustomImageViewManager extends SimpleViewManager<RNCustomImageVie
         return new RNCustomImageView(reactContext, Fresco.newDraweeControllerBuilder(), null, mCallerContext);
     }
 
-    @Override
-    public Map getExportedCustomBubblingEventTypeConstants() {
+    /*
+    @Nullable@Override
+    public Map getExportedCustomDirectEventTypeConstants(){
         return MapBuilder.builder()
                 .put(
                         "onSave",
                         MapBuilder.of(
-                                "phasedRegistrationNames",
-                                MapBuilder.of("bubbled", "onSave")))
+                                "registrationName",
+                                "onSave"
+                        )
+                    )
                 .build();
-    }
+    }*/
 
     @ReactProp(name = "src")
     public void setSrc(RNCustomImageView view, @Nullable ReadableMap image) {
@@ -87,13 +91,30 @@ public class RNCustomImageViewManager extends SimpleViewManager<RNCustomImageVie
     public void setResizeMode(RNCustomImageView view, @Nullable String resizeMode) {
         view.setScaleType(ImageResizeMode.toScaleType(resizeMode));
     }
-
+    
+    /*
     @ReactProp(name = "saveImage")
     public void saveImage(RNCustomImageView view, @Nullable boolean save) {
         if (save) {
             view.saveImageToStorage();
         }
     }
+    */
 
+    @Override
+    public Map<String,Integer> getCommandsMap() {
+        return MapBuilder.of("save", COMMAND_SAVE);
+    }
 
+    public void receiveCommand(final RNCustomImageView view, int command, final ReadableArray args) {
+        switch (command) {
+            case COMMAND_SAVE: {
+                view.saveImageToStorage();
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+    }
 }
