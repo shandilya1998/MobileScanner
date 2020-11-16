@@ -1,6 +1,12 @@
 import xml.etree.ElementTree as ET
 import re
 
+"""
+    Formula parser not implemented
+    Next step is extracting bounding boxes from parsed coordinates by 
+    finding minimum and maximum
+"""
+
 f = 'IAMonDo-db-1.0/078.inkml'
 
 def get_all_traces(doc_namespace, root):
@@ -94,46 +100,161 @@ def get_coords_all(traces_all):
         coords_all.append(get_coords(trace))
     return coords_all
 
+def parse_word(child):
+    word = []
+    text = child.findall('annotation')[1].text
+    for trace in child.findall('traceView'):
+        word.append(trace.attrib['traceDataRef'][1:])
+    return word, text
+
+def parse_symbol(child):
+    symbol = []
+    for trace in child.findall('traceView'):
+        symbol.append(trace.attrib['traceDataRef'][1:])
+    return symbol
+
+def parse_textline(view):
+    textline = []
+    for child in view.findall('traceView'):
+        if child.findall('annotation')[0].text == 'Word':
+            word, text = parse_word(child)
+            textline.append({
+                'annotation' : 'Word'
+                'word' : text,
+                'traces' : word
+            })
+        elif child.findall('annotation')[0].text == 'Symbol':
+            symbol = parse_symbol(child)
+            textline.append({
+                'annotation' : 'Symbol',
+                'traces' : symbol
+            })
+    
+    return textline
+
 def parse_textblock(traceView):
-    return {}
+    traces = []
+    for view in traceView.findall('traceView'):
+        sent = view.findall('annotation')[1].text
+        textline = []
+        if view.findall('annotation')[0].text == 'Textline':
+            textline = parse_textline(view)
+        traces.append({
+            'annotation' : 'Textline',
+            'text' : sent,
+            'traces' : textline
+        })
+    return  traces
 
 def parse_drawing(traceView):
     traces = []
     for view in traceView.findall('traceView'):
         traces.append(view.attrib['traceDataRef'][1:])
-    return {'traces' : traces}
+    return traces
 
 def parse_diagram(traceView):
+    traces = []
+    for view in traceView.findall('traceView'):
+        sent = view.findall('annotation')[1].text
+        textline = []
+        if view.findall('annotation')[0].text == 'Textline':
+            textline = parse_textline(view)
+            traces.append({
+                'annotation' : 'Textline',
+                'text' : sent,
+                'traces' : textline
+            })
+        elif view.findall('annotation')[0].text == 'Drawing':
+            drawing = parse_drawing(view)
+            traces.append({
+                'annotation' : 'Drawing',
+                'traces' : drawing
+            })
+        elif view.findall('annotation')[0].text == 'Structure':
+            lst, structure = parse_structure(view)
+            traces.append({
+                'annotation' : 'Structure',
+                'structure' : structure,
+                'traces' : lst 
+            })
+        elif view.findall('annotation')[0].text == 'Formula':
+            continue
+            """
+                NEEDS TO BE COMPLETED
+            """
+    return  traces
+
+def parse_structure(child):
+    lst = []
+    structure = view.findall('annotation')[1].text
+    for trace in child.findall('traceView'):
+        lst.append(trace.attrib['traceDataRef'][1:])
+    return lst, structure
+
+
+def parse_formula(traceView):
     return {}
 
 def parse_table(traceView):
-    return {}
+    traces = []
+    for view in traceView.findall('traceView'):
+        sent = view.findall('annotation')[1].text
+        textline = []
+        if view.findall('annotation')[0].text == 'Textline':
+            textline = parse_textline(view)
+            traces.append({
+                'annotation' : 'Textline',
+                'text' : sent,
+                'traces' : textline
+            })
+        elif view.findall('annotation')[0].text == 'Structure':
+            lst, structure = parse_structure(view)
+            traces.append({
+                'annotation' : 'Structure',
+                'structure' : structure,
+                'traces' : lst
+            })
+    return  traces 
 
 def parse_list(traceView):
-    return {}
+    traces = []
+    for view in traceView.findall('traceView'):
+        sent = view.findall('annotation')[1].text
+        textline = []
+        if view.findall('annotation')[0].text == 'Textline':
+            textline = parse_textline(view)
+        traces.append({
+            'annotation' : 'Textline',
+            'text' : sent,
+            'traces' : textline
+        })
+    return  traces
 
 def parse_annotations(root):
     doc = []
     document = root.findall('traceView')[0]
-    if document.findall('annotation')[0] == 'Document':
+    if document.findall('annotation')[0].text == 'Document':
         traceViews = document.findall('traceView')
         for traceView in traceViews:
-            annotation = traceView.findall('annotation')[0]
+            annotation = traceView.findall('annotation')[0].text
             if annotation == 'TextBlock':
-                labels = parse_textblock(traceView)
-                doc.append({'annotation' : 'TextBlock', 'annotation' : labels})
+                traces = parse_textblock(traceView)
+                doc.append({'annotation' : 'TextBlock', 'traces' : traces})
             elif annotation == 'Drawing':
-                labels = parse_drawing(traceView)
-                doc.append({'annotation' : 'Drawing', 'annotation' : labels})
+                traces = parse_drawing(traceView)
+                doc.append({'annotation' : 'Drawing', 'traces' : traces})
             elif annotation == 'Diagram':
-                labels = parse_diagram(traceView)
-                doc.append({'annotation' : 'Diagram', 'annotation' : labels})
+                traces = parse_diagram(traceView)
+                doc.append({'annotation' : 'Diagram', 'traces' : traces})
             elif annotation == 'List':
-                labels = parse_list(traceView)
-                doc.append({'annotation' : 'List', 'annotation' : labels})
+                traces = parse_list(traceView)
+                doc.append({'annotation' : 'List', 'traces' : traces})
             elif annotation == 'Table':
-                labels = parse_diagram(traceView)
-                doc.append({'annotation' : 'Table', 'annotation' : labels})
+                traces = parse_diagram(traceView)
+                doc.append({'annotation' : 'Table', 'traces' : traces})
+            elif annotation == 'Formula':
+                traces = parse_formula(traceView)
+                doc.append({'annotation' : 'Formula', 'traces' : traces})
             else:
                 continue   
 
