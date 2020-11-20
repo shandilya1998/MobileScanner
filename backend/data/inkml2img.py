@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import pickle
 import re
 import os
 import matplotlib.pyplot as plt
@@ -134,8 +135,13 @@ def parse_correction(child, coords_all):
 
 def parse_word(child, coords_all):
     word = []
-    text = None
-    text = child.findall('annotation')[1].text
+    text = ''
+    try:
+        text = child.findall('annotation')[1].text
+        if text == None:
+            text = ''
+    except IndexError:
+        text = ''
     for trace in child.findall('traceView'):
         if 'Correction' in [tag.text for tag in trace.findall('annotation')]:
             traces, annotation, box_vertices = parse_correction(trace, coords_all)
@@ -145,8 +151,11 @@ def parse_word(child, coords_all):
                 'box' : box_vertices
             })
         else:
+            #print([tag.text for tag in child.findall('annotation')])
+            #text = child.findall('annotation')[1].text
             word.append(trace.attrib['traceDataRef'][1:])
     box_vertices = get_bounding_box(word, coords_all)
+    #print(word)
     return word, text, box_vertices
 
 def parse_symbol(child, coords_all):
@@ -168,6 +177,7 @@ def parse_textline(view, coords_all):
                 'traces' : word,
                 'box' : box_vertices
             })
+            #print(text)
             sent.append(text)
         elif child.findall('annotation')[0].text == 'Symbol':
             symbol, box_vertices = parse_symbol(child, coords_all)
@@ -176,14 +186,14 @@ def parse_textline(view, coords_all):
                 'traces' : symbol,
                 'box' : box_vertices,
             })
-    
+    #print(sent)
     return textline, ' '.join(sent)
 
 def parse_textblock(traceView, coords_all):
     traces = []
     for view in traceView.findall('traceView'):
         textline = []
-        sent = None
+        sent = ''
         if view.findall('annotation')[0].text == 'Textline':
             textline, sent = parse_textline(view, coords_all)
         traces.append({
@@ -227,11 +237,17 @@ def parse_diagram(traceView, coords_all):
                 'traces' : lst,
                 'box' : box_vertices
             })
+        elif view.findall('annotation')[0].text == 'Arrow':
+            lst, arrow, box_vertices = parse_structure(view, coords_all)
+            traces.append({
+                'annotation' : 'Structure',
+                'structure' : arrow,
+                'traces' : lst,
+                'box' : box_vertices
+            })
         elif view.findall('annotation')[0].text == 'Formula':
-            continue
-            """
-                NEEDS TO BE COMPLETED
-            """
+            formula, box_vertices = parse_formula(traceView, coords_all)
+            traces.append({'annotation' : 'Formula', 'traces' : formula, 'box' : box_vertices})
     return  traces
 
 def parse_structure(view, coords_all):
@@ -242,11 +258,24 @@ def parse_structure(view, coords_all):
     box_vertices = get_bounding_box(lst, coords_all)
     return lst, structure, box_vertices
 
+def parse_arrow(view, coords_all):
+    lst = []
+    arrow = view.findall('annotation')[1].text
+    for trace in view.findall('traceView'):
+        lst.append(trace.attrib['traceDataRef'][1:])
+    box_vertices = get_bounding_box(lst, coords_all)
+    return lst, arrow, box_vertices
 
 def parse_formula(traceView, coords_all):
     traces = []
     for view in traceView.findall('traceView'):
-        traces.append(view.attrib['traceDataRef'][1:])
+        #print(view.attrib)
+        #print(view.tag)
+        #print([child for child in view.findall('traceView')])
+        try:
+            traces.append(view.attrib['traceDataRef'][1:])
+        except KeyError:
+            print('formula missing a trace')
     box_vertices = get_bounding_box(traces, coords_all)
     return traces, box_vertices
 
@@ -275,7 +304,7 @@ def parse_list(traceView, coords_all):
     traces = []
     for view in traceView.findall('traceView'):
         textline = []
-        sent = None
+        sent = ''
         if view.findall('annotation')[0].text == 'Textline':
             textline, sent = parse_textline(view, coords_all)
         traces.append({
@@ -287,12 +316,16 @@ def parse_list(traceView, coords_all):
 
 def parse_annotations(root, coords_all):
     doc = []
+    annotation = ''
     document = root.findall('traceView')[0]
     if document.findall('annotation')[0].text == 'Document':
         traceViews = document.findall('traceView')
         for traceView in traceViews:
-            annotation = traceView.findall('annotation')[0].text
-            if annotation == 'TextBlock':
+            try:
+                annotation = traceView.findall('annotation')[0].text
+            except IndexError:
+                annotation = ''
+            if annotation == 'Textblock':
                 traces = parse_textblock(traceView, coords_all)
                 doc.append({'annotation' : 'TextBlock', 'traces' : traces})
             elif annotation == 'Drawing':
@@ -344,19 +377,30 @@ def plot(doc, coords_all, name, folder):
     fig.savefig(os.path.join(folder, name[:-6]+'.png'))
     fig.clear()
     plt.close(fig)
-    
-
+   
+def save_annotation(doc, name, folder):
+    pkl = open(os.path.join(folder, name[:-6]+'.pickle'), 'wb')
+    pickle.dump(doc, pkl)
+    pkl.close()
+ 
 def transform_data(folder):
-    for f in tqdm(os.listdir(folder)):
+    data = os.listdir(folder)[880:]
+    #data = ['001.inkml']
+    for f in tqdm(data):
+        if 'set' in f:
+            continue
         name = f
         f = os.path.join(folder, f)
-        #print(f)
+        print(f)
         traces_all = parse_file(f)
         coords_all = get_coords_all(traces_all)
         root = get_tree_root(f)
         doc = parse_annotations(root, coords_all)
         if not os.path.exists('images'):
             os.mkdir('images')
+        if not os.path.exists('annotations'):
+            os.mkdir('annotations')
         plot(doc, coords_all, name, 'images')
+        save_annotation(doc, name, 'annotations')
 
 transform_data('IAMonDo-db-1.0')
