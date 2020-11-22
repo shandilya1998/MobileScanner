@@ -1,9 +1,13 @@
+import math
 import xml.etree.ElementTree as ET
 import pickle
 import re
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from scipy import interpolate
+import numpy as np
+from skimage import draw
 f = 'IAMonDo-db-1.0/078.inkml'
 
 """
@@ -14,6 +18,7 @@ f = 'IAMonDo-db-1.0/078.inkml'
     -   Convert force values into image intensity values
 """
 
+scale_factor = 100
 
 def get_all_traces(doc_namespace, root):
     traces_all = []
@@ -353,10 +358,9 @@ def _plot(trace, coords, axes):
             if coord['id'] in trace:
                 x = []
                 y = []
-                for values in coord['coords']:
+                for i, values in enumerate(coord['coords']):
                     x.append(values[0])
                     y.append(values[1])
-                axes.plot(x, y, c ='black', linewidth = 1)
     else:
         for child in trace['traces']:
             _plot(child, coords, axes) 
@@ -374,7 +378,7 @@ def plot(doc, coords_all, name, folder):
     axes.spines['left'].set_visible(False)
     for child in doc:
         _plot(child, coords_all, axes)
-    fig.savefig(os.path.join(folder, name[:-6]+'.png'))
+    fig.savefig(os.path.join(folder, name[:-6]+'.png'), dpi = 100)
     fig.clear()
     plt.close(fig)
    
@@ -385,7 +389,7 @@ def save_annotation(doc, name, folder):
  
 def transform_data(folder):
     data = os.listdir(folder)[880:]
-    #data = ['001.inkml']
+    data = ['001.inkml']
     for f in tqdm(data):
         if 'set' in f:
             continue
@@ -400,7 +404,7 @@ def transform_data(folder):
             os.mkdir('images')
         if not os.path.exists('annotations'):
             os.mkdir('annotations')
-        plot(doc, coords_all, name, 'images')
-        save_annotation(doc, name, 'annotations')
+        plot(doc, coords_all, name, '.')
+        save_annotation(doc, name, '.')
 
 transform_data('IAMonDo-db-1.0')
