@@ -5,9 +5,9 @@ import re
 import os
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from scipy import interpolate
+from scipy import interpolate, ndimage
 import numpy as np
-from skimage import draw
+from skimage import draw, io, transform
 f = 'IAMonDo-db-1.0/078.inkml'
 
 """
@@ -76,38 +76,63 @@ def parse_file(f):
             }
     return traces_all
 
-def get_coords(trace):
+def get_extremes(x, min_x, max_x, min_y, max_y):
+    if x[0] < min_x:
+        min_x = x[0]
+    if x[0] > max_x:
+        max_x = x[0]
+    if x[1] < min_y:
+        min_y = x[1]
+    if x[1] > max_y:
+        max_y = x[1]
+    return min_x, max_x, min_y, max_y
+
+def get_coords(trace, min_x, max_x, min_y, max_y):
     coords = []
     coords.append(trace['x_initial'])
     x = trace['x_initial']
     v = trace['v_initial'] 
     a = trace['a_initial']
+    min_x, max_x, min_y, max_y = get_extremes(x, min_x, max_x, min_y, max_y)
     if trace['coords']:
         for i in range(len(trace['coords'])):
             x = [x[j]+v[j] for j in range(4)]
+            min_x, max_x, min_y, max_y = get_extremes(x, min_x, max_x, min_y, max_y)
             coords.append(x)
             v = [v[j] + a[j] for j in range(4)]
             a = trace['coords'][i] 
     else:
         flag1 = False
         flag2 = False
+
         for i in range(4):
             if v[i]!=0:
                 flag1 = True
             if a[i]!=0:
                 flag2 = True
+
         if flag1:
-            coords.append([x[i] + v[i] for i in range(4)])
+            x = [x[i] + v[i] for i in range(4)]
+            min_x, max_x, min_y, max_y = get_extremes(x, min_x, max_x, min_y, max_y)
+            coords.append(x)
+
         if flag2 and flag1:
-            coords.append([x[i] + v[i] + a[i] for i in range(4)])
+            x = [x[i] + v[i] + a[i] for i in range(4)]
+            min_x, max_x, min_y, max_y = get_extremes(x, min_x, max_x, min_y, max_y)
+            coords.append(x)
             
-    return {'id' : trace['id'], 'coords' : coords}
+    return {'id' : trace['id'], 'coords' : coords}, min_x, max_x, min_y, max_y
 
 def get_coords_all(traces_all):
     coords_all = []
+    min_x = 10e20
+    max_x = -10e20
+    min_y = 10e20
+    max_y = -10e20
     for trace in traces_all:
-        coords_all.append(get_coords(trace))
-    return coords_all
+        coords, min_x, max_x, min_y, max_y = get_coords(trace, min_x, max_x, min_y, max_y)
+        coords_all.append(coords)
+    return coords_all, min_x, max_x, min_y, max_y
 
 def get_bounding_box(traces, coords_all):
     min_x = 10e20
@@ -352,59 +377,59 @@ def parse_annotations(root, coords_all):
                 continue 
     return doc  
 
-def _plot(trace, coords, axes):
+def _plot(trace, coords, image, size):
     if type(trace) == str:
-        for coord in coords:        
+        for coord in coords:
             if coord['id'] in trace:
-                x = []
-                y = []
+                x = 0
+                y = 0
                 for i, values in enumerate(coord['coords']):
-                    x.append(values[0])
-                    y.append(values[1])
+                    if i == 0 and len(coord['coords']) == 1:
+                            x = math.ceil(values[0]) - size[0]
+                            y = math.ceil(values[1]) - size[1]
+                            image[math.ceil(x), math.ceil(y)] = 0
+                    elif i!=0:
+                        rr, cc = draw.line(math.ceil(values[0]) - size[0], math.ceil(values[1]) - size[1], x, y)
+                        image[rr, cc] = 0
+                    x = math.ceil(values[0]) - size[0]
+                    y = math.ceil(values[1]) - size[1]
+        return image
     else:
         for child in trace['traces']:
-            _plot(child, coords, axes) 
+            image = _plot(child, coords, image, size)
+        return image
 
-def plot(doc, coords_all, name, folder):
-    fig = plt.figure()
-    axes = fig.gca()
-    axes.invert_yaxis()
-    axes.set_aspect('equal', adjustable='box')
-    axes.get_xaxis().set_visible(False)
-    axes.get_yaxis().set_visible(False)
-    axes.spines['top'].set_visible(False)
-    axes.spines['right'].set_visible(False)
-    axes.spines['bottom'].set_visible(False)
-    axes.spines['left'].set_visible(False)
+def plot(doc, coords_all, name, folder, min_x, max_x, min_y, max_y):
+    size = (math.ceil(max_x) - math.floor(min_x)+1, math.ceil(max_y) - math.floor(min_y)+1)
+    image = np.zeros(size, dtype=np.uint8)
+    image.fill(255)
     for child in doc:
-        _plot(child, coords_all, axes)
-    fig.savefig(os.path.join(folder, name[:-6]+'.png'), dpi = 100)
-    fig.clear()
-    plt.close(fig)
-   
+        image = _plot(child, coords_all, image, (math.floor(min_x), math.floor(min_y)))
+    io.imsave(os.path.join(folder, name[:-6]+'.png'), image.T)
+
 def save_annotation(doc, name, folder):
     pkl = open(os.path.join(folder, name[:-6]+'.pickle'), 'wb')
     pickle.dump(doc, pkl)
     pkl.close()
  
 def transform_data(folder):
-    data = os.listdir(folder)[880:]
-    data = ['001.inkml']
+    data = os.listdir(folder)
+    #data = ['003.inkml']
     for f in tqdm(data):
         if 'set' in f:
             continue
         name = f
         f = os.path.join(folder, f)
-        print(f)
+        #print(f)
         traces_all = parse_file(f)
-        coords_all = get_coords_all(traces_all)
+        coords_all, min_x, max_x, min_y, max_y = get_coords_all(traces_all)
         root = get_tree_root(f)
         doc = parse_annotations(root, coords_all)
         if not os.path.exists('images'):
             os.mkdir('images')
         if not os.path.exists('annotations'):
             os.mkdir('annotations')
-        plot(doc, coords_all, name, '.')
-        save_annotation(doc, name, '.')
+        plot(doc, coords_all, name, 'images', min_x, max_x, min_y, max_y)
+        save_annotation(doc, name, 'raw_annotations')
 
 transform_data('IAMonDo-db-1.0')
