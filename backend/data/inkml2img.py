@@ -184,7 +184,7 @@ def create_object(text):
 
 def create_text(ob, text):
     val = ET.Element('text')
-    val.text = sent
+    val.text = text
     ob.append(val)
     return ob
 
@@ -193,7 +193,7 @@ def parse_correction(child, coords_all, annotation, lower):
 
     ob = create_object('Correction')
 
-    text = child.findall('annotation')[1]
+    text = child.findall('annotation')[1].text
     for trace in child.findall('traceView'):
         traces.append(trace.attrib['traceDataRef'][1:])
     min_x, max_x, min_y, max_y = get_bounding_box(traces, coords_all)
@@ -216,14 +216,14 @@ def parse_word(child, coords_all, annotation, lower):
     text = ''
 
     try:
-        text = child.findall('text')[1].text
+        text = child.findall('annotation')[1].text
         if text == None:
             text = ''
     except IndexError:
         text = ''
 
     for trace in child.findall('traceView'):
-        if 'Correction' in [tag.text for tag in trace.findall('text')]:
+        if 'Correction' in [tag.text for tag in trace.findall('annotation')]:
             traces, text, box_vertices, ob = parse_correction(trace, coords_all, ob, lower)
             word.append({
                 'traces' : traces,
@@ -247,7 +247,7 @@ def parse_word(child, coords_all, annotation, lower):
     
     return word, text, box_vertices, annotation
 
-def parse_symbol(child, coords_all, lower):
+def parse_symbol(child, coords_all, annotation, lower):
     
     ob = create_object('Symbol')
 
@@ -260,7 +260,7 @@ def parse_symbol(child, coords_all, lower):
     ob = create_bndbox(ob, min_x, max_x, min_y, max_y, lower)
     annotation.append(ob)
 
-    return symbol, box_vertices
+    return symbol, box_vertices, annotation
 
 def parse_textline(view, coords_all, annotation, lower):
     textline = []
@@ -273,7 +273,7 @@ def parse_textline(view, coords_all, annotation, lower):
     ob = create_object('TextLine')
  
     for child in view.findall('traceView'):
-        if child.findall('text')[0].text == 'Word':
+        if child.findall('annotation')[0].text == 'Word':
             word, text, box_vertices, ob = parse_word(child, coords_all, ob, lower)
             textline.append({
                 'text' : 'Word',
@@ -283,7 +283,7 @@ def parse_textline(view, coords_all, annotation, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
             sent.append(text)
-        elif child.findall('text')[0].text == 'Symbol':
+        elif child.findall('annotation')[0].text == 'Symbol':
             symbol, box_vertices, ob = parse_symbol(child, coords_all, ob, lower)
             textline.append({
                 'text' : 'Symbol',
@@ -295,13 +295,11 @@ def parse_textline(view, coords_all, annotation, lower):
     box_vertices = (min_x, max_x, min_y, max_y)
 
     ob = create_bndbox(ob, min_x, max_x, min_y, max_y, lower)        
-
     sent = ' '.join(sent)
 
     ob = create_text(ob, sent)
 
     annotation.append(ob)
-
     return textline, sent, box_vertices, annotation
 
 def parse_textblock(traceView, coords_all, annotation, lower):
@@ -317,15 +315,15 @@ def parse_textblock(traceView, coords_all, annotation, lower):
     for view in traceView.findall('traceView'):
         textline = []
         sent = ''
-        if view.findall('text')[0].text == 'Textline':
+        if view.findall('annotation')[0].text == 'Textline':
             textline, sent, box_vertices, ob = parse_textline(view, coords_all, ob, lower)
-        traces.append({
-            'text' : 'Textline',
-            'text' : sent,
-            'traces' : textline
-        })
+            traces.append({
+                'text' : 'Textline',
+                'text' : sent,
+                'traces' : textline
+            })
 
-        min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
+            min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
 
     box_vertices = (min_x, max_x, min_y, max_y)
 
@@ -364,8 +362,8 @@ def parse_diagram(traceView, coords_all, annotation, lower):
     for view in traceView.findall('traceView'):
         textline = []
 
-        if view.findall('text')[0].text == 'Textline':
-            #print([tag.text for tag in view.findall('text')])
+        if view.findall('annotation')[0].text == 'Textline':
+            #print([tag.text for tag in view.findall('annotation')])
             textline, sent, box_vertices, ob = parse_textline(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Textline',
@@ -374,7 +372,7 @@ def parse_diagram(traceView, coords_all, annotation, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
         
-        elif view.findall('text')[0].text == 'Drawing':
+        elif view.findall('annotation')[0].text == 'Drawing':
             drawing, box_vertices, ob = parse_drawing(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Drawing',
@@ -383,7 +381,7 @@ def parse_diagram(traceView, coords_all, annotation, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)        
 
-        elif view.findall('text')[0].text == 'Structure':
+        elif view.findall('annotation')[0].text == 'Structure':
             lst, structure, box_vertices, ob = parse_structure(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Structure',
@@ -393,7 +391,7 @@ def parse_diagram(traceView, coords_all, annotation, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
     
-        elif view.findall('text')[0].text == 'Arrow':
+        elif view.findall('annotation')[0].text == 'Arrow':
             lst, arrow, box_vertices, ob = parse_structure(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Structure',
@@ -403,7 +401,7 @@ def parse_diagram(traceView, coords_all, annotation, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
 
-        elif view.findall('text')[0].text == 'Formula':
+        elif view.findall('annotation')[0].text == 'Formula':
             formula, box_vertices, ob = parse_formula(traceView, coords_all, ob, lower)
             traces.append({'text' : 'Formula', 'traces' : formula, 'box' : box_vertices})
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
@@ -420,7 +418,7 @@ def parse_structure(view, coords_all, annotation, lower):
     ob = create_object('Structure')
 
     lst = []
-    structure = view.findall('text')[1].text
+    structure = view.findall('annotation')[1].text
     for trace in view.findall('traceView'):
         lst.append(trace.attrib['traceDataRef'][1:])
     box_vertices = get_bounding_box(lst, coords_all)
@@ -439,7 +437,7 @@ def parse_arrow(view, coords_all, annotation, lower):
     ob = create_object('Arrow')
 
     lst = []
-    arrow = view.findall('text')[1].text
+    arrow = view.findall('annotation')[1].text
     for trace in view.findall('traceView'):
         lst.append(trace.attrib['traceDataRef'][1:])
     box_vertices = get_bounding_box(lst, coords_all)
@@ -475,7 +473,7 @@ def parse_formula(traceView, coords_all, annotation, lower):
 
     return traces, box_vertices, annotation
 
-def parse_table(traceView, coords_all, ob, lower):
+def parse_table(traceView, coords_all, annotation, lower):
 
     ob = create_object('Table')
 
@@ -487,7 +485,7 @@ def parse_table(traceView, coords_all, ob, lower):
     traces = []
     for view in traceView.findall('traceView'):
         textline = []
-        if view.findall('text')[0].text == 'Textline':
+        if view.findall('annotation')[0].text == 'Textline':
             textline, sent, box_vertices, ob = parse_textline(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Textline',
@@ -496,7 +494,7 @@ def parse_table(traceView, coords_all, ob, lower):
             })
             min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
 
-        elif view.findall('text')[0].text == 'Structure':
+        elif view.findall('annotation')[0].text == 'Structure':
             lst, structure, box_vertices, ob = parse_structure(view, coords_all, ob, lower)
             traces.append({
                 'text' : 'Structure',
@@ -527,14 +525,14 @@ def parse_list(traceView, coords_all, annotation, lower):
     for view in traceView.findall('traceView'):
         textline = []
         sent = ''
-        if view.findall('text')[0].text == 'Textline':
+        if view.findall('annotation')[0].text == 'Textline':
             textline, sent, box_vertices, ob = parse_textline(view, coords_all, ob, lower)
-        traces.append({
-            'text' : 'Textline',
-            'text' : sent,
-            'traces' : textline
-        })
-        min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
+            traces.append({
+                'text' : 'Textline',
+                'text' : sent,
+                'traces' : textline
+            })
+            min_x, max_x, min_y, max_y = compare(box_vertices, min_x, max_x, min_y, max_y)
 
     box_vertices = (min_x, max_x, min_y, max_y)
 
@@ -544,11 +542,11 @@ def parse_list(traceView, coords_all, annotation, lower):
 
     return  traces, box_vertices, annotation
 
-def parse_texts(root, coords_all, annotation, min_x, max_x, min_y, max_y, lower):
+def parse_texts(root, coords_all, annotation, lower):
     doc = []
     text = ''
     document = root.findall('traceView')[0]
-    if document.findall('text')[0].text == 'Document':
+    if document.findall('annotation')[0].text == 'Document':
         traceViews = document.findall('traceView')
         for traceView in traceViews:
             try:
@@ -607,10 +605,11 @@ def plot(doc, coords_all, name, folder, min_x, max_x, min_y, max_y):
         image = _plot(child, coords_all, image, (math.floor(min_x), math.floor(min_y)))
     io.imsave(os.path.join(folder, name[:-6]+'.png'), image.T)
 
-def save_text(doc, name, folder, xml_folder):
+def save_text(doc, name, tree, folder, xml_folder):
     pkl = open(os.path.join(folder, name[:-6]+'.pickle'), 'wb')
     pickle.dump(doc, pkl)
     pkl.close()
+    tree.write(os.path.join(xml_folder, name[:-6]+'.xml'))
  
 def transform_data(folder):
     data = os.listdir(folder)
@@ -625,31 +624,31 @@ def transform_data(folder):
         coords_all, min_x, max_x, min_y, max_y = get_coords_all(traces_all)
         size = (math.ceil(max_x) - math.floor(min_x)+1, math.ceil(max_y) - math.floor(min_y)+1)
         
-        text = ET.Element('annotation')
+        annotation = ET.Element('annotation')
         dr = ET.Element('folder')
         dr.text = 'texts'
         fname = ET.Element('filename')
         fname.text = name
-        text.append(dr)
-        size = ET.Element('size')
-        height = ET.SubElement(size, 'height')
+        annotation.append(dr)
+        size_ = ET.Element('size')
+        height = ET.SubElement(size_, 'height')
         height.text = str(size[0])
-        width = ET.SubElement(size, 'width')
+        width = ET.SubElement(size_, 'width')
         width.text = str(size[1])
-        text.append(size)
-        
+        annotation.append(size_)
+        tree = ET.ElementTree(element = annotation)
         root = get_tree_root(f)
         lower = (math.floor(min_x), math.floor(min_y))
         doc = parse_texts(root, coords_all, annotation, lower)
     
         if not os.path.exists('images'):
             os.mkdir('images')
-        if not os.path.exists('texts'):
-            os.mkdir('texts')
-        if not os.path.existsi('raw_texts'):
-            os.mkdir('raw_texts')
+        if not os.path.exists('annotations'):
+            os.mkdir('annotations')
+        if not os.path.exists('raw_annotations'):
+            os.mkdir('raw_annotations')
 
         plot(doc, coords_all, name, 'images', min_x, max_x, min_y, max_y)
-        save_text(doc, name, 'raw_annotations', 'annotations')
+        save_text(doc, name, tree, 'raw_annotations', 'annotations')
 
 transform_data('IAMonDo-db-1.0')
