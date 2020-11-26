@@ -15,7 +15,7 @@ print('Tensorflow version : {}'.format(tf.__version__))
 print('GPU : {}'.format(tf.config.list_physical_devices('GPU')))
 # Parameters
 
-LABELS           = (
+LABELS = (
     'TextBlock', 
     'Textline', 
     'Word', 
@@ -50,10 +50,10 @@ max_annot        = 0
 
 # Train and validation directory
 
-train_image_folder = 'data/train/image/'
-train_annot_folder = 'data/train/annotation/'
-val_image_folder = 'data/val/image/'
-val_annot_folder = 'data/val/annotation/'
+train_image_folder = '../../data/object_detection/image/train/'
+train_annot_folder = '../../data/object_detection/annotations/train/'
+val_image_folder = '../../data/object_detection/images/val/'
+val_annot_folder = '../../data/object_detection/annotations/val/'
 
 """# 1. Define YOLO model"""
 
@@ -230,7 +230,7 @@ class WeightReader:
     
     def reset(self):
         self.offset = 4
-
+"""
 weight_reader = WeightReader('yolo.weights')
 
 weight_reader.reset()
@@ -275,7 +275,7 @@ new_kernel = np.random.normal(size=weights[0].shape)/(GRID_H*GRID_W)
 new_bias   = np.random.normal(size=weights[1].shape)/(GRID_H*GRID_W)
 
 layer.set_weights([new_kernel, new_bias])
-
+"""
 """# 3. Data generator"""
 
 def parse_annotation(ann_dir, img_dir, labels):
