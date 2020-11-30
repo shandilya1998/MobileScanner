@@ -17,7 +17,7 @@ print('GPU : {}'.format(tf.config.list_physical_devices('GPU')))
 
 LABELS = (
     'TextBlock', 
-    'Textline', 
+    'TextLine', 
     'Word', 
     'Correction', 
     'Drawing',
@@ -50,10 +50,10 @@ max_annot        = 0
 
 # Train and validation directory
 
-train_image_folder = '../../data/object_detection/image/train/'
-train_annot_folder = '../../data/object_detection/annotations/train/'
-val_image_folder = '../../data/object_detection/images/val/'
-val_annot_folder = '../../data/object_detection/annotations/val/'
+train_image_folder = '../../../data/object_detection/image/train/'
+train_annot_folder = '../../../data/object_detection/annotations/train/'
+val_image_folder = '../../../data/object_detection/images/val/'
+val_annot_folder = '../../../data/object_detection/annotations/val/'
 
 """# 1. Define YOLO model"""
 
@@ -93,7 +93,7 @@ x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
 # Layer 2
-x = Ctf.keras.layers.Conv2D(64, (3,3), strides=(1,1), padding='same', name='conv_2', use_bias=False)(x)
+x = tf.keras.layers.Conv2D(64, (3,3), strides=(1,1), padding='same', name='conv_2', use_bias=False)(x)
 x = tf.keras.layers.BatchNormalization(name='norm_2')(x)
 x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
@@ -308,7 +308,7 @@ def parse_annotation(ann_dir, img_dir, labels):
         tree = ET.parse(ann_dir + ann)
         for elem in tree.iter(): 
             if 'filename' in elem.tag:
-                imgs_name.append(img_dir + elem.text)
+                imgs_name.append(os.path.join(img_dir, elem.text))
             if 'width' in elem.tag:
                 w = int(elem.text)
             if 'height' in elem.tag:
