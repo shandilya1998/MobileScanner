@@ -8,6 +8,7 @@ from tqdm import tqdm
 from scipy import interpolate, ndimage
 import numpy as np
 from skimage import draw, io, transform
+
 f = 'IAMonDo-db-1.0/078.inkml'
 
 """
@@ -18,7 +19,7 @@ f = 'IAMonDo-db-1.0/078.inkml'
     -   Convert force values into image intensity values
 """
 
-scale_factor = 100
+SIZE = (1024, 1024)
 
 def get_all_traces(doc_namespace, root):
     traces_all = []
@@ -463,7 +464,8 @@ def parse_formula(traceView, coords_all, annotation, lower):
         try:
             traces.append(view.attrib['traceDataRef'][1:])
         except KeyError:
-            print('formula missing a trace')
+            #print('formula missing a trace')
+            pass
     box_vertices = get_bounding_box(traces, coords_all)
 
     min_x, max_x, min_y, max_y = box_vertices
@@ -585,7 +587,7 @@ def _plot(trace, coords, image, size):
                     if i == 0 and len(coord['coords']) == 1:
                             x = math.ceil(values[0]) - size[0]
                             y = math.ceil(values[1]) - size[1]
-                            image[math.ceil(x), math.ceil(y)] = 0
+                            image[x, y] = 0
                     elif i!=0:
                         rr, cc = draw.line(math.ceil(values[0]) - size[0], math.ceil(values[1]) - size[1], x, y)
                         image[rr, cc] = 0
@@ -599,11 +601,11 @@ def _plot(trace, coords, image, size):
 
 def plot(doc, coords_all, name, folder, min_x, max_x, min_y, max_y):
     size = (math.ceil(max_x) - math.floor(min_x)+1, math.ceil(max_y) - math.floor(min_y)+1)
-    image = np.zeros(size, dtype=np.uint8)
+    image = np.zeros(SIZE, dtype=np.uint8)
     image.fill(255)
     for child in doc:
         image = _plot(child, coords_all, image, (math.floor(min_x), math.floor(min_y)))
-    io.imsave(os.path.join(folder, name[:-6]+'.png'), image.T)
+    io.imsave(os.path.join(folder, name[:-6]+'.png'), image.T,  check_contrast=False)
 
 def save_text(doc, name, tree, folder, xml_folder):
     pkl = open(os.path.join(folder, name[:-6]+'.pickle'), 'wb')
@@ -628,7 +630,8 @@ def transform_data(folder):
         dr = ET.Element('folder')
         dr.text = 'texts'
         fname = ET.Element('filename')
-        fname.text = name
+        fname.text = name[:-6]+'.png'
+        annotation.append(fname)
         annotation.append(dr)
         size_ = ET.Element('size')
         height = ET.SubElement(size_, 'height')
@@ -638,7 +641,7 @@ def transform_data(folder):
         annotation.append(size_)
         tree = ET.ElementTree(element = annotation)
         root = get_tree_root(f)
-        lower = (math.floor(min_x), math.floor(min_y))
+        lower = (math.floor(min_x) + 1, math.floor(min_y) + 1)
         doc = parse_texts(root, coords_all, annotation, lower)
     
         if not os.path.exists('images'):
