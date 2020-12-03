@@ -28,7 +28,7 @@ val_image_folder = '../../data/object_detection/images/val/'
 val_annot_folder = '../../data/object_detection/annotations/val/'
 
 GRID_H,  GRID_W  = 16, 16 # GRID size = IMAGE size / 32
-BOX              = 5
+BOX              = 16
 SCORE_THRESHOLD  = 0.5
 IOU_THRESHOLD    = 0.45
 ANCHORS          = [0.57273, 0.677385, 1.87446, 2.06253, 3.33843, 5.47434, 7.88282, 3.52778, 9.77052, 9.16828]
