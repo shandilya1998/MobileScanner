@@ -10,15 +10,16 @@ import matplotlib.patches as patches
 import xml.etree.ElementTree as ET
 import imgaug as ia
 from imgaug import augmenters as iaa
-from yolo import *
+from yolov2 import *
 from loss import *
+from gnd_truth import *
 
 import tensorflow as tf
 print('Tensorflow version : {}'.format(tf.__version__))
 print('GPU : {}'.format(tf.config.list_physical_devices('GPU')))
 # Parameters
 
-model = get_yolo_model()
+model = get_yolov2_model()
 
 """# 1. Data generator"""
 
@@ -75,10 +76,12 @@ def parse_annotation(ann_dir, img_dir, labels):
                                 box[3] = math.ceil(float(dim.text)*IMAGE_H/1024)
                 boxes.append(np.asarray(box))
         
+        """
         if w != IMAGE_W or h != IMAGE_H :
             print('Image size error')
             break
-            
+        """
+ 
         annots.append(np.asarray(boxes))
         
 
@@ -232,10 +235,6 @@ test_dataset(aug_train_dataset)
 
 train_gen = ground_truth_generator(aug_train_dataset)
 val_gen = ground_truth_generator(val_dataset)
-
-# Test generator pipeline
-
-#model.load_weights('weights/training_do70_2_0.21443991.h5') # best weights, comment to start with YOLO weights
 
 # batch
 img, detector_mask, matching_true_boxes, class_one_hot, true_boxes = next(train_gen)
@@ -412,7 +411,6 @@ results = train(EPOCHS, model, train_gen, val_gen, 10, 2, 'training_1')
 
 plt.plot(results[0])
 plt.plot(results[1])
-
 """# 3. Results"""
 
 def display_yolo(file, model, score_threshold, iou_threshold):
