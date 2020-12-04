@@ -11,6 +11,9 @@ import xml.etree.ElementTree as ET
 import imgaug as ia
 from imgaug import augmenters as iaa
 from yolov2 import *
+from mobilenetv2 import *
+from yolo_lite import *
+from tiny_yolo import *
 from loss import *
 from gnd_truth import *
 

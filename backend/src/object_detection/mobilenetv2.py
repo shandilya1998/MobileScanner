@@ -1,10 +1,4 @@
-﻿"""
-# Reference
-- [Inverted Residuals and Linear Bottlenecks Mobile Networks for
-   Classification, Detection and Segmentation]
-   (https://arxiv.org/abs/1801.04381)
-"""
-
+﻿from constants import *
 import tensorflow as tf
 
 # Define ReLU6 activation
@@ -96,7 +90,7 @@ def _inverted_residual_block(inputs, filters, kernel, t, strides, n):
     return x
 
 
-def MobileNetV2(input_shape, k, plot_model=False):
+def get_mobilenet_model(plot_model=False):
     """MobileNetv2
     This function defines a MobileNetv2 architecture.
 
@@ -109,7 +103,7 @@ def MobileNetV2(input_shape, k, plot_model=False):
         MobileNetv2 model.
     """
 
-    inputs = tf.keras.layers.Input(shape=input_shape, name='input')
+    inputs = tf.keras.layers.Input((IMAGE_H, IMAGE_W, NUM_C), dtype = 'float32', name='input')
     x = _conv_block(inputs, 32, (3, 3), strides=(2, 2))
 
     x = _inverted_residual_block(x, 16, (3, 3), t=1, strides=1, n=1)
@@ -121,16 +115,20 @@ def MobileNetV2(input_shape, k, plot_model=False):
     x = _inverted_residual_block(x, 320, (3, 3), t=6, strides=1, n=1)
 
     x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
-    x = tf.keras.layers.GlobalAveragePooling2D()(x)
-    x = tf.keras.layers.Reshape((1, 1, 1280))(x)
-    x = tf.keras.layers.Dropout(0.3, name='Dropout')(x)
-    x = tf.keras.layers.Conv2D(k, (1, 1), padding='same')(x)
-    x = tf.keras.layers.Activation('softmax', name='final_activation')(x)
-    output = tf.keras.layers.Reshape((k,), name='output')(x)
+    x = tf.keras.layers.Conv2D(
+        BOX * (4 + 1 + CLASS), 
+        (3, 3), 
+        use_bias=False, 
+        padding='same', 
+        strides=(1, 1), 
+        name = 'conv_9'
+    )(x)
+    output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
     model = tf.keras.models.Model(inputs, output)
-    model.summary()
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='model.png', show_shapes=True)
 
     return model
 
+#model = get_mobilenet_model()
+#print(model.summary())

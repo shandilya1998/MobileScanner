@@ -144,5 +144,5 @@ def get_tiny_yolo():
     model = tf.keras.Model(inputs = inp, outputs = output) 
     return model
 
-model = get_tiny_yolo()
-print(model.summary())
+#model = get_tiny_yolo()
+#print(model.summary())

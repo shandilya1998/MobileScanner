@@ -118,5 +118,5 @@ def get_yolo_lite():
     model = tf.keras.Model(inputs = inp, outputs = output)
     return model
 
-model = get_yolo_lite()
-print(model.summary())
+#model = get_yolo_lite()
+#print(model.summary())
