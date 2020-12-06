@@ -1,4 +1,4 @@
-from constants import *
+from src.object_detection.constants import *
 import tensorflow as tf
 import numpy as np
 

@@ -1,10 +1,10 @@
 import tensorflow as tf
 import numpy as np
-from constants import *
+from src.object_detection.constants import *
 
 """# 1. Define YOLO model"""
 
-def get_yolov2_model():
+def get_yolov2_model(plot_model=False):
 # Custom Keras layer
     class SpaceToDepth(tf.keras.layers.Layer):
 
@@ -223,4 +223,6 @@ def get_yolov2_model():
 
     layer.set_weights([new_kernel, new_bias])
     """
+    if plot_model:
+        tf.keras.utils.plot_model(model, to_file='yolov2_model.png', show_shapes=True)
     return model

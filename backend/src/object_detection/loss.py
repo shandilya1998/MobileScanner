@@ -1,4 +1,4 @@
-from constants import *
+from src.object_detection.constants import *
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -34,7 +34,7 @@ def iou(x1, y1, w1, h1, x2, y2, w2, h2):
 
 # loss
 
-def yolov2_loss(detector_mask, matching_true_boxes, class_one_hot, true_boxes_grid, y_pred, info=False):
+def LOSS(detector_mask, matching_true_boxes, class_one_hot, true_boxes_grid, y_pred, info=False):
     '''
     Calculate YOLO V2 loss from prediction (y_pred) and ground truth tensors (detector_mask,
     matching_true_boxes, class_one_hot, true_boxes_grid,)

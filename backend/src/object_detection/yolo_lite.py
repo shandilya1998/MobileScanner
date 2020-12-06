@@ -1,5 +1,5 @@
 import tensorflow as tf
-from constants import *
+from src.object_detection.constants import *
 
 """
     Perform experiments of increasing the number of grids in the this
@@ -7,7 +7,7 @@ from constants import *
     A subtle impact is expected as very small size objects have to be detected
 """
 
-def get_yolo_lite():
+def get_yolo_lite(plot_model = False):
     inp = tf.keras.layers.Input((IMAGE_H, IMAGE_W, NUM_C), dtype = 'float32')
     
     x = tf.keras.layers.Conv2D(
@@ -116,6 +116,8 @@ def get_yolo_lite():
     )(x)
     output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
     model = tf.keras.Model(inputs = inp, outputs = output)
+    if plot_model:
+        tf.keras.utils.plot_model(model, to_file='yolo_lite_model.png', show_shapes=True)
     return model
 
 #model = get_yolo_lite()

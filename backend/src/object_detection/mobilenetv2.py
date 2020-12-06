@@ -1,4 +1,4 @@
-﻿from constants import *
+﻿from src.object_detection.constants import *
 import tensorflow as tf
 
 # Define ReLU6 activation
@@ -126,7 +126,7 @@ def get_mobilenet_model(plot_model=False):
     output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
     model = tf.keras.models.Model(inputs, output)
     if plot_model:
-        tf.keras.utils.plot_model(model, to_file='model.png', show_shapes=True)
+        tf.keras.utils.plot_model(model, to_file='mobilenet_model.png', show_shapes=True)
 
     return model
 
