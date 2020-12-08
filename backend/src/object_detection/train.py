@@ -238,11 +238,10 @@ def run(
                 ia_boxes.append(ia.BoundingBoxesOnImage(ia_bbs, shape=(IMAGE_W, IMAGE_H)))
             # data augmentation
             seq = iaa.Sequential([
-                iaa.Fliplr(0.5),
-                iaa.Flipud(0.5),
+                iaa.Rot90((0, 3), keep_size=False),
                 iaa.Multiply((0.4, 1.6)), # change brightness
                 #iaa.ContrastNormalization((0.5, 1.5)),
-                #iaa.Affine(translate_px={"x": (-100,100), "y": (-100,100)}, scale=(0.7, 1.30))
+                iaa.Affine(translate_px={"x": (-100,100), "y": (-100,100)}, scale=(0.7, 1.30))
                 ])
             #seq = iaa.Sequential([])
             seq_det = seq.to_deterministic()

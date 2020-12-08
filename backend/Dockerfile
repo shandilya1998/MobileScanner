@@ -1,23 +1,79 @@
-FROM tensorflow/tensorflow:2.1.0-gpu-py3
+ARG UBUNTU_VERSION=18.04
+
+ARG CUDA=11.0
+FROM nvidia/cuda:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
+ARG CUDNN=8.0.4.30-1
+ARG CUDNN_MAJOR_VERSION=8
+ARG LIB_DIR_PREFIX=x86_64
+ARG LIBNVINFER=7.1.3-1
+ARG LIBNVINFER_MAJOR_VERSION=7
+
+# Needed for string substitution
+SHELL ["/bin/bash", "-c"]
+# Pick up some TF dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        cuda-command-line-tools-${CUDA/./-} \
+        libcublas-${CUDA/./-} \
+        cuda-nvrtc-${CUDA/./-} \
+        libcufft-${CUDA/./-} \
+        libcurand-${CUDA/./-} \
+        libcusolver-${CUDA/./-} \
+        libcusparse-${CUDA/./-} \
+        curl \
+        libcudnn8=${CUDNN}+cuda${CUDA} \
+        libfreetype6-dev \
+        libhdf5-serial-dev \
+        libzmq3-dev \
+        pkg-config \
+        software-properties-common \
+        unzip
+
+# For CUDA profiling, TensorFlow requires CUPTI.
+ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
+# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
+# dynamic linker run-time bindings
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
+    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
+    && ldconfig
+
+# See http://bugs.python.org/issue19846
+ENV LANG C.UTF-8
+
+RUN apt-get update && apt-get install -y \
+    python3.7 \
+    python3-pip
+
+RUN python3 -m pip --no-cache-dir install --upgrade \
+    pip \
+    setuptools
+
+# Some TF tools expect a "python" binary
+RUN ln -s $(which python3) /usr/local/bin/python
+
+# Options:
+#   tensorflow
+#   tensorflow-gpu
+#   tf-nightly
+#   tf-nightly-gpu
+# Set --build-arg TF_PACKAGE_VERSION=1.11.0rc0 to install a specific version.
+# Installs the latest version by default.
+ARG TF_PACKAGE=tensorflow
+ARG TF_PACKAGE_VERSION=
+RUN python3 -m pip install --no-cache-dir ${TF_PACKAGE}${TF_PACKAGE_VERSION:+==${TF_PACKAGE_VERSION}}
+
+COPY bashrc /etc/bash.bashrc
+RUN chmod a+rwx /etc/bash.bashrc
 
 WORKDIR /root
 
 # Copies all the relevant files to the docker image
-COPY ./src/object_detection/train.py ./src/object_detection/train.py
-COPY ./src/object_detection/tiny_yolo.py ./src/object_detection/tiny_yolo.py
-COPY ./src/object_detection/yolo_lite.py ./src/object_detection/yolo_lite.py
-COPY ./src/object_detection/yolov2.py ./src/object_detection/yolov2.py
-COPY ./src/object_detection/loss.py ./src/object_detection/loss.py
-COPY ./src/object_detection/constants.py ./src/object_detection/constants.py
-COPY ./src/object_detection/mobilenetv2.py ./src/object_detection/mobilenetv2.py
-COPY ./src/object_detection/gnd_truth.py ./src/object_detection/gnd_truth.py
 
-ADD ./data/object_detection/images ./data/object_detection/images
-ADD ./data/object_detection/annotations ./data/object_detection/annotations
+ADD ./src ./src
+ADD ./data ./data
 
-RUN pip3 install --upgrade pip
-
-COPY requirements.txt ./requirements.txt
+COPY ./requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
 
 ENTRYPOINT ["python", "-u" "run.py"]
