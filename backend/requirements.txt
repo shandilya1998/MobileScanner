@@ -62,10 +62,9 @@ scipy==1.4.1
 Shapely==1.7.1
 six==1.15.0
 tabulate==0.8.7
-tensorboard==2.4.0
+tensorboard==2.2.0
 tensorboard-plugin-wit==1.7.0
 tensorflow==2.2.0
-tensorflow-cloud==0.1.10
 tensorflow-datasets==3.0.0
 tensorflow-estimator==2.2.0
 tensorflow-metadata==0.25.0

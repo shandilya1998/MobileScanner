@@ -37,7 +37,7 @@ JOB_NAME=custom_gpu_container_job_$(date +%Y%m%d_%H%M%S)
 REGION=us-central1
 
 # Build the docker image
-docker build -f Dockerfile -t ${IMAGE_URI} ./
+docker build -t ${IMAGE_URI} ./
 
 # Submit your training job
 echo "Submitting the training job"
@@ -46,7 +46,7 @@ echo "Submitting the training job"
 JOB_DIR=gs://${BUCKET_ID}/models/gpu
 # Note: these files have already been copied over when the image was built
 
-docker run -i ${IMAGE_URI} \
+docker run -it ${IMAGE_URI} \
     --job-dir ${JOB_DIR} \
     --train-batch-size 10 \
     --val-batch-size 10 \

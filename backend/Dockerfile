@@ -1,79 +1,54 @@
-ARG UBUNTU_VERSION=18.04
+FROM nvidia/cuda:11.1-devel-ubuntu20.04
 
-ARG CUDA=11.0
-FROM nvidia/cuda:${CUDA}-base-ubuntu${UBUNTU_VERSION} as base
-ARG CUDNN=8.0.4.30-1
-ARG CUDNN_MAJOR_VERSION=8
-ARG LIB_DIR_PREFIX=x86_64
-ARG LIBNVINFER=7.1.3-1
-ARG LIBNVINFER_MAJOR_VERSION=7
-
-# Needed for string substitution
-SHELL ["/bin/bash", "-c"]
-# Pick up some TF dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        build-essential \
-        cuda-command-line-tools-${CUDA/./-} \
-        libcublas-${CUDA/./-} \
-        cuda-nvrtc-${CUDA/./-} \
-        libcufft-${CUDA/./-} \
-        libcurand-${CUDA/./-} \
-        libcusolver-${CUDA/./-} \
-        libcusparse-${CUDA/./-} \
-        curl \
-        libcudnn8=${CUDNN}+cuda${CUDA} \
-        libfreetype6-dev \
-        libhdf5-serial-dev \
-        libzmq3-dev \
-        pkg-config \
-        software-properties-common \
-        unzip
-
-# For CUDA profiling, TensorFlow requires CUPTI.
-ENV LD_LIBRARY_PATH /usr/local/cuda/extras/CUPTI/lib64:/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-
-# Link the libcuda stub to the location where tensorflow is searching for it and reconfigure
-# dynamic linker run-time bindings
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1 \
-    && echo "/usr/local/cuda/lib64/stubs" > /etc/ld.so.conf.d/z-cuda-stubs.conf \
-    && ldconfig
-
-# See http://bugs.python.org/issue19846
 ENV LANG C.UTF-8
-
-RUN apt-get update && apt-get install -y \
-    python3.7 \
-    python3-pip
-
-RUN python3 -m pip --no-cache-dir install --upgrade \
-    pip \
-    setuptools
-
-# Some TF tools expect a "python" binary
-RUN ln -s $(which python3) /usr/local/bin/python
-
-# Options:
-#   tensorflow
-#   tensorflow-gpu
-#   tf-nightly
-#   tf-nightly-gpu
-# Set --build-arg TF_PACKAGE_VERSION=1.11.0rc0 to install a specific version.
-# Installs the latest version by default.
-ARG TF_PACKAGE=tensorflow
-ARG TF_PACKAGE_VERSION=
-RUN python3 -m pip install --no-cache-dir ${TF_PACKAGE}${TF_PACKAGE_VERSION:+==${TF_PACKAGE_VERSION}}
-
-COPY bashrc /etc/bash.bashrc
-RUN chmod a+rwx /etc/bash.bashrc
+ENV LC_ALL C.UTF-8
 
 WORKDIR /root
+ENV HOME /root
+
+RUN apt-get update
+
+ENV CUDNN_VERSION 8.0.5.39
+
+LABEL com.nvidia.cudnn.version="${CUDNN_VERSION}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libcudnn8=$CUDNN_VERSION-1+cuda11.1 \
+    libcudnn8-dev=$CUDNN_VERSION-1+cuda11.1 \
+    && apt-mark hold libcudnn8 && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN apt-get install -y --no-install-recommends \
+    git \
+    build-essential \
+    software-properties-common \
+    ca-certificates \
+    wget \
+    curl \
+    htop \
+    zip \
+    unzip \
+    zlib1g-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libssl-dev \
+    libreadline-dev \
+    libffi-dev && \
+    python3 -V && \
+    python3 -m pip --no-cache-dir install --upgrade pip setuptools && \
+    ln -s $(which python3) /usr/local/bin/python
+
+COPY ./requirements.txt ./requirements.txt
 
 # Copies all the relevant files to the docker image
-
 ADD ./src ./src
 ADD ./data ./data
 
 COPY ./requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt
+
+RUN  echo "/usr/local/cuda/compat" >> /etc/ld.so.conf.d/cuda-10-0.conf && \
+    ldconfig
 
 ENTRYPOINT ["python", "-u" "run.py"]
