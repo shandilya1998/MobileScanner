@@ -37,7 +37,7 @@ JOB_NAME=custom_gpu_container_job_$(date +%Y%m%d_%H%M%S)
 REGION=us-central1
 
 # Build the docker image
-docker build -f Dockerfile -t ${IMAGE_URI} ./
+docker build -t ${IMAGE_URI} ./
 
 # Deploy the docker image to Cloud Container Registry
 docker push ${IMAGE_URI}
@@ -59,7 +59,7 @@ gcloud beta ai-platform jobs submit training ${JOB_NAME} \
     --val-batch-size 10 \
     --learning-rate 0.005 \
     --eps 10e-8 \
-    --beta1 0.9 \
+   --beta1 0.9 \
     --beta2 0.999 \
     --epochs 600 \
     --seed 42 \
