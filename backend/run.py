@@ -111,5 +111,7 @@ train.run(
     beta2 = args.beta2,
     architecture = args.net, 
     plot_model = args.plot,
-    seed = args.seed
+    seed = args.seed,
+    device = 'gpu',
+    aug = True,
 )

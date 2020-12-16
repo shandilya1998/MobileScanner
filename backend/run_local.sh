@@ -56,6 +56,7 @@ docker run -it ${IMAGE_URI} \
     --beta2 0.999 \
     --epochs 600 \
     --seed 42 \
+    --net yolov2 \
     --log-interval 10 \
 
 # Verify the model was exported

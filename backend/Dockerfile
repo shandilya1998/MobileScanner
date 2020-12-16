@@ -12,14 +12,24 @@ RUN apt-get install -y --no-install-recommends \
     curl \
     htop \
     zip \
-    unzip
+    unzip \
+    zlib1g-dev \
+    libncurses5-dev \
+    libgdbm-dev \
+    libnss3-dev \
+    libssl-dev \
+    libsqlite3-dev \
+    libreadline-dev \
+    libffi-dev \
+    wget \
+    libbz2-dev
 
 RUN wget https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz && \
-    tar –xf Python-3.7.5.tgz && \
+    tar -xf Python-3.7.5.tgz && \
     cd Python-3.7.5 && \
-    ./configure ––enable–optimizations && \
+    ./configure && \
     make install && \
-    python3 ––version
+    python3 --version
 
 COPY ./requirements.txt ./requirements.txt
 
@@ -28,6 +38,7 @@ ADD ./src ./src
 ADD ./data ./data
 
 COPY ./requirements.txt ./requirements.txt
+RUN pip3 install --upgrade pip setuptools wheel
 RUN pip3 install -r requirements.txt
 
 ENTRYPOINT ["python", "-u" "run.py"]

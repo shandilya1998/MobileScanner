@@ -1,8 +1,5 @@
-﻿from src.object_detection.constants import *
+from src.object_detection.constants import *
 import tensorflow as tf
-
-# Define ReLU6 activation
-relu6 = tf.keras.layers.ReLU(6.)
 
 def _conv_block(inputs, filters, kernel, strides):
     """Convolution Block
@@ -24,7 +21,7 @@ def _conv_block(inputs, filters, kernel, strides):
 
     x = tf.keras.layers.Conv2D(filters, kernel, padding='same', strides=strides)(inputs)
     x = tf.keras.layers.BatchNormalization()(x)
-    return relu6(x)
+    return tf.keras.layers.ReLU(6.)(x)
 
 
 def _bottleneck(inputs, filters, kernel, t, s, r=False):
@@ -53,7 +50,7 @@ def _bottleneck(inputs, filters, kernel, t, s, r=False):
 
     x = tf.keras.layers.DepthwiseConv2D(kernel, strides=(s, s), depth_multiplier=1, padding='same')(x)
     x = tf.keras.layers.BatchNormalization()(x)
-    x = relu6(x)
+    x = tf.keras.layers.ReLU(6.)(x)
 
     x = tf.keras.layers.Conv2D(filters, (1, 1), strides=(1, 1), padding='same')(x)
     x = tf.keras.layers.BatchNormalization()(x)
@@ -132,3 +129,4 @@ def get_mobilenet_model(plot_model=False):
 
 #model = get_mobilenet_model()
 #print(model.summary())
+
