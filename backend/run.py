@@ -95,23 +95,35 @@ parser.add_argument(
     '--log-interval',
     type=int,
     default=20,
-    help='wandb log interval'
+    help='image log interval'
+)
+
+parser.add_argument(
+    '--num',
+    type=int,
+    default=00,
+    help='experiment number'
 )
 
 args = parser.parse_args()
 
+arch = args.net
+num = 1
 train.run(
+    id = '{a}_{n}'.format(a = arch, n = num),
     log_interval = args.log_interval,
     job_dir = args.job_dir,
     train_batch_size = args.train_batch_size,
     val_batch_size = args.val_batch_size,
     learning_rate = args.learning_rate,
-    eps = args.eps,
     beta1 = args.beta1,
     beta2 = args.beta2,
-    architecture = args.net, 
+    eps = args.eps ,
+    architecture = args.net,
     plot_model = args.plot,
     seed = args.seed,
     device = 'gpu',
     aug = True,
+    steps_per_epoch_train = 79,
+    steps_per_epoch_val = 12
 )

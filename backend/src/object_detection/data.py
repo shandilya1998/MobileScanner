@@ -1,11 +1,57 @@
-from constants import *
+from src.object_detection.constants import *
 import matplotlib.pyplot as plt
 import numpy as np
 import xml.etree.ElementTree as ET
 import imgaug as ia
 from imgaug import augmenters as iaa
-from visualize import *
-from kmeans_anchors import *
+from scipy.spatial.distance import cdist
+from sklearn.cluster import KMeans
+
+def compute_iou(bb_1, bb_2):
+
+    xa0, ya0, xa1, ya1 = bb_1
+    xb0, yb0, xb1, yb1 = bb_2
+
+    intersec = (min([xa1, xb1]) - max([xa0, xb0]))*(min([ya1, yb1]) - max([ya0, yb0]))
+
+    union = (xa1 - xa0)*(ya1 - ya0) + (xb1 - xb0)*(yb1 - yb0) - intersec
+
+    return intersec / union
+
+def IoU_dist(x, c):
+    return 1. - compute_iou([0,0,x[0],x[1]], [0,0,c[0],c[1]])
+
+def get_wh(imgs_name, bbox, max_annot):
+    wh = []
+    for i in range(imgs_name.shape[0]):
+        for j in range(max_annot):
+            w = 0
+            h = 0
+            if bbox[i][j][0] == 0 and bbox[i][j][1] == 0 and bbox[i][j][2] == 0 and bbox[i][j][3] == 0:
+                continue
+            else:
+                w = (bbox[i][j][1] - bbox[i][j][0])/IMAGE_W
+                h = (bbox[i][j][3] - bbox[i][j][2])/IMAGE_H
+            temp = [w,h]
+            wh.append(temp)
+    wh = np.array(wh)
+    return wh
+
+def weighted_choice(choices):
+    r = np.random.uniform(0, np.sum(choices, -1))
+    upto = 0
+    for c, w in enumerate(choices):
+        if upto + w >= r:
+            return c
+        upto += w
+    return 0
+
+def compute_anchors(imgs_name, bbox, max_annot):
+    wh = get_wh(imgs_name, bbox, max_annot)
+    kmeans = KMeans(n_clusters = BOX, random_state=0).fit(wh)
+    centroids = kmeans.cluster_centers_
+    anchors = list(centroids.flatten())
+    return anchors
 
 """# 1. Data generator"""
 
@@ -91,7 +137,7 @@ def parse_function(img_obj, true_boxes):
     x_img = tf.image.resize(x_img, (IMAGE_H, IMAGE_W))
     return x_img, true_boxes
 
-def get_dataset(img_dir, ann_dir, labels, batch_size, compute_anchors = False):
+def get_dataset(img_dir, ann_dir, labels, batch_size, compute = False):
     '''
     Create a YOLO dataset
     
@@ -112,7 +158,7 @@ def get_dataset(img_dir, ann_dir, labels, batch_size, compute_anchors = False):
     '''
     imgs_name, bbox, max_annot = parse_annotation(ann_dir, img_dir, LABELS)
     visualize_classes(imgs_name, bbox, max_annot)
-    if compute_anchors:
+    if compute:
         ANCHORS = compute_anchors(imgs_name, bbox, max_annot)
     dataset = tf.data.Dataset.from_tensor_slices((imgs_name, bbox))
     dataset = dataset.shuffle(len(imgs_name))

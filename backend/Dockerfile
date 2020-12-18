@@ -1,4 +1,3 @@
-FROM nvidia/cuda:11.1-cudnn8-devel-ubuntu18.04
 
 RUN apt-get -y update
 

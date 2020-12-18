@@ -5,10 +5,10 @@ def get_tiny_yolo(plot_model = False):
     inp = tf.keras.layers.Input((IMAGE_H, IMAGE_W, NUM_C), dtype = 'float32')
     
     x = tf.keras.layers.Conv2D(
-        16, 
+        16,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
+        use_bias=False,
+        padding='same',
         strides=(1, 1),
         name = 'conv_1'
     )(inp)
@@ -21,127 +21,127 @@ def get_tiny_yolo(plot_model = False):
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        32, 
+        32,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_2'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_2')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (1, 1)
-    )(x) 
+    )(x)
 
     x = tf.keras.layers.Conv2D(
-        64, 
+        64,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_3'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_3')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (2, 2)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        128, 
+        128,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_4'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_4')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(1, 1), 
+        pool_size=(1, 1),
         padding = 'same',
         strides = (1, 1)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        256, 
+        256,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_5'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_5')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (2, 2)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        512, 
+        512,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_6'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_6')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (1, 1)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        1024, 
+        1024,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_7'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_7')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (2, 2)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        1024, 
+        1024,
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_8'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_8')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
-        strides = (2, 2)
+        strides = (1, 1)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        BOX * (4 + 1 + CLASS), 
+        BOX * (4 + 1 + CLASS),
         (3, 3),
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        use_bias=False,
+        padding='same',
+        strides=(2, 2),
         name = 'conv_9'
     )(x)
     output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
-    model = tf.keras.Model(inputs = inp, outputs = output) 
+    model = tf.keras.Model(inputs = inp, outputs = output)
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='tiny_yolo_model.png', show_shapes=True)
     return model

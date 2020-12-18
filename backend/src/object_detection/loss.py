@@ -1,20 +1,15 @@
 """
 Yolo v2 loss function.
 """
-from constants import *
+from src.object_detection.constants import *
 import numpy as np
 import tensorflow as tf
 
-EPSILON = 1e-7
+def generate_yolo_grid(batch, g_h, g_w, num_bb):
+    c_x = tf.keras.backend.cast(tf.keras.backend.reshape(tf.keras.backend.tile(tf.keras.backend.arange(g_h), [g_w]), (1, g_h, g_w, 1, 1)), tf.keras.backend.floatx())
+    c_y = tf.keras.backend.permute_dimensions(c_x, (0,2,1,3,4))
+    return tf.keras.backend.tile(tf.keras.backend.concatenate([c_x, c_y], -1), [batch, 1, 1, num_bb, 1])
 
-
-def generate_yolo_grid(batch, g, num_bb):
-    c_x = K.cast(K.reshape(K.tile(K.arange(g), [g]), (1, g, g, 1, 1)), K.floatx())
-    c_y = K.permute_dimensions(c_x, (0,2,1,3,4))
-    return K.tile(K.concatenate([c_x, c_y], -1), [batch, 1, 1, num_bb, 1])
-
-c_grid = generate_yolo_grid(BATCH_SIZE, GRID_H, GRID_W, BOX)
-anchors = np.reshape(ANCHORS, [1, 1, 1, BOX, 2])
 
 def calculate_ious(A1, A2, use_iou=True):
 
@@ -57,17 +52,37 @@ def calculate_ious(A1, A2, use_iou=True):
     return intersect_areas / union_areas
 
 
-def _transform_netout(y_pred_raw):
-    y_pred_xy = tf.keras.backend.sigmoid(y_pred_raw[..., :2]) + c_grid
-    y_pred_wh = tf.keras.backend.exp(y_pred_raw[..., 2:4]) * anchors
-    y_pred_conf = tf.keras.backend.sigmoid(y_pred_raw[..., 4:5])
-    y_pred_class = y_pred_raw[...,5:]
-
-    return tf.keras.backend.concatenate([y_pred_xy, y_pred_wh, y_pred_conf, y_pred_class], axis=-1)
+def _transform_netout(y_pred):
+    coord_x = tf.cast(tf.reshape(tf.tile(tf.range(GRID_W), [GRID_H]), (1, GRID_H, GRID_W, 1, 1)), tf.float32)
+    coord_y = tf.transpose(coord_x, (0,2,1,3,4))
+    coords = tf.tile(tf.concat([coord_x,coord_y], -1), [y_pred.shape[0], 1, 1, 5, 1])
+    dims = tf.keras.backend.cast_to_floatx(tf.keras.backend.int_shape(y_pred)[1:3])
+    dims = tf.keras.backend.reshape(dims,(1,1,1,1,2))
+    # anchors tensor
+    anchors = np.array(ANCHORS)
+    anchors = anchors.reshape(len(anchors) // 2, 2)
+    # pred_xy and pred_wh shape (m, GRID_W, GRID_H, Anchors, 2)
+    pred_xy = tf.keras.backend.sigmoid(y_pred[:,:,:,:,0:2])
+    pred_xy = (pred_xy + coords)
+    pred_xy = pred_xy / dims
+    pred_wh = tf.keras.backend.exp(y_pred[:,:,:,:,2:4])
+    pred_wh = (pred_wh * anchors)
+    pred_wh = pred_wh / dims
+    # pred_confidence
+    box_conf = tf.keras.backend.sigmoid(y_pred[:,:,:,:,4:5])
+    # pred_class
+    box_class_prob = tf.keras.backend.softmax(y_pred[:,:,:,:,5:])
+    """
+    print(pred_xy.shape)
+    print(pred_wh.shape)
+    print(box_conf.shape)
+    print(box_class_prob.shape)
+    """
+    return tf.keras.backend.concatenate([pred_xy, pred_wh, box_conf, box_class_prob], axis=-1)
 
 class YoloLoss(object):
 
-    def __init__(self, batch_size):
+    def __init__(self):
         self.__name__ = 'yolo_loss'
         self.iou_filter = 0.6
         self.readjust_obj_score = False
@@ -79,20 +94,18 @@ class YoloLoss(object):
 
 
     def coord_loss(self, y_true, y_pred):
-        
-        b_xy_pred = y_pred[..., :2]
-        b_wh_pred = y_pred[..., 2:4]
-        
-        b_xy = y_true[..., 0:2]
-        b_wh = y_true[..., 2:4]
+        pred_xy = y_pred[:,:,:,:,0:2]
+        pred_wh = y_pred[:,:,:,:,2:4]
+        detector_mask = tf.expand_dims(y_pred[:,:,:,:,4], -1)
+        nb_detector_mask = tf.keras.backend.sum(tf.cast(detector_mask > 0.0, tf.float32))
+        xy_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(y_true[...,:2] - pred_xy)
+        ) / (nb_detector_mask + EPSILON)
+        wh_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(tf.keras.backend.sqrt(y_true[...,2:4]) - tf.keras.backend.sqrt(pred_wh))
+        ) / (nb_detector_mask + EPSILON)
 
-        indicator_coord = tf.keras.backend.expand_dims(y_true[..., 4], axis=-1) * self.lambda_coord
-
-        loss_xy = tf.keras.backend.sum(tf.keras.backend.square(b_xy - b_xy_pred) * indicator_coord)#, axis=[1,2,3,4])
-        loss_wh = tf.keras.backend.sum(tf.keras.backend.square(b_wh - b_wh_pred) * indicator_coord)#, axis=[1,2,3,4])
-        #loss_wh = tf.keras.backend.sum(tf.keras.backend.square(tf.keras.backend.sqrt(b_wh) - tf.keras.backend.sqrt(b_wh_pred)) * indicator_coord)#, axis=[1,2,3,4])
-
-        return (loss_wh + loss_xy) / 2
+        return xy_loss + wh_loss
 
 
     def obj_loss(self, y_true, y_pred):
@@ -101,7 +114,7 @@ class YoloLoss(object):
         b_o_pred = y_pred[..., 4]
 
         num_true_labels = GRID_H*GRID_W*BOX
-        y_true_p = tf.keras.backend.reshape(y_true[..., :4], shape=(BATCH_SIZE, 1, 1, 1, num_true_labels, 4))
+        y_true_p = tf.keras.backend.reshape(y_true[..., :4], shape=(y_true.shape[0], 1, 1, 1, num_true_labels, 4))
         iou_scores_buff = calculate_ious(y_true_p, tf.keras.backend.expand_dims(y_pred, axis=4))
         best_ious = tf.keras.backend.max(iou_scores_buff, axis=4)
 
@@ -115,19 +128,7 @@ class YoloLoss(object):
 
 
     def class_loss(self, y_true, y_pred):
-
-        p_c_pred = tf.keras.backend.softmax(y_pred[..., 5:])
-        p_c = tf.keras.backend.one_hot(tf.keras.backend.argmax(y_true[..., 5:], axis=-1), CLASS)
-        loss_class_arg = tf.keras.backend.sum(tf.keras.backend.square(p_c - p_c_pred), axis=-1)
-        
-        #b_class = tf.keras.backend.argmax(y_true[..., 5:], axis=-1)
-        #b_class_pred = y_pred[..., 5:]
-        #oss_class_arg = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=b_class, logits=b_class_pred)
-
-        indicator_class = y_true[..., 4] * self.lambda_class
-
-        loss_class = tf.keras.backend.sum(loss_class_arg * indicator_class)#, axis=[1,2,3])
-
+        loss_class = tf.keras.backend.sum(tf.keras.backend.categorical_crossentropy(y_true[..., 5:], y_pred[..., 5:]))
         return loss_class
     
     def l_coord(self, y_true, y_pred_raw):
@@ -139,16 +140,23 @@ class YoloLoss(object):
     def l_class(self, y_true, y_pred_raw):
         return self.class_loss(y_true, _transform_netout(y_pred_raw))
 
-
-
-    def __call__(self, y_true, y_pred_raw):
+    def __call__(self, y_true, y_pred_raw, info = False):
 
         y_pred = _transform_netout(y_pred_raw)
 
         total_coord_loss = self.coord_loss(y_true, y_pred)
         total_obj_loss = self.obj_loss(y_true, y_pred)
         total_class_loss = self.class_loss(y_true, y_pred)
-
+        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
         loss = total_coord_loss + total_obj_loss + total_class_loss
 
-        return  loss
+        if info:
+            print('conf_loss   : {:.4f}'.format(total_obj_loss))
+            print('class_loss  : {:.4f}'.format(total_class_loss))
+            print('coord_loss  : {:.4f}'.format(total_coord_loss))
+            print('--------------------')
+            print('total loss  : {:.4f}'.format(loss))
+
+        return  loss, sub_loss
+
+LOSS = YoloLoss()

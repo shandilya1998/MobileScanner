@@ -1,6 +1,5 @@
 import tensorflow as tf
 from src.object_detection.constants import *
-
 """
     Perform experiments of increasing the number of grids in the this
     architecure and see what is the impact on predictions
@@ -11,49 +10,49 @@ def get_yolo_lite(plot_model = False):
     inp = tf.keras.layers.Input((IMAGE_H, IMAGE_W, NUM_C), dtype = 'float32')
     
     x = tf.keras.layers.Conv2D(
-        16, 
-        (3, 3), 
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        16,
+        (3, 3),
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_1'
     )(inp)
     x = tf.keras.layers.BatchNormalization(name='norm_1')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (2, 2)
     )(x)
 
     x = tf.keras.layers.Conv2D(
-        32, 
-        (3, 3), 
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        32,
+        (3, 3),
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_2'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_2')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (1, 1)
-    )(x) 
+    )(x)
 
     x = tf.keras.layers.Conv2D(
-        64, 
-        (3, 3), 
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        64,
+        (3, 3),
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_3'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_3')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(
-        pool_size=(2, 2), 
+        pool_size=(2, 2),
         padding = 'same',
         strides = (2, 2)
     )(x)
@@ -95,7 +94,7 @@ def get_yolo_lite(plot_model = False):
         (3, 3),
         use_bias=False,
         padding='same',
-        strides=(1, 1),
+        strides=(2, 2),
         name = 'conv_8'
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_8')(x)
@@ -103,7 +102,7 @@ def get_yolo_lite(plot_model = False):
     x = tf.keras.layers.MaxPooling2D(
         pool_size=(2, 2),
         padding = 'same',
-        strides = (2, 2)
+        strides = (1, 1)
     )(x)
 
     x = tf.keras.layers.Conv2D(
@@ -111,7 +110,7 @@ def get_yolo_lite(plot_model = False):
         (3, 3),
         use_bias=False,
         padding='same',
-        strides=(1, 1),
+        strides=(2, 2),
         name = 'conv_9'
     )(x)
     output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)

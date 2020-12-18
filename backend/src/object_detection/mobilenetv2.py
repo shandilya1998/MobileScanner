@@ -113,11 +113,11 @@ def get_mobilenet_model(plot_model=False):
 
     x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
     x = tf.keras.layers.Conv2D(
-        BOX * (4 + 1 + CLASS), 
-        (3, 3), 
-        use_bias=False, 
-        padding='same', 
-        strides=(1, 1), 
+        BOX * (4 + 1 + CLASS),
+        (3, 3),
+        use_bias=False,
+        padding='same',
+        strides=(1, 1),
         name = 'conv_9'
     )(x)
     output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
@@ -129,4 +129,3 @@ def get_mobilenet_model(plot_model=False):
 
 #model = get_mobilenet_model()
 #print(model.summary())
-
