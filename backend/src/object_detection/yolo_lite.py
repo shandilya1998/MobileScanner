@@ -113,7 +113,7 @@ def get_yolo_lite(plot_model = False):
         strides=(2, 2),
         name = 'conv_9'
     )(x)
-    output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
+    output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
     model = tf.keras.Model(inputs = inp, outputs = output)
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='yolo_lite_model.png', show_shapes=True)

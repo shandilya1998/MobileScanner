@@ -2,7 +2,6 @@ import tensorflow as tf
 import numpy as np
 from src.object_detection.constants import *
 
-
 """# 1. Define YOLO model"""
 
 def get_yolov2_model(plot_model=False):
@@ -159,7 +158,7 @@ def get_yolov2_model(plot_model=False):
 
     # Layer 23
     x = tf.keras.layers.Conv2D(BOX * (4 + 1 + CLASS), (1,1), strides=(1,1), padding='same', name='conv_23')(x)
-    output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
+    output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
 
     model = tf.keras.models.Model(input_image, output)
 

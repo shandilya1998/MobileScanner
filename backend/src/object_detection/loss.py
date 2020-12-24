@@ -5,12 +5,6 @@ from src.object_detection.constants import *
 import numpy as np
 import tensorflow as tf
 
-def generate_yolo_grid(batch, g_h, g_w, num_bb):
-    c_x = tf.keras.backend.cast(tf.keras.backend.reshape(tf.keras.backend.tile(tf.keras.backend.arange(g_h), [g_w]), (1, g_h, g_w, 1, 1)), tf.keras.backend.floatx())
-    c_y = tf.keras.backend.permute_dimensions(c_x, (0,2,1,3,4))
-    return tf.keras.backend.tile(tf.keras.backend.concatenate([c_x, c_y], -1), [batch, 1, 1, num_bb, 1])
-
-
 def calculate_ious(A1, A2, use_iou=True):
 
     if not use_iou:
@@ -54,11 +48,13 @@ def calculate_ious(A1, A2, use_iou=True):
 
 def _transform_netout(y_pred):
     coord_x = tf.cast(tf.reshape(tf.tile(tf.range(GRID_W), [GRID_H]), (1, GRID_H, GRID_W, 1, 1)), tf.float32)
-    coord_y = tf.transpose(coord_x, (0,2,1,3,4))
-    coords = tf.tile(tf.concat([coord_x,coord_y], -1), [y_pred.shape[0], 1, 1, 5, 1])
+    coord_y = tf.cast(tf.reshape(tf.tile(tf.range(GRID_H), [GRID_W]), (1, GRID_W, GRID_H, 1, 1)), tf.float32)
+    coord_y = tf.transpose(coord_y, (0,2,1,3,4))
+    coords = tf.tile(tf.concat([coord_x,coord_y], -1), [y_pred.shape[0], 1, 1, BOX, 1])
     dims = tf.keras.backend.cast_to_floatx(tf.keras.backend.int_shape(y_pred)[1:3])
     dims = tf.keras.backend.reshape(dims,(1,1,1,1,2))
     # anchors tensor
+    #print(len(ANCHORS))
     anchors = np.array(ANCHORS)
     anchors = anchors.reshape(len(anchors) // 2, 2)
     # pred_xy and pred_wh shape (m, GRID_W, GRID_H, Anchors, 2)
@@ -147,8 +143,8 @@ class YoloLoss(object):
         total_coord_loss = self.coord_loss(y_true, y_pred)
         total_obj_loss = self.obj_loss(y_true, y_pred)
         total_class_loss = self.class_loss(y_true, y_pred)
-        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
-        loss = total_coord_loss + total_obj_loss + total_class_loss
+        sub_loss = [total_obj_loss, total_class_loss, 100*total_coord_loss]
+        loss = 100*total_coord_loss + total_obj_loss + total_class_loss
 
         if info:
             print('conf_loss   : {:.4f}'.format(total_obj_loss))

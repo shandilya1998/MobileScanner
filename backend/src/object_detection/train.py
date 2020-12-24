@@ -73,7 +73,7 @@ def run(
     print(model.summary())
 
     train_dataset = None
-    train_dataset= get_dataset(train_image_folder, train_annot_folder, LABELS, BATCH_SIZE, compute)
+    train_dataset= get_dataset(train_image_folder, train_annot_folder, LABELS, BATCH_SIZE, compute_iou)
 
     val_dataset = None
     val_dataset= get_dataset(val_image_folder, val_annot_folder, LABELS, BATCH_SIZE)
@@ -83,13 +83,13 @@ def run(
     test_dataset(train_dataset)
 
     """## 1.2. Data augmentation"""
-    aug_train_dataset = augmentation_generator(train_dataset)
+    #aug_train_dataset = augmentation_generator(train_dataset)
 
-    test_dataset(aug_train_dataset)
+    #test_dataset(aug_train_dataset)
 
     # Ground true generator
 
-    train_gen = ground_truth_generator(aug_train_dataset)
+    train_gen = ground_truth_generator(train_dataset)
     val_gen = ground_truth_generator(val_dataset)
 
     def display(file, model, score_threshold, iou_threshold, step = EPOCHS):
@@ -114,14 +114,15 @@ def run(
         # post prediction process
         # grid coords tensor
         coord_x = tf.cast(tf.reshape(tf.tile(tf.range(GRID_W), [GRID_H]), (1, GRID_H, GRID_W, 1, 1)), tf.float32)
-        coord_y = tf.transpose(coord_x, (0,2,1,3,4))
-        coords = tf.tile(tf.concat([coord_x,coord_y], -1), [BATCH_SIZE, 1, 1, 5, 1])
+        coord_y = tf.cast(tf.reshape(tf.tile(tf.range(GRID_H), [GRID_W]), (1, GRID_W, GRID_H, 1, 1)), tf.float32)
+        coord_y = tf.transpose(coord_y, (0,2,1,3,4))
+        coords = tf.tile(tf.concat([coord_x,coord_y], -1), [BATCH_SIZE, 1, 1, BOX, 1])
         dims = tf.keras.backend.cast_to_floatx(tf.keras.backend.int_shape(y_pred)[1:3])
         dims = tf.keras.backend.reshape(dims,(1,1,1,1,2))
         # anchors tensor
         anchors = np.array(ANCHORS)
         anchors = anchors.reshape(len(anchors) // 2, 2)
-        # pred_xy and pred_wh shape (m, GRID_W, GRID_H, Anchors, 2)
+        # pred_xy and pred_wh shape (m, GRID_H, GRID_W, Anchors, 2)
         pred_xy = tf.keras.backend.sigmoid(y_pred[:,:,:,:,0:2])
         pred_xy = (pred_xy + coords)
         pred_xy = pred_xy / dims
@@ -153,9 +154,6 @@ def run(
         scores = tf.boolean_mask(box_class_scores, prediction_mask)
         classes = tf.boolean_mask(box_classes, prediction_mask)
 
-        # Scale box to image shape
-        boxes = boxes * IMAGE_H
-
         # Non Max Supression
         selected_idx = tf.image.non_max_suppression(boxes, scores, 50, iou_threshold=iou_threshold)
         boxes = tf.keras.backend.gather(boxes, selected_idx)
@@ -170,10 +168,10 @@ def run(
         ax1.set_title('Detected objects count : {}'.format(count_detected))
         for i in range(count_detected):
             box = boxes[i,...]
-            x = box[0]*1024/IMAGE_W
-            y = box[1]*1024/IMAGE_H
-            w = (box[2] - box[0])*1024/IMAGE_W
-            h = (box[3] - box[1])*1024/IMAGE_H
+            x = box[0]*IMAGE_W
+            y = box[1]*IMAGE_H
+            w = (box[2] - box[0])*IMAGE_W
+            h = (box[3] - box[1])*IMAGE_H
             classe = classes[i].numpy()
             if classe == 0:
                 color = (0, 1, 0)

@@ -120,7 +120,7 @@ def get_mobilenet_model(plot_model=False):
         strides=(1, 1),
         name = 'conv_9'
     )(x)
-    output = tf.keras.layers.Reshape((GRID_W, GRID_H, BOX, 4 + 1 + CLASS))(x)
+    output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
     model = tf.keras.models.Model(inputs, output)
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='mobilenet_model.png', show_shapes=True)

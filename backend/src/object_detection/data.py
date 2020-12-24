@@ -99,13 +99,13 @@ def parse_annotation(ann_dir, img_dir, labels):
                         annot_count += 1
                         for dim in list(attr):
                             if 'xmin' in dim.tag:
-                                box[0] = math.floor(float(dim.text)*IMAGE_W/1024)
+                                box[0] = math.floor(float(dim.text))
                             if 'ymin' in dim.tag:
-                                box[1] = math.floor(float(dim.text)*IMAGE_H/1024)
+                                box[1] = math.floor(float(dim.text))
                             if 'xmax' in dim.tag:
-                                box[2] = math.ceil(float(dim.text)*IMAGE_W/1024)
+                                box[2] = math.ceil(float(dim.text))
                             if 'ymax' in dim.tag:
-                                box[3] = math.ceil(float(dim.text)*IMAGE_H/1024)
+                                box[3] = math.ceil(float(dim.text))
                 boxes.append(np.asarray(box))
         
         """
@@ -114,6 +114,80 @@ def parse_annotation(ann_dir, img_dir, labels):
             break
         """
  
+        annots.append(np.asarray(boxes))
+        
+
+        if annot_count > max_annot:
+            max_annot = annot_count
+           
+    # Rectify annotations boxes : len -> max_annot
+    imgs_name = np.array(imgs_name)
+    true_boxes = np.zeros((imgs_name.shape[0], max_annot, 5))
+    for idx, boxes in enumerate(annots):
+        true_boxes[idx, :boxes.shape[0], :5] = boxes
+        
+    return imgs_name, true_boxes, max_annot
+
+def parse_annotation_top(ann_dir, img_dir, labels):
+    '''
+    Parse XML files in PASCAL VOC format.
+    
+    Parameters
+    ----------
+    - ann_dir : annotations files directory
+    - img_dir : images files directory
+    - labels : labels list
+    
+    Returns
+    -------
+    - imgs_name : numpy array of images files path (shape : images count, 1)
+    - true_boxes : numpy array of annotations for each image (shape : image count, max annotation count, 5)
+        annotation format : xmin, ymin, xmax, ymax, class
+        xmin, ymin, xmax, ymax : image unit (pixel)
+        class = label index
+    '''
+ 
+    max_annot = 0
+    imgs_name = []
+    annots = []
+    
+    # Parse file
+    for ann in sorted(os.listdir(ann_dir)):
+        annot_count = 0
+        boxes = []
+        tree = ET.parse(ann_dir + ann)
+        for elem in tree.iter():
+            if 'filename' in elem.tag:
+                imgs_name.append(os.path.join(img_dir, elem.text))
+            if 'width' in elem.tag:
+                w = int(elem.text)
+            if 'height' in elem.tag:
+                h = int(elem.text)
+            if 'object' in elem.tag or 'part' in elem.tag:
+                for child in elem:
+                    if elem.find('name').text in labels:
+                        box = np.zeros((5))
+                        for attr in list(elem):
+                            if 'name' in attr.tag:
+                                box[4] = labels.index(attr.text) + 1 # 0:label for no bounding box
+                            if 'bndbox' in attr.tag:
+                                annot_count += 1
+                                for dim in list(attr):
+                                    if 'xmin' in dim.tag:
+                                        box[0] = math.floor(float(dim.text))
+                                    if 'ymin' in dim.tag:
+                                        box[1] = math.floor(float(dim.text))
+                                    if 'xmax' in dim.tag:
+                                        box[2] = math.ceil(float(dim.text))
+                                    if 'ymax' in dim.tag:
+                                        box[3] = math.ceil(float(dim.text))
+                        boxes.append(np.asarray(box))
+        """
+        if w != IMAGE_W or h != IMAGE_H :
+            print('Image size error')
+            break
+        """
+
         annots.append(np.asarray(boxes))
         
 
@@ -137,7 +211,7 @@ def parse_function(img_obj, true_boxes):
     x_img = tf.image.resize(x_img, (IMAGE_H, IMAGE_W))
     return x_img, true_boxes
 
-def get_dataset(img_dir, ann_dir, labels, batch_size, compute = False):
+def get_dataset(img_dir, ann_dir, labels, batch_size, compute = False, top = True):
     '''
     Create a YOLO dataset
     
@@ -156,10 +230,19 @@ def get_dataset(img_dir, ann_dir, labels, batch_size, compute = False):
         batch[1] : annotations : tensor (shape : batch_size, max annot, 5)
     Note : image pixel values = pixels value / 255. channels : RGB
     '''
-    imgs_name, bbox, max_annot = parse_annotation(ann_dir, img_dir, LABELS)
+    imgs_name = None
+    bbox = None
+    max_annot = None
+    if top:
+        imgs_name, bbox, max_annot = parse_annotation_top(ann_dir, img_dir, LABELS)
+    else:
+        imgs_name, bbox, max_annot = parse_annotation(ann_dir, img_dir, LABELS)
     visualize_classes(imgs_name, bbox, max_annot)
     if compute:
+        global ANCHORS
         ANCHORS = compute_anchors(imgs_name, bbox, max_annot)
+        print(ANCHORS)
+        print(len(ANCHORS))
     dataset = tf.data.Dataset.from_tensor_slices((imgs_name, bbox))
     dataset = dataset.shuffle(len(imgs_name))
     dataset = dataset.repeat()
@@ -226,8 +309,7 @@ def augmentation_generator(dataset):
             ia_boxes.append(ia.BoundingBoxesOnImage(ia_bbs, shape=(IMAGE_W, IMAGE_H)))
         # data augmentation
         seq = iaa.Sequential([
-            iaa.Rot90((0, 3), keep_size=False),
-            iaa.Multiply((0.4, 1.6)), # change brightness
+            #iaa.Multiply((0.4, 1.6)), # change brightness
             #iaa.ContrastNormalization((0.5, 1.5)),
             iaa.Affine(translate_px={"x": (-100,100), "y": (-100,100)}, scale=(0.7, 1.30))
             ])

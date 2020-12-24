@@ -17,9 +17,9 @@ def process_true_boxes(true_boxes, anchors, image_width, image_height):
     
     Returns
     -------
-    - detector_mask : array, shape (GRID_W, GRID_H, anchors_count, 1)
+    - detector_mask : array, shape (GRID_H, GRID_W, anchors_count, 1)
         1 if bounding box detected by grid cell, else 0
-    - matching_true_boxes : array, shape (GRID_W, GRID_H, anchors_count, 5)
+    - matching_true_boxes : array, shape (GRID_H, GRID_W, anchors_count, 5)
         Contains adjusted coords of bounding box in YOLO format
     -true_boxes_grid : array, same shape than true_boxes (max_annot, 5),
         format : x, y, w, h, c, coords unit : grid cell
@@ -32,14 +32,15 @@ def process_true_boxes(true_boxes, anchors, image_width, image_height):
     c : label index
     '''
     
-    scale = IMAGE_W / GRID_W # scale = 32
-    
+    scale_w = IMAGE_W / GRID_W # scale = 32
+    scale_h = IMAGE_H / GRID_H
+
     anchors_count = len(anchors) // 2
     anchors = np.array(anchors)
     anchors = anchors.reshape(len(anchors) // 2, 2)
     
-    detector_mask = np.zeros((GRID_W, GRID_H, anchors_count, 1))
-    matching_true_boxes = np.zeros((GRID_W, GRID_H, anchors_count, 5))
+    detector_mask = np.zeros((GRID_H, GRID_W, anchors_count, 1))
+    matching_true_boxes = np.zeros((GRID_H, GRID_W, anchors_count, 5))
     
     # convert true_boxes numpy array -> tensor
     true_boxes = true_boxes.numpy()
@@ -49,11 +50,11 @@ def process_true_boxes(true_boxes, anchors, image_width, image_height):
     # convert bounding box coords and localize bounding box
     for i, box in enumerate(true_boxes):
         # convert box coords to x, y, w, h and convert to grids coord
-        w = (box[2] - box[0]) / scale
-        h = (box[3] - box[1]) / scale
-        x = ((box[0] + box[2]) / 2) / scale
-        y = ((box[1] + box[3]) / 2) / scale
-        true_boxes_grid[i,...] = np.array([x, y, w, h, box[4]])
+        w = (box[2] - box[0]) / scale_w
+        h = (box[3] - box[1]) / scale_h
+        x = ((box[0] + box[2]) / 2) / scale_w
+        y = ((box[1] + box[3]) / 2) / scale_h
+        true_boxes_grid[i,...] = np.array([y, x, h, w, box[4]])
         if w * h > 0: # box exists
             # calculate iou between box and each anchors and find best anchors
             best_iou = 0
@@ -71,7 +72,7 @@ def process_true_boxes(true_boxes, anchors, image_width, image_height):
                 x_coord = np.floor(x).astype('int')
                 y_coord = np.floor(y).astype('int')
                 detector_mask[y_coord, x_coord, best_anchor] = 1
-                yolo_box = np.array([x, y, w, h, box[4]])
+                yolo_box = np.array([y, x, h, w, box[4]])
                 matching_true_boxes[y_coord, x_coord, best_anchor] = yolo_box
     return matching_true_boxes, detector_mask, true_boxes_grid
 
@@ -89,11 +90,11 @@ def ground_truth_generator(dataset):
     Returns
     -------
     - imgs : images to predict. tensor (shape : batch_size, IMAGE_H, IMAGE_W, 3)
-    - detector_mask : tensor, shape (batch, size, GRID_W, GRID_H, anchors_count, 1)
+    - detector_mask : tensor, shape (batch, size, GRID_H, GRID_W, anchors_count, 1)
         1 if bounding box detected by grid cell, else 0
-    - matching_true_boxes : tensor, shape (batch_size, GRID_W, GRID_H, anchors_count, 5)
+    - matching_true_boxes : tensor, shape (batch_size, GRID_H, GRID_W, anchors_count, 5)
         Contains adjusted coords of bounding box in YOLO format
-    - class_one_hot : tensor, shape (batch_size, GRID_W, GRID_H, anchors_count, class_count)
+    - class_one_hot : tensor, shape (batch_size, GRID_H, GRID_W, anchors_count, class_count)
         One hot representation of bounding box label
     - true_boxes_grid : annotations : tensor (shape : batch_size, max annot, 5)
         true_boxes format : x, y, w, h, c, coords unit : grid cell
@@ -130,4 +131,3 @@ def ground_truth_generator(dataset):
         
         batch = (imgs, detector_mask, matching_true_boxes, class_one_hot, true_boxes_grid)
         yield batch
-

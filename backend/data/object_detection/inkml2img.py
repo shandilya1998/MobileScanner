@@ -19,7 +19,7 @@ f = 'IAMonDo-db-1.0/078.inkml'
     -   Convert force values into image intensity values
 """
 
-SIZE = (1024, 1024)
+SIZE = (768, 1024)
 
 def get_all_traces(doc_namespace, root):
     traces_all = []
@@ -162,16 +162,16 @@ def get_bounding_box(traces, coords_all):
 def create_bndbox(ob, min_x, max_x, min_y, max_y, lower):
     bndbox = ET.Element('bndbox')
     xmin = ET.Element('xmin')
-    xmin.text = str(math.ceil(min_x) - lower[0])
+    xmin.text = str(math.ceil(min_x))
     bndbox.append(xmin)
     xmax = ET.Element('xmax')
-    xmax.text = str(math.ceil(max_x) - lower[0])
+    xmax.text = str(math.ceil(max_x))
     bndbox.append(xmax)
     ymin = ET.Element('ymin')
-    ymin.text = str(math.ceil(min_y) - lower[1])
+    ymin.text = str(math.ceil(min_y))
     bndbox.append(ymin)
     ymax = ET.Element('ymax')
-    ymax.text = str(math.ceil(max_y) - lower[1])
+    ymax.text = str(math.ceil(max_y))
     bndbox.append(ymax)
     ob.append(bndbox)
     return ob
@@ -585,14 +585,14 @@ def _plot(trace, coords, image, size):
                 y = 0
                 for i, values in enumerate(coord['coords']):
                     if i == 0 and len(coord['coords']) == 1:
-                            x = math.ceil(values[0]) - size[0]
-                            y = math.ceil(values[1]) - size[1]
+                            x = math.ceil(values[0])
+                            y = math.ceil(values[1])
                             image[x, y] = 0
                     elif i!=0:
-                        rr, cc = draw.line(math.ceil(values[0]) - size[0], math.ceil(values[1]) - size[1], x, y)
+                        rr, cc = draw.line(math.ceil(values[0]), math.ceil(values[1]), x, y)
                         image[rr, cc] = 0
-                    x = math.ceil(values[0]) - size[0]
-                    y = math.ceil(values[1]) - size[1]
+                    x = math.ceil(values[0])
+                    y = math.ceil(values[1])
         return image
     else:
         for child in trace['traces']:
@@ -600,7 +600,7 @@ def _plot(trace, coords, image, size):
         return image
 
 def plot(doc, coords_all, name, folder, min_x, max_x, min_y, max_y):
-    size = (math.ceil(max_x) - math.floor(min_x)+1, math.ceil(max_y) - math.floor(min_y)+1)
+    size = (math.ceil(max_x), math.ceil(max_y))
     image = np.zeros(SIZE, dtype=np.uint8)
     image.fill(255)
     for child in doc:
@@ -624,8 +624,6 @@ def transform_data(folder):
         #print(f)
         traces_all = parse_file(f)
         coords_all, min_x, max_x, min_y, max_y = get_coords_all(traces_all)
-        size = (math.ceil(max_x) - math.floor(min_x)+1, math.ceil(max_y) - math.floor(min_y)+1)
-        
         annotation = ET.Element('annotation')
         dr = ET.Element('folder')
         dr.text = 'texts'
@@ -635,9 +633,9 @@ def transform_data(folder):
         annotation.append(dr)
         size_ = ET.Element('size')
         height = ET.SubElement(size_, 'height')
-        height.text = str(size[0])
+        height.text = str(SIZE[0])
         width = ET.SubElement(size_, 'width')
-        width.text = str(size[1])
+        width.text = str(SIZE[1])
         annotation.append(size_)
         tree = ET.ElementTree(element = annotation)
         root = get_tree_root(f)
