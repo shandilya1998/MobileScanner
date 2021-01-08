@@ -111,7 +111,7 @@ def get_mobilenet_model(plot_model=False):
     x = _inverted_residual_block(x, 160, (3, 3), t=6, strides=2, n=3)
     x = _inverted_residual_block(x, 320, (3, 3), t=6, strides=1, n=1)
 
-    x = _conv_block(x, 1280, (1, 1), strides=(1, 1))
+    features = _conv_block(x, 1280, (1, 1), strides=(1, 1))
     x = tf.keras.layers.Conv2D(
         BOX * (4 + 1 + CLASS),
         (3, 3),
@@ -119,9 +119,9 @@ def get_mobilenet_model(plot_model=False):
         padding='same',
         strides=(1, 1),
         name = 'conv_9'
-    )(x)
+    )(features)
     output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
-    model = tf.keras.models.Model(inputs, output)
+    model = tf.keras.models.Model(inputs = inputs, outputs = [output, features])
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='mobilenet_model.png', show_shapes=True)
 

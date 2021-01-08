@@ -1,10 +1,7 @@
-import tensorflow as tf
-import numpy as np
 from src.object_detection.constants import *
+import tensorflow as tf
 
-"""# 1. Define YOLO model"""
-
-def get_yolov2_model(plot_model=False):
+def get_depthwise_yolov2_model(plot_model=False):
 # Custom Keras layer
     class SpaceToDepth(tf.keras.layers.Layer):
 
@@ -29,76 +26,74 @@ def get_yolov2_model(plot_model=False):
                       input_shape[3] * self.block_size **2)
             return tf.TensorShape(shape)
 
-    # Yolo model (thanks to https://github.com/experiencor/keras-yolo2)
-
     input_image = tf.keras.layers.Input((IMAGE_H, IMAGE_W, NUM_C), dtype='float32')
 
     # Layer 1
-    x = tf.keras.layers.Conv2D(32, (3,3), strides=(1,1), padding='same', name='conv_1', use_bias=False)(input_image)
+    x = tf.keras.layers.SeparableConv2D(32, (3,3), strides=(1,1), padding='same', name='conv_1', use_bias=False)(input_image)
     x = tf.keras.layers.BatchNormalization(name='norm_1')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
     # Layer 2
-    x = tf.keras.layers.Conv2D(64, (3,3), strides=(1,1), padding='same', name='conv_2', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(64, (3,3), strides=(1,1), padding='same', name='conv_2', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_2')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
     # Layer 3
-    x = tf.keras.layers.Conv2D(128, (3,3), strides=(1,1), padding='same', name='conv_3', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(128, (3,3), strides=(1,1), padding='same', name='conv_3', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_3')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 4
-    x = tf.keras.layers.Conv2D(64, (1,1), strides=(1,1), padding='same', name='conv_4', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(64, (1,1), strides=(1,1), padding='same', name='conv_4', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_4')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 5
-    x = tf.keras.layers.Conv2D(128, (3,3), strides=(1,1), padding='same', name='conv_5', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(128, (3,3), strides=(1,1), padding='same', name='conv_5', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_5')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
     # Layer 6
-    x = tf.keras.layers.Conv2D(256, (3,3), strides=(1,1), padding='same', name='conv_6', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(256, (3,3), strides=(1,1), padding='same', name='conv_6', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_6')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 7
-    x = tf.keras.layers.Conv2D(128, (1,1), strides=(1,1), padding='same', name='conv_7', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(128, (1,1), strides=(1,1), padding='same', name='conv_7', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_7')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 8
-    x = tf.keras.layers.Conv2D(256, (3,3), strides=(1,1), padding='same', name='conv_8', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(256, (3,3), strides=(1,1), padding='same', name='conv_8', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_8')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
     # Layer 9
-    x = tf.keras.layers.Conv2D(512, (3,3), strides=(1,1), padding='same', name='conv_9', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(512, (3,3), strides=(1,1), padding='same', name='conv_9', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_9')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 10
-    x = tf.keras.layers.Conv2D(128, (1,1), strides=(1,1), padding='same', name='conv_10', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(128, (1,1), strides=(1,1), padding='same', name='conv_10', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_10')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 11
-    x = tf.keras.layers.Conv2D(512, (3,3), strides=(1,1), padding='same', name='conv_11', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(512, (3,3), strides=(1,1), padding='same', name='conv_11', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_11')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 12
-    x = tf.keras.layers.Conv2D(256, (1,1), strides=(1,1), padding='same', name='conv_12', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(256, (1,1), strides=(1,1), padding='same', name='conv_12', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_12')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 13
-    x = tf.keras.layers.Conv2D(512, (3,3), strides=(1,1), padding='same', name='conv_13', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(512, (3,3), strides=(1,1), padding='same', name='conv_13', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_13')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
@@ -107,42 +102,42 @@ def get_yolov2_model(plot_model=False):
     x = tf.keras.layers.MaxPooling2D(pool_size=(2, 2))(x)
 
     # Layer 14
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_14', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_14', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_14')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 15
-    x = tf.keras.layers.Conv2D(512, (1,1), strides=(1,1), padding='same', name='conv_15', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(512, (1,1), strides=(1,1), padding='same', name='conv_15', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_15')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 16
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_16', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_16', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_16')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 17
-    x = tf.keras.layers.Conv2D(512, (1,1), strides=(1,1), padding='same', name='conv_17', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(512, (1,1), strides=(1,1), padding='same', name='conv_17', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_17')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 18
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_18', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_18', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_18')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 19
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_19', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_19', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_19')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 20
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_20', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_20', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_20')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
 
     # Layer 21
-    skip_connection = tf.keras.layers.Conv2D(64, (1,1), strides=(1,1), padding='same', name='conv_21', use_bias=False)(skip_connection)
+    skip_connection = tf.keras.layers.SeparableConv2D(64, (1,1), strides=(1,1), padding='same', name='conv_21', use_bias=False)(skip_connection)
     skip_connection = tf.keras.layers.BatchNormalization(name='norm_21')(skip_connection)
     skip_connection = tf.keras.layers.LeakyReLU(alpha=0.1)(skip_connection)
 
@@ -151,16 +146,16 @@ def get_yolov2_model(plot_model=False):
     x = tf.keras.layers.concatenate([skip_connection, x])
 
     # Layer 22
-    x = tf.keras.layers.Conv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_22', use_bias=False)(x)
+    x = tf.keras.layers.SeparableConv2D(1024, (3,3), strides=(1,1), padding='same', name='conv_22', use_bias=False)(x)
     x = tf.keras.layers.BatchNormalization(name='norm_22')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
     features = tf.keras.layers.Dropout(0.3)(x) # add dropout
 
     # Layer 23
-    x = tf.keras.layers.Conv2D(BOX * (4 + 1 + CLASS), (1,1), strides=(1,1), padding='same', name='conv_23')(features)
+    x = tf.keras.layers.SeparableConv2D(BOX * (4 + 1 + CLASS), (1,1), strides=(1,1), padding='same', name='conv_23')(features)
     output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
 
-    model = tf.keras.models.Model(input_image, [output, features])
+    model = tf.keras.models.Model(input_image, output)
 
     """# 2. Load YOLO pretrained weigts"""
 

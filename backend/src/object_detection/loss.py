@@ -4,6 +4,7 @@ Yolo v2 loss function.
 from src.object_detection.constants import *
 import numpy as np
 import tensorflow as tf
+import tensorflow_addons as tfa
 
 def calculate_ious(A1, A2, use_iou=True):
 
@@ -143,8 +144,8 @@ class YoloLoss(object):
         total_coord_loss = self.coord_loss(y_true, y_pred)
         total_obj_loss = self.obj_loss(y_true, y_pred)
         total_class_loss = self.class_loss(y_true, y_pred)
-        sub_loss = [total_obj_loss, total_class_loss, 100*total_coord_loss]
-        loss = 100*total_coord_loss + total_obj_loss + total_class_loss
+        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
+        loss = total_coord_loss + total_obj_loss + total_class_loss
 
         if info:
             print('conf_loss   : {:.4f}'.format(total_obj_loss))
@@ -154,5 +155,265 @@ class YoloLoss(object):
             print('total loss  : {:.4f}'.format(loss))
 
         return  loss, sub_loss
+
+class YoloFocalLoss(object):
+
+    def __init__(self):
+        self.__name__ = 'yolo_loss'
+        self.iou_filter = 0.6
+        self.readjust_obj_score = False
+
+        self.lambda_coord = LAMBDA_COORD
+        self.lambda_noobj = LAMBDA_NOOBJECT
+        self.lambda_obj = LAMBDA_OBJECT
+        self.lambda_class = LAMBDA_CLASS
+
+
+    def coord_loss(self, y_true, y_pred):
+        pred_xy = y_pred[:,:,:,:,0:2]
+        pred_wh = y_pred[:,:,:,:,2:4]
+        detector_mask = tf.expand_dims(y_pred[:,:,:,:,4], -1)
+        nb_detector_mask = tf.keras.backend.sum(tf.cast(detector_mask > 0.0, tf.float32))
+        xy_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(y_true[...,:2] - pred_xy)
+        ) / (nb_detector_mask + EPSILON)
+        wh_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(tf.keras.backend.sqrt(y_true[...,2:4]) - tf.keras.backend.sqrt(pred_wh))
+        ) / (nb_detector_mask + EPSILON)
+
+        return xy_loss + wh_loss
+
+
+    def obj_loss(self, y_true, y_pred):
+
+        b_o = calculate_ious(y_true, y_pred, use_iou=self.readjust_obj_score)
+        b_o_pred = y_pred[..., 4]
+
+        num_true_labels = GRID_H*GRID_W*BOX
+        y_true_p = tf.keras.backend.reshape(y_true[..., :4], shape=(y_true.shape[0], 1, 1, 1, num_true_labels, 4))
+        iou_scores_buff = calculate_ious(y_true_p, tf.keras.backend.expand_dims(y_pred, axis=4))
+        best_ious = tf.keras.backend.max(iou_scores_buff, axis=4)
+
+        indicator_noobj = tf.keras.backend.cast(best_ious < self.iou_filter, np.float32) * (1 - y_true[..., 4]) * self.lambda_noobj
+        indicator_obj = y_true[..., 4] * self.lambda_obj
+        indicator_o = indicator_obj + indicator_noobj
+
+        loss_obj = tf.keras.backend.sum(tf.keras.backend.square(b_o-b_o_pred) * indicator_o)#, axis=[1,2,3])
+
+        return loss_obj / 2
+
+
+    def class_loss(self, y_true, y_pred):
+        loss_class = tf.keras.backend.sum(tfa.losses.sigmoid_focal_crossentropy(y_true[..., 5:], y_pred[..., 5:]))
+        return loss_class
+    
+    def l_coord(self, y_true, y_pred_raw):
+        return self.coord_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_obj(self, y_true, y_pred_raw):
+        return self.obj_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_class(self, y_true, y_pred_raw):
+        return self.class_loss(y_true, _transform_netout(y_pred_raw))
+
+    def __call__(self, y_true, y_pred_raw, info = False):
+
+        y_pred = _transform_netout(y_pred_raw)
+
+        total_coord_loss = self.coord_loss(y_true, y_pred)
+        total_obj_loss = self.obj_loss(y_true, y_pred)
+        total_class_loss = self.class_loss(y_true, y_pred)
+        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
+        loss = total_coord_loss + total_obj_loss + total_class_loss
+
+        if info:
+            print('conf_loss   : {:.4f}'.format(total_obj_loss))
+            print('class_loss  : {:.4f}'.format(total_class_loss))
+            print('coord_loss  : {:.4f}'.format(total_coord_loss))
+            print('--------------------')
+            print('total loss  : {:.4f}'.format(loss))
+
+        return  loss, sub_loss
+
+def calculate_gious(A1, A2, use_iou=True):
+
+    if not use_iou:
+        return A1[..., 4]
+
+    def process_boxes(A):
+        # ALign x-w, y-h
+        A_xy = A[..., 0:2]
+        A_wh = A[..., 2:4]
+        
+        A_wh_half = A_wh / 2.
+        # Get x_min, y_min
+        A_mins = A_xy - A_wh_half
+        # Get x_max, y_max
+        A_maxes = A_xy + A_wh_half
+        
+        return A_mins, A_maxes, A_wh
+    
+    # Process two sets
+    A2_mins, A2_maxes, A2_wh = process_boxes(A2)
+    A1_mins, A1_maxes, A1_wh = process_boxes(A1)
+    A1 = tf.concat([A1_mins, A1_maxes], -1)
+    A2 = tf.concat([A2_mins, A2_maxes], -1)
+    giou = tfa.losses.giou_loss(A1, A2)
+    return giou
+
+class YoloGIOULoss(object):
+
+    def __init__(self):
+        self.__name__ = 'yolo_loss'
+        self.iou_filter = 0.6
+        self.readjust_obj_score = False
+
+        self.lambda_coord = LAMBDA_COORD
+        self.lambda_noobj = LAMBDA_NOOBJECT
+        self.lambda_obj = LAMBDA_OBJECT
+        self.lambda_class = LAMBDA_CLASS
+
+
+    def coord_loss(self, y_true, y_pred):
+        pred_xy = y_pred[:,:,:,:,0:2]
+        pred_wh = y_pred[:,:,:,:,2:4]
+        detector_mask = tf.expand_dims(y_pred[:,:,:,:,4], -1)
+        nb_detector_mask = tf.keras.backend.sum(tf.cast(detector_mask > 0.0, tf.float32))
+        xy_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(y_true[...,:2] - pred_xy)
+        ) / (nb_detector_mask + EPSILON)
+        wh_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(tf.keras.backend.sqrt(y_true[...,2:4]) - tf.keras.backend.sqrt(pred_wh))
+        ) / (nb_detector_mask + EPSILON)
+
+        return xy_loss + wh_loss
+
+
+    def obj_loss(self, y_true, y_pred):
+        b_o = calculate_gious(y_true, y_pred, use_iou=self.readjust_obj_score)
+        b_o_pred = y_pred[..., 4]
+
+        num_true_labels = GRID_H*GRID_W*BOX
+        y_true_p = tf.keras.backend.reshape(y_true[..., :4], shape=(y_true.shape[0], 1, 1, 1, num_true_labels, 4))
+        iou_scores_buff = calculate_gious(y_true_p, tf.keras.backend.expand_dims(y_pred, axis=4))
+        best_ious = tf.keras.backend.max(iou_scores_buff, axis=4)
+
+        indicator_noobj = tf.keras.backend.cast(best_ious < self.iou_filter, np.float32) * (1 - y_true[..., 4]) * self.lambda_noobj
+        indicator_obj = y_true[..., 4] * self.lambda_obj
+        indicator_o = indicator_obj + indicator_noobj
+
+        loss_obj = tf.keras.backend.sum(tf.keras.backend.square(b_o-b_o_pred) * indicator_o)#, axis=[1,2,3])
+
+        return loss_obj / 2
+
+    def class_loss(self, y_true, y_pred):
+        loss_class = tf.keras.backend.sum(tf.keras.backend.categorical_crossentropy(y_true[..., 5:], y_pred[..., 5:]))
+        return loss_class
+    
+    def l_coord(self, y_true, y_pred_raw):
+        return self.coord_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_obj(self, y_true, y_pred_raw):
+        return self.obj_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_class(self, y_true, y_pred_raw):
+        return self.class_loss(y_true, _transform_netout(y_pred_raw))
+
+    def __call__(self, y_true, y_pred_raw, info = False):
+
+        y_pred = _transform_netout(y_pred_raw)
+
+        total_coord_loss = self.coord_loss(y_true, y_pred)
+        total_obj_loss = self.obj_loss(y_true, y_pred)
+        total_class_loss = self.class_loss(y_true, y_pred)
+        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
+        loss = total_coord_loss + total_obj_loss + total_class_loss
+
+        if info:
+            print('conf_loss   : {:.4f}'.format(total_obj_loss))
+            print('class_loss  : {:.4f}'.format(total_class_loss))
+            print('coord_loss  : {:.4f}'.format(total_coord_loss))
+            print('--------------------')
+            print('total loss  : {:.4f}'.format(loss))
+
+        return  loss, sub_loss
+
+class YoloGIOUFocalLoss(object):
+
+    def __init__(self):
+        self.__name__ = 'yolo_loss'
+        self.iou_filter = 0.6
+        self.readjust_obj_score = False
+
+        self.lambda_coord = LAMBDA_COORD
+        self.lambda_noobj = LAMBDA_NOOBJECT
+        self.lambda_obj = LAMBDA_OBJECT
+        self.lambda_class = LAMBDA_CLASS
+
+
+    def coord_loss(self, y_true, y_pred):
+        pred_xy = y_pred[:,:,:,:,0:2]
+        pred_wh = y_pred[:,:,:,:,2:4]
+        detector_mask = tf.expand_dims(y_pred[:,:,:,:,4], -1)
+        nb_detector_mask = tf.keras.backend.sum(tf.cast(detector_mask > 0.0, tf.float32))
+        xy_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(y_true[...,:2] - pred_xy)
+        ) / (nb_detector_mask + EPSILON)
+        wh_loss = self.lambda_coord * tf.keras.backend.sum(
+            detector_mask * tf.keras.backend.square(tf.keras.backend.sqrt(y_true[...,2:4]) - tf.keras.backend.sqrt(pred_wh))
+        ) / (nb_detector_mask + EPSILON)
+
+        return xy_loss + wh_loss
+
+
+    def obj_loss(self, y_true, y_pred):
+        b_o = calculate_gious(y_true, y_pred, use_iou=self.readjust_obj_score)
+        b_o_pred = y_pred[..., 4]
+
+        num_true_labels = GRID_H*GRID_W*BOX
+        y_true_p = tf.keras.backend.reshape(y_true[..., :4], shape=(y_true.shape[0], 1, 1, 1, num_true_labels, 4))
+        iou_scores_buff = calculate_gious(y_true_p, tf.keras.backend.expand_dims(y_pred, axis=4))
+        best_ious = tf.keras.backend.max(iou_scores_buff, axis=4)
+
+        indicator_noobj = tf.keras.backend.cast(best_ious < self.iou_filter, np.float32) * (1 - y_true[..., 4]) * self.lambda_noobj
+        indicator_obj = y_true[..., 4] * self.lambda_obj
+        indicator_o = indicator_obj + indicator_noobj
+
+        loss_obj = tf.keras.backend.sum(tf.keras.backend.square(b_o-b_o_pred) * indicator_o)#, axis=[1,2,3])
+
+        return loss_obj / 2
+
+    def class_loss(self, y_true, y_pred):
+        loss_class = tf.keras.backend.sum(tfa.losses.sigmoid_focal_crossentropy(y_true[..., 5:], y_pred[..., 5:]))
+        return loss_class
+    
+    def l_coord(self, y_true, y_pred_raw):
+        return self.coord_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_obj(self, y_true, y_pred_raw):
+        return self.obj_loss(y_true, _transform_netout(y_pred_raw))
+
+    def l_class(self, y_true, y_pred_raw):
+        return self.class_loss(y_true, _transform_netout(y_pred_raw))
+
+    def __call__(self, y_true, y_pred_raw, info = False):
+
+        y_pred = _transform_netout(y_pred_raw)
+
+        total_coord_loss = self.coord_loss(y_true, y_pred)
+        total_obj_loss = self.obj_loss(y_true, y_pred)
+        total_class_loss = self.class_loss(y_true, y_pred)
+        sub_loss = [total_obj_loss, total_class_loss, total_coord_loss]
+        loss = total_coord_loss + total_obj_loss + total_class_loss
+
+        if info:
+            print('conf_loss   : {:.4f}'.format(total_obj_loss))
+            print('class_loss  : {:.4f}'.format(total_class_loss))
+            print('coord_loss  : {:.4f}'.format(total_coord_loss))
+            print('--------------------')
+            print('total loss  : {:.4f}'.format(loss))
+
+        return  loss, sub_loss
+
 
 LOSS = YoloLoss()

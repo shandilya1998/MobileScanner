@@ -126,7 +126,7 @@ def get_tiny_yolo(plot_model = False):
     )(x)
     x = tf.keras.layers.BatchNormalization(name='norm_8')(x)
     x = tf.keras.layers.LeakyReLU(alpha=0.1)(x)
-    x = tf.keras.layers.MaxPooling2D(
+    features = tf.keras.layers.MaxPooling2D(
         pool_size=(2, 2),
         padding = 'same',
         strides = (1, 1)
@@ -139,9 +139,9 @@ def get_tiny_yolo(plot_model = False):
         padding='same',
         strides=(2, 2),
         name = 'conv_9'
-    )(x)
+    )(features)
     output = tf.keras.layers.Reshape((GRID_H, GRID_W, BOX, 4 + 1 + CLASS))(x)
-    model = tf.keras.Model(inputs = inp, outputs = output)
+    model = tf.keras.Model(inputs = inp, outputs = [output, features])
     if plot_model:
         tf.keras.utils.plot_model(model, to_file='tiny_yolo_model.png', show_shapes=True)
     return model
