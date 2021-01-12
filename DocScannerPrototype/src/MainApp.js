@@ -67,6 +67,7 @@ class MainApp extends Component{
         const exists = await RNFS.exists(appSharedDir);
         console.log(exists);
         if(!exists){
+            console.log('testt');
             await RNFS.mkdir(appSharedDir);
         } 
     }
