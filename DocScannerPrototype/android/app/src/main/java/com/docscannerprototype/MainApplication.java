@@ -1,5 +1,6 @@
 package com.docscannerprototype;
 //import com.rnfs.RNFSPackage;
+import com.reactlibraryocr.RNOCRPackage;
 import com.reactlibraryblurryimagecheck.RNBlurryImageCheckPackage;
 import com.reactlibrarycustomcrop.RNCustomCropPackage;
 import com.reactlibrarycustomimageview.RNCustomImageViewPackage;
@@ -37,6 +38,7 @@ public class MainApplication extends Application implements ReactApplication {
           packages.add(new RNBlurryImageCheckPackage());
           packages.add(new RNCustomCropPackage());
           packages.add(new RNCustomImageViewPackage());
+          packages.add(new RNOCRPackage());
           //packages.add(new RNFSPackage());
           return packages;
         }
