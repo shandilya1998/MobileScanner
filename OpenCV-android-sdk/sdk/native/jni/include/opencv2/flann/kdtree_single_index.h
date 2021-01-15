@@ -31,12 +31,12 @@
 #ifndef OPENCV_FLANN_KDTREE_SINGLE_INDEX_H_
 #define OPENCV_FLANN_KDTREE_SINGLE_INDEX_H_
 
-//! @cond IGNORED
-
 #include <algorithm>
 #include <map>
+#include <cassert>
 #include <cstring>
 
+#include "general.h"
 #include "nn_index.h"
 #include "matrix.h"
 #include "result_set.h"
@@ -87,7 +87,6 @@ public:
     {
         size_ = dataset_.rows;
         dim_ = dataset_.cols;
-        root_node_ = 0;
         int dim_param = get_param(params,"dim",-1);
         if (dim_param>0) dim_ = dim_param;
         leaf_max_size_ = get_param(params,"leaf_max_size",10);
@@ -114,7 +113,7 @@ public:
     /**
      * Builds the index
      */
-    void buildIndex() CV_OVERRIDE
+    void buildIndex()
     {
         computeBoundingBox(root_bbox_);
         root_node_ = divideTree(0, (int)size_, root_bbox_ );   // construct the tree
@@ -133,13 +132,13 @@ public:
         }
     }
 
-    flann_algorithm_t getType() const CV_OVERRIDE
+    flann_algorithm_t getType() const
     {
         return FLANN_INDEX_KDTREE_SINGLE;
     }
 
 
-    void saveIndex(FILE* stream) CV_OVERRIDE
+    void saveIndex(FILE* stream)
     {
         save_value(stream, size_);
         save_value(stream, dim_);
@@ -154,7 +153,7 @@ public:
     }
 
 
-    void loadIndex(FILE* stream) CV_OVERRIDE
+    void loadIndex(FILE* stream)
     {
         load_value(stream, size_);
         load_value(stream, dim_);
@@ -179,7 +178,7 @@ public:
     /**
      *  Returns size of index.
      */
-    size_t size() const CV_OVERRIDE
+    size_t size() const
     {
         return size_;
     }
@@ -187,7 +186,7 @@ public:
     /**
      * Returns the length of an index feature.
      */
-    size_t veclen() const CV_OVERRIDE
+    size_t veclen() const
     {
         return dim_;
     }
@@ -196,7 +195,7 @@ public:
      * Computes the inde memory usage
      * Returns: memory used by the index
      */
-    int usedMemory() const CV_OVERRIDE
+    int usedMemory() const
     {
         return (int)(pool_.usedMemory+pool_.wastedMemory+dataset_.rows*sizeof(int));  // pool memory and vind array memory
     }
@@ -210,13 +209,13 @@ public:
      * \param[in] knn Number of nearest neighbors to return
      * \param[in] params Search parameters
      */
-    void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params) CV_OVERRIDE
+    void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params)
     {
-        CV_Assert(queries.cols == veclen());
-        CV_Assert(indices.rows >= queries.rows);
-        CV_Assert(dists.rows >= queries.rows);
-        CV_Assert(int(indices.cols) >= knn);
-        CV_Assert(int(dists.cols) >= knn);
+        assert(queries.cols == veclen());
+        assert(indices.rows >= queries.rows);
+        assert(dists.rows >= queries.rows);
+        assert(int(indices.cols) >= knn);
+        assert(int(dists.cols) >= knn);
 
         KNNSimpleResultSet<DistanceType> resultSet(knn);
         for (size_t i = 0; i < queries.rows; i++) {
@@ -225,7 +224,7 @@ public:
         }
     }
 
-    IndexParams getParameters() const CV_OVERRIDE
+    IndexParams getParameters() const
     {
         return index_params_;
     }
@@ -239,7 +238,7 @@ public:
      *     vec = the vector for which to search the nearest neighbors
      *     maxCheck = the maximum number of restarts (in a best-bin-first manner)
      */
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams) CV_OVERRIDE
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams)
     {
         float epsError = 1+get_param(searchParams,"eps",0.0f);
 
@@ -459,7 +458,7 @@ private:
             DistanceType span = bbox[i].high-bbox[i].low;
             if (span>(DistanceType)((1-EPS)*max_span)) {
                 ElementType min_elem, max_elem;
-                computeMinMax(ind, count, (int)i, min_elem, max_elem);
+                computeMinMax(ind, count, cutfeat, min_elem, max_elem);
                 DistanceType spread = (DistanceType)(max_elem-min_elem);
                 if (spread>max_spread) {
                     cutfeat = (int)i;
@@ -546,19 +545,11 @@ private:
         /* If this is a leaf node, then do check and return. */
         if ((node->child1 == NULL)&&(node->child2 == NULL)) {
             DistanceType worst_dist = result_set.worstDist();
-            if (reorder_) {
-                for (int i=node->left; i<node->right; ++i) {
-                    DistanceType dist = distance_(vec, data_[i], dim_, worst_dist);
-                    if (dist<worst_dist) {
-                        result_set.addPoint(dist,vind_[i]);
-                    }
-                }
-            } else {
-                for (int i=node->left; i<node->right; ++i) {
-                    DistanceType dist = distance_(vec, data_[vind_[i]], dim_, worst_dist);
-                    if (dist<worst_dist) {
-                        result_set.addPoint(dist,vind_[i]);
-                    }
+            for (int i=node->left; i<node->right; ++i) {
+                int index = reorder_ ? i : vind_[i];
+                DistanceType dist = distance_(vec, data_[index], dim_, worst_dist);
+                if (dist<worst_dist) {
+                    result_set.addPoint(dist,vind_[i]);
                 }
             }
             return;
@@ -639,7 +630,5 @@ private:
 };   // class KDTree
 
 }
-
-//! @endcond
 
 #endif //OPENCV_FLANN_KDTREE_SINGLE_INDEX_H_

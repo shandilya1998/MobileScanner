@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_TRANSFORM_HPP
-#define OPENCV_CUDA_TRANSFORM_HPP
+#ifndef __OPENCV_CUDA_TRANSFORM_HPP__
+#define __OPENCV_CUDA_TRANSFORM_HPP__
 
 #include "common.hpp"
 #include "utility.hpp"
@@ -72,4 +72,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_TRANSFORM_HPP
+#endif // __OPENCV_CUDA_TRANSFORM_HPP__

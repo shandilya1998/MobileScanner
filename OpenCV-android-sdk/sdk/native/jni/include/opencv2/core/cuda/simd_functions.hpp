@@ -70,8 +70,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef OPENCV_CUDA_SIMD_FUNCTIONS_HPP
-#define OPENCV_CUDA_SIMD_FUNCTIONS_HPP
+#ifndef __OPENCV_CUDA_SIMD_FUNCTIONS_HPP__
+#define __OPENCV_CUDA_SIMD_FUNCTIONS_HPP__
 
 #include "common.hpp"
 
@@ -866,4 +866,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_SIMD_FUNCTIONS_HPP
+#endif // __OPENCV_CUDA_SIMD_FUNCTIONS_HPP__

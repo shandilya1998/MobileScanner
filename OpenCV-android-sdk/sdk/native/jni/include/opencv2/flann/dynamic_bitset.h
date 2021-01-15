@@ -35,8 +35,6 @@
 #ifndef OPENCV_FLANN_DYNAMIC_BITSET_H_
 #define OPENCV_FLANN_DYNAMIC_BITSET_H_
 
-//! @cond IGNORED
-
 #ifndef FLANN_USE_BOOST
 #  define FLANN_USE_BOOST 0
 #endif
@@ -61,7 +59,7 @@ class DynamicBitset
 public:
     /** default constructor
      */
-    DynamicBitset() : size_(0)
+    DynamicBitset()
     {
     }
 
@@ -157,7 +155,5 @@ private:
 } // namespace cvflann
 
 #endif
-
-//! @endcond
 
 #endif // OPENCV_FLANN_DYNAMIC_BITSET_H_

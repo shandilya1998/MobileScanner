@@ -9,12 +9,6 @@ android {
         targetSdkVersion 21
     }
 
-    android {
-        lintOptions {
-            abortOnError false
-        }
-    }
-
     buildTypes {
         release {
             minifyEnabled false

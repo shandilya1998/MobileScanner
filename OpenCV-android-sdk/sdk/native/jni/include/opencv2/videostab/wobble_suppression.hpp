@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_VIDEOSTAB_WOBBLE_SUPPRESSION_HPP
-#define OPENCV_VIDEOSTAB_WOBBLE_SUPPRESSION_HPP
+#ifndef __OPENCV_VIDEOSTAB_WOBBLE_SUPPRESSION_HPP__
+#define __OPENCV_VIDEOSTAB_WOBBLE_SUPPRESSION_HPP__
 
 #include <vector>
 #include "opencv2/core.hpp"
@@ -95,7 +95,7 @@ protected:
 class CV_EXPORTS NullWobbleSuppressor : public WobbleSuppressorBase
 {
 public:
-    virtual void suppress(int idx, const Mat &frame, Mat &result) CV_OVERRIDE;
+    virtual void suppress(int idx, const Mat &frame, Mat &result);
 };
 
 class CV_EXPORTS MoreAccurateMotionWobbleSuppressorBase : public WobbleSuppressorBase
@@ -113,7 +113,7 @@ protected:
 class CV_EXPORTS MoreAccurateMotionWobbleSuppressor : public MoreAccurateMotionWobbleSuppressorBase
 {
 public:
-    virtual void suppress(int idx, const Mat &frame, Mat &result) CV_OVERRIDE;
+    virtual void suppress(int idx, const Mat &frame, Mat &result);
 
 private:
     Mat_<float> mapx_, mapy_;
@@ -124,7 +124,7 @@ class CV_EXPORTS MoreAccurateMotionWobbleSuppressorGpu : public MoreAccurateMoti
 {
 public:
     void suppress(int idx, const cuda::GpuMat &frame, cuda::GpuMat &result);
-    virtual void suppress(int idx, const Mat &frame, Mat &result) CV_OVERRIDE;
+    virtual void suppress(int idx, const Mat &frame, Mat &result);
 
 private:
     cuda::GpuMat frameDevice_, resultDevice_;

@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_BORDER_INTERPOLATE_HPP
-#define OPENCV_CUDA_BORDER_INTERPOLATE_HPP
+#ifndef __OPENCV_CUDA_BORDER_INTERPOLATE_HPP__
+#define __OPENCV_CUDA_BORDER_INTERPOLATE_HPP__
 
 #include "saturate_cast.hpp"
 #include "vec_traits.hpp"
@@ -719,4 +719,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_BORDER_INTERPOLATE_HPP
+#endif // __OPENCV_CUDA_BORDER_INTERPOLATE_HPP__

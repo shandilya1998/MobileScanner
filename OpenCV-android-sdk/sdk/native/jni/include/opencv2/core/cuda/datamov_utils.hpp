@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_DATAMOV_UTILS_HPP
-#define OPENCV_CUDA_DATAMOV_UTILS_HPP
+#ifndef __OPENCV_CUDA_DATAMOV_UTILS_HPP__
+#define __OPENCV_CUDA_DATAMOV_UTILS_HPP__
 
 #include "common.hpp"
 
@@ -110,4 +110,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_DATAMOV_UTILS_HPP
+#endif // __OPENCV_CUDA_DATAMOV_UTILS_HPP__

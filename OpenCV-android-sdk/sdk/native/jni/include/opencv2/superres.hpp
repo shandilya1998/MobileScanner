@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_SUPERRES_HPP
-#define OPENCV_SUPERRES_HPP
+#ifndef __OPENCV_SUPERRES_HPP__
+#define __OPENCV_SUPERRES_HPP__
 
 #include "opencv2/core.hpp"
 #include "opencv2/superres/optical_flow.hpp"
@@ -50,7 +50,7 @@
   @defgroup superres Super Resolution
 
 The Super Resolution module contains a set of functions and classes that can be used to solve the
-problem of resolution enhancement. There are a few methods implemented, most of them are described in
+problem of resolution enhancement. There are a few methods implemented, most of them are descibed in
 the papers @cite Farsiu03 and @cite Mitzel09 .
 
  */
@@ -97,8 +97,8 @@ namespace cv
 
             @param frame Output result
              */
-            void nextFrame(OutputArray frame) CV_OVERRIDE;
-            void reset() CV_OVERRIDE;
+            void nextFrame(OutputArray frame);
+            void reset();
 
             /** @brief Clear all inner buffers.
             */
@@ -204,4 +204,4 @@ namespace cv
     }
 }
 
-#endif // OPENCV_SUPERRES_HPP
+#endif // __OPENCV_SUPERRES_HPP__

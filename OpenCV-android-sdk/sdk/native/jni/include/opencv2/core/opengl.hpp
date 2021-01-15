@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CORE_OPENGL_HPP
-#define OPENCV_CORE_OPENGL_HPP
+#ifndef __OPENCV_CORE_OPENGL_HPP__
+#define __OPENCV_CORE_OPENGL_HPP__
 
 #ifndef __cplusplus
 #  error opengl.hpp header must be compiled as C++
@@ -245,7 +245,7 @@ public:
 
     /** @brief Maps OpenGL buffer to CUDA device memory.
 
-    This operation doesn't copy data. Several buffer objects can be mapped to CUDA memory at a time.
+    This operatation doesn't copy data. Several buffer objects can be mapped to CUDA memory at a time.
 
     A mapped data store must be unmapped with ogl::Buffer::unmapDevice before its buffer object is used.
      */
@@ -558,10 +558,12 @@ by the call to mapGLBuffer() function.
  */
 CV_EXPORTS void unmapGLBuffer(UMat& u);
 
-//! @}
 }} // namespace cv::ogl
 
 namespace cv { namespace cuda {
+
+//! @addtogroup cuda
+//! @{
 
 /** @brief Sets a CUDA device and initializes it for the current thread with OpenGL interoperability.
 
@@ -570,6 +572,8 @@ This function should be explicitly called after OpenGL context creation and befo
 @ingroup core_opengl
  */
 CV_EXPORTS void setGlDevice(int device = 0);
+
+//! @}
 
 }}
 
@@ -722,4 +726,4 @@ bool cv::ogl::Arrays::empty() const
 
 //! @endcond
 
-#endif /* OPENCV_CORE_OPENGL_HPP */
+#endif /* __OPENCV_CORE_OPENGL_HPP__ */

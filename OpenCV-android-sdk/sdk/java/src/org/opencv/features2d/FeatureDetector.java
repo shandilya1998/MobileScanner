@@ -1,29 +1,23 @@
+
 //
 // This file is auto-generated. Please don't modify it!
 //
 package org.opencv.features2d;
 
+import java.lang.String;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfKeyPoint;
-import org.opencv.features2d.FeatureDetector;
 import org.opencv.utils.Converters;
 
 // C++: class javaFeatureDetector
-/**
- * @deprecated Please use direct instantiation of Feature2D classes
- */
-@Deprecated
+//javadoc: javaFeatureDetector
 public class FeatureDetector {
 
     protected final long nativeObj;
     protected FeatureDetector(long addr) { nativeObj = addr; }
 
-    public long getNativeObjAddr() { return nativeObj; }
-
-    // internal usage only
-    public static FeatureDetector __fromPtr__(long addr) { return new FeatureDetector(addr); }
 
     private static final int
             GRIDDETECTOR = 1000,
@@ -31,7 +25,6 @@ public class FeatureDetector {
             DYNAMICDETECTOR = 3000;
 
 
-    // C++: enum <unnamed>
     public static final int
             FAST = 1,
             STAR = 2,
@@ -84,83 +77,109 @@ public class FeatureDetector {
 
 
     //
-    // C++:  void cv::javaFeatureDetector::detect(Mat image, vector_KeyPoint& keypoints, Mat mask = Mat())
+    // C++:  bool empty()
     //
 
-    public void detect(Mat image, MatOfKeyPoint keypoints, Mat mask) {
+    //javadoc: javaFeatureDetector::empty()
+    public  boolean empty()
+    {
+        
+        boolean retVal = empty_0(nativeObj);
+        
+        return retVal;
+    }
+
+
+    //
+    // C++: static javaFeatureDetector* create(int detectorType)
+    //
+
+    //javadoc: javaFeatureDetector::create(detectorType)
+    public static FeatureDetector create(int detectorType)
+    {
+        
+        FeatureDetector retVal = new FeatureDetector(create_0(detectorType));
+        
+        return retVal;
+    }
+
+
+    //
+    // C++:  void detect(Mat image, vector_KeyPoint& keypoints, Mat mask = Mat())
+    //
+
+    //javadoc: javaFeatureDetector::detect(image, keypoints, mask)
+    public  void detect(Mat image, MatOfKeyPoint keypoints, Mat mask)
+    {
         Mat keypoints_mat = keypoints;
         detect_0(nativeObj, image.nativeObj, keypoints_mat.nativeObj, mask.nativeObj);
+        
+        return;
     }
 
-    public void detect(Mat image, MatOfKeyPoint keypoints) {
+    //javadoc: javaFeatureDetector::detect(image, keypoints)
+    public  void detect(Mat image, MatOfKeyPoint keypoints)
+    {
         Mat keypoints_mat = keypoints;
         detect_1(nativeObj, image.nativeObj, keypoints_mat.nativeObj);
+        
+        return;
     }
 
 
     //
-    // C++:  void cv::javaFeatureDetector::detect(vector_Mat images, vector_vector_KeyPoint& keypoints, vector_Mat masks = std::vector<Mat>())
+    // C++:  void detect(vector_Mat images, vector_vector_KeyPoint& keypoints, vector_Mat masks = std::vector<Mat>())
     //
 
-    public void detect(List<Mat> images, List<MatOfKeyPoint> keypoints, List<Mat> masks) {
+    //javadoc: javaFeatureDetector::detect(images, keypoints, masks)
+    public  void detect(List<Mat> images, List<MatOfKeyPoint> keypoints, List<Mat> masks)
+    {
         Mat images_mat = Converters.vector_Mat_to_Mat(images);
         Mat keypoints_mat = new Mat();
         Mat masks_mat = Converters.vector_Mat_to_Mat(masks);
         detect_2(nativeObj, images_mat.nativeObj, keypoints_mat.nativeObj, masks_mat.nativeObj);
         Converters.Mat_to_vector_vector_KeyPoint(keypoints_mat, keypoints);
         keypoints_mat.release();
+        return;
     }
 
-    public void detect(List<Mat> images, List<MatOfKeyPoint> keypoints) {
+    //javadoc: javaFeatureDetector::detect(images, keypoints)
+    public  void detect(List<Mat> images, List<MatOfKeyPoint> keypoints)
+    {
         Mat images_mat = Converters.vector_Mat_to_Mat(images);
         Mat keypoints_mat = new Mat();
         detect_3(nativeObj, images_mat.nativeObj, keypoints_mat.nativeObj);
         Converters.Mat_to_vector_vector_KeyPoint(keypoints_mat, keypoints);
         keypoints_mat.release();
+        return;
     }
 
 
     //
-    // C++:  bool cv::javaFeatureDetector::empty()
+    // C++:  void read(String fileName)
     //
 
-    public boolean empty() {
-        return empty_0(nativeObj);
-    }
-
-
-    //
-    // C++: static Ptr_javaFeatureDetector cv::javaFeatureDetector::create(int detectorType)
-    //
-
-    /**
-     * supported: FAST STAR SIFT SURF ORB MSER GFTT HARRIS BRISK AKAZE Grid(XXXX) Pyramid(XXXX) Dynamic(XXXX)
-     * not supported: SimpleBlob, Dense
-     * @deprecated
-     * @param detectorType automatically generated
-     * @return automatically generated
-     */
-    @Deprecated
-    public static FeatureDetector create(int detectorType) {
-        return FeatureDetector.__fromPtr__(create_0(detectorType));
-    }
-
-
-    //
-    // C++:  void cv::javaFeatureDetector::write(String fileName)
-    //
-
-    public void write(String fileName) {
-        write_0(nativeObj, fileName);
-    }
-
-
-    //
-    // C++:  void cv::javaFeatureDetector::read(String fileName)
-    //
-
-    public void read(String fileName) {
+    //javadoc: javaFeatureDetector::read(fileName)
+    public  void read(String fileName)
+    {
+        
         read_0(nativeObj, fileName);
+        
+        return;
+    }
+
+
+    //
+    // C++:  void write(String fileName)
+    //
+
+    //javadoc: javaFeatureDetector::write(fileName)
+    public  void write(String fileName)
+    {
+        
+        write_0(nativeObj, fileName);
+        
+        return;
     }
 
 
@@ -171,25 +190,25 @@ public class FeatureDetector {
 
 
 
-    // C++:  void cv::javaFeatureDetector::detect(Mat image, vector_KeyPoint& keypoints, Mat mask = Mat())
+    // C++:  bool empty()
+    private static native boolean empty_0(long nativeObj);
+
+    // C++: static javaFeatureDetector* create(int detectorType)
+    private static native long create_0(int detectorType);
+
+    // C++:  void detect(Mat image, vector_KeyPoint& keypoints, Mat mask = Mat())
     private static native void detect_0(long nativeObj, long image_nativeObj, long keypoints_mat_nativeObj, long mask_nativeObj);
     private static native void detect_1(long nativeObj, long image_nativeObj, long keypoints_mat_nativeObj);
 
-    // C++:  void cv::javaFeatureDetector::detect(vector_Mat images, vector_vector_KeyPoint& keypoints, vector_Mat masks = std::vector<Mat>())
+    // C++:  void detect(vector_Mat images, vector_vector_KeyPoint& keypoints, vector_Mat masks = std::vector<Mat>())
     private static native void detect_2(long nativeObj, long images_mat_nativeObj, long keypoints_mat_nativeObj, long masks_mat_nativeObj);
     private static native void detect_3(long nativeObj, long images_mat_nativeObj, long keypoints_mat_nativeObj);
 
-    // C++:  bool cv::javaFeatureDetector::empty()
-    private static native boolean empty_0(long nativeObj);
-
-    // C++: static Ptr_javaFeatureDetector cv::javaFeatureDetector::create(int detectorType)
-    private static native long create_0(int detectorType);
-
-    // C++:  void cv::javaFeatureDetector::write(String fileName)
-    private static native void write_0(long nativeObj, String fileName);
-
-    // C++:  void cv::javaFeatureDetector::read(String fileName)
+    // C++:  void read(String fileName)
     private static native void read_0(long nativeObj, String fileName);
+
+    // C++:  void write(String fileName)
+    private static native void write_0(long nativeObj, String fileName);
 
     // native support for java finalize()
     private static native void delete(long nativeObj);

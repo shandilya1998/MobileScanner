@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_COLOR_DETAIL_HPP
-#define OPENCV_CUDA_COLOR_DETAIL_HPP
+#ifndef __OPENCV_CUDA_COLOR_DETAIL_HPP__
+#define __OPENCV_CUDA_COLOR_DETAIL_HPP__
 
 #include "../common.hpp"
 #include "../vec_traits.hpp"
@@ -1977,4 +1977,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_COLOR_DETAIL_HPP
+#endif // __OPENCV_CUDA_COLOR_DETAIL_HPP__
