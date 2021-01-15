@@ -18,8 +18,6 @@ import java.io.IOException;
 import org.opencv.core.*;
 import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfByte;
-import org.opencv.dnn.*;
-import org.opencv.dnn.Dnn;
 import org.opencv.utils.*;
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
