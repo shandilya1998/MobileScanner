@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_VIDEOSTAB_LOG_HPP
-#define OPENCV_VIDEOSTAB_LOG_HPP
+#ifndef __OPENCV_VIDEOSTAB_LOG_HPP__
+#define __OPENCV_VIDEOSTAB_LOG_HPP__
 
 #include "opencv2/core.hpp"
 
@@ -63,13 +63,13 @@ public:
 class CV_EXPORTS NullLog : public ILog
 {
 public:
-    virtual void print(const char * /*format*/, ...) CV_OVERRIDE {}
+    virtual void print(const char * /*format*/, ...) {}
 };
 
 class CV_EXPORTS LogToStdout : public ILog
 {
 public:
-    virtual void print(const char *format, ...) CV_OVERRIDE;
+    virtual void print(const char *format, ...);
 };
 
 //! @}

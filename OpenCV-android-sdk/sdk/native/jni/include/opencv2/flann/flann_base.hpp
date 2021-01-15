@@ -31,9 +31,8 @@
 #ifndef OPENCV_FLANN_BASE_HPP_
 #define OPENCV_FLANN_BASE_HPP_
 
-//! @cond IGNORED
-
 #include <vector>
+#include <cassert>
 #include <cstdio>
 
 #include "general.h"
@@ -81,12 +80,10 @@ NNIndex<Distance>* load_saved_index(const Matrix<typename Distance::ElementType>
     }
     IndexHeader header = load_header(fin);
     if (header.data_type != Datatype<ElementType>::type()) {
-        fclose(fin);
-        FLANN_THROW(cv::Error::StsError, "Datatype of saved index is different than of the one to be created.");
+        throw FLANNException("Datatype of saved index is different than of the one to be created.");
     }
     if ((size_t(header.rows) != dataset.rows)||(size_t(header.cols) != dataset.cols)) {
-        fclose(fin);
-        FLANN_THROW(cv::Error::StsError, "The index saved belongs to a different dataset");
+        throw FLANNException("The index saved belongs to a different dataset");
     }
 
     IndexParams params;
@@ -129,7 +126,7 @@ public:
     /**
      * Builds the index.
      */
-    void buildIndex() CV_OVERRIDE
+    void buildIndex()
     {
         if (!loaded_) {
             nnIndex_->buildIndex();
@@ -140,7 +137,7 @@ public:
     {
         FILE* fout = fopen(filename.c_str(), "wb");
         if (fout == NULL) {
-            FLANN_THROW(cv::Error::StsError, "Cannot open file");
+            throw FLANNException("Cannot open file");
         }
         save_header(fout, *nnIndex_);
         saveIndex(fout);
@@ -151,7 +148,7 @@ public:
      * \brief Saves the index to a stream
      * \param stream The stream to save the index to
      */
-    virtual void saveIndex(FILE* stream) CV_OVERRIDE
+    virtual void saveIndex(FILE* stream)
     {
         nnIndex_->saveIndex(stream);
     }
@@ -160,7 +157,7 @@ public:
      * \brief Loads the index from a stream
      * \param stream The stream from which the index is loaded
      */
-    virtual void loadIndex(FILE* stream) CV_OVERRIDE
+    virtual void loadIndex(FILE* stream)
     {
         nnIndex_->loadIndex(stream);
     }
@@ -168,7 +165,7 @@ public:
     /**
      * \returns number of features in this index.
      */
-    size_t veclen() const CV_OVERRIDE
+    size_t veclen() const
     {
         return nnIndex_->veclen();
     }
@@ -176,7 +173,7 @@ public:
     /**
      * \returns The dimensionality of the features in this index.
      */
-    size_t size() const CV_OVERRIDE
+    size_t size() const
     {
         return nnIndex_->size();
     }
@@ -184,7 +181,7 @@ public:
     /**
      * \returns The index type (kdtree, kmeans,...)
      */
-    flann_algorithm_t getType() const CV_OVERRIDE
+    flann_algorithm_t getType() const
     {
         return nnIndex_->getType();
     }
@@ -192,7 +189,7 @@ public:
     /**
      * \returns The amount of memory (in bytes) used by the index.
      */
-    virtual int usedMemory() const CV_OVERRIDE
+    virtual int usedMemory() const
     {
         return nnIndex_->usedMemory();
     }
@@ -201,7 +198,7 @@ public:
     /**
      * \returns The index parameters
      */
-    IndexParams getParameters() const CV_OVERRIDE
+    IndexParams getParameters() const
     {
         return nnIndex_->getParameters();
     }
@@ -214,7 +211,7 @@ public:
      * \param[in] knn Number of nearest neighbors to return
      * \param[in] params Search parameters
      */
-    void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params) CV_OVERRIDE
+    void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params)
     {
         nnIndex_->knnSearch(queries, indices, dists, knn, params);
     }
@@ -228,7 +225,7 @@ public:
      * \param[in] params Search parameters
      * \returns Number of neighbors found
      */
-    int radiusSearch(const Matrix<ElementType>& query, Matrix<int>& indices, Matrix<DistanceType>& dists, float radius, const SearchParams& params) CV_OVERRIDE
+    int radiusSearch(const Matrix<ElementType>& query, Matrix<int>& indices, Matrix<DistanceType>& dists, float radius, const SearchParams& params)
     {
         return nnIndex_->radiusSearch(query, indices, dists, radius, params);
     }
@@ -236,7 +233,7 @@ public:
     /**
      * \brief Method that searches for nearest-neighbours
      */
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams) CV_OVERRIDE
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& searchParams)
     {
         nnIndex_->findNeighbors(result, vec, searchParams);
     }
@@ -244,7 +241,7 @@ public:
     /**
      * \brief Returns actual index
      */
-    CV_DEPRECATED NNIndex<Distance>* getIndex()
+    FLANN_DEPRECATED NNIndex<Distance>* getIndex()
     {
         return nnIndex_;
     }
@@ -253,7 +250,7 @@ public:
      * \brief Returns index parameters.
      * \deprecated use getParameters() instead.
      */
-    CV_DEPRECATED  const IndexParams* getIndexParameters()
+    FLANN_DEPRECATED  const IndexParams* getIndexParameters()
     {
         return &index_params_;
     }
@@ -265,9 +262,6 @@ private:
     bool loaded_;
     /** Parameters passed to the index */
     IndexParams index_params_;
-
-    Index(const Index &); // copy disabled
-    Index& operator=(const Index &); // assign disabled
 };
 
 /**
@@ -282,7 +276,7 @@ private:
  * of the form (branching-1)*K+1 smaller than clusters.rows).
  */
 template <typename Distance>
-int hierarchicalClustering(const Matrix<typename Distance::ElementType>& points, Matrix<typename Distance::CentersType>& centers,
+int hierarchicalClustering(const Matrix<typename Distance::ElementType>& points, Matrix<typename Distance::ResultType>& centers,
                            const KMeansIndexParams& params, Distance d = Distance())
 {
     KMeansIndex<Distance> kmeans(points, params, d);
@@ -293,7 +287,4 @@ int hierarchicalClustering(const Matrix<typename Distance::ElementType>& points,
 }
 
 }
-
-//! @endcond
-
 #endif /* OPENCV_FLANN_BASE_HPP_ */

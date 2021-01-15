@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_VIDEOSTAB_OUTLIER_REJECTION_HPP
-#define OPENCV_VIDEOSTAB_OUTLIER_REJECTION_HPP
+#ifndef __OPENCV_VIDEOSTAB_OUTLIER_REJECTION_HPP__
+#define __OPENCV_VIDEOSTAB_OUTLIER_REJECTION_HPP__
 
 #include <vector>
 #include "opencv2/core.hpp"
@@ -68,7 +68,7 @@ class CV_EXPORTS NullOutlierRejector : public IOutlierRejector
 {
 public:
     virtual void process(
-            Size frameSize, InputArray points0, InputArray points1, OutputArray mask) CV_OVERRIDE;
+            Size frameSize, InputArray points0, InputArray points1, OutputArray mask);
 };
 
 class CV_EXPORTS TranslationBasedLocalOutlierRejector : public IOutlierRejector
@@ -83,7 +83,7 @@ public:
     RansacParams ransacParams() const { return ransacParams_; }
 
     virtual void process(
-            Size frameSize, InputArray points0, InputArray points1, OutputArray mask) CV_OVERRIDE;
+            Size frameSize, InputArray points0, InputArray points1, OutputArray mask);
 
 private:
     Size cellSize_;

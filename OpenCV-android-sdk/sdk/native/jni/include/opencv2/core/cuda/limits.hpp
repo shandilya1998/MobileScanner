@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_LIMITS_HPP
-#define OPENCV_CUDA_LIMITS_HPP
+#ifndef __OPENCV_CUDA_LIMITS_HPP__
+#define __OPENCV_CUDA_LIMITS_HPP__
 
 #include <limits.h>
 #include <float.h>
@@ -125,4 +125,4 @@ template <> struct numeric_limits<double>
 
 //! @endcond
 
-#endif // OPENCV_CUDA_LIMITS_HPP
+#endif // __OPENCV_CUDA_LIMITS_HPP__

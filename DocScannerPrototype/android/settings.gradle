@@ -8,5 +8,5 @@ project(':react-native-rectangle-scanner').projectDir = new File(rootProject.pro
 apply from: file("../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesSettingsGradle(settings)
 include ':app'
 include ':libraries:tess-two'
-include ':openCVLibrary3413'
 include ':openCvLibrary310'
+include ':openCVLibrary310'

@@ -41,8 +41,8 @@
 //
 //M*/
 
-#ifndef OPENCV_SHAPE_SHAPE_TRANSFORM_HPP
-#define OPENCV_SHAPE_SHAPE_TRANSFORM_HPP
+#ifndef __OPENCV_SHAPE_SHAPE_TRANSFORM_HPP__
+#define __OPENCV_SHAPE_SHAPE_TRANSFORM_HPP__
 #include <vector>
 #include "opencv2/core.hpp"
 #include "opencv2/imgproc.hpp"
@@ -92,7 +92,7 @@ public:
 
 /** @brief Definition of the transformation
 
-occupied in the paper "Principal Warps: Thin-Plate Splines and Decomposition of Deformations", by
+ocupied in the paper "Principal Warps: Thin-Plate Splines and Decomposition of Deformations", by
 F.L. Bookstein (PAMI 1989). :
  */
 class CV_EXPORTS_W ThinPlateSplineShapeTransformer : public ShapeTransformer

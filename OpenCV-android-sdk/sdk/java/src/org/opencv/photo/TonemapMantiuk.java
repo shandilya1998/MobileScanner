@@ -1,58 +1,71 @@
+
 //
 // This file is auto-generated. Please don't modify it!
 //
 package org.opencv.photo;
 
-import org.opencv.photo.Tonemap;
+
 
 // C++: class TonemapMantiuk
-/**
- * This algorithm transforms image to contrast using gradients on all levels of gaussian pyramid,
- * transforms contrast values to HVS response and scales the response. After this the image is
- * reconstructed from new contrast values.
- *
- * For more information see CITE: MM06 .
- */
+//javadoc: TonemapMantiuk
 public class TonemapMantiuk extends Tonemap {
 
     protected TonemapMantiuk(long addr) { super(addr); }
 
-    // internal usage only
-    public static TonemapMantiuk __fromPtr__(long addr) { return new TonemapMantiuk(addr); }
 
     //
-    // C++:  float cv::TonemapMantiuk::getScale()
+    // C++:  float getSaturation()
     //
 
-    public float getScale() {
-        return getScale_0(nativeObj);
+    //javadoc: TonemapMantiuk::getSaturation()
+    public  float getSaturation()
+    {
+        
+        float retVal = getSaturation_0(nativeObj);
+        
+        return retVal;
     }
 
 
     //
-    // C++:  void cv::TonemapMantiuk::setScale(float scale)
+    // C++:  float getScale()
     //
 
-    public void setScale(float scale) {
-        setScale_0(nativeObj, scale);
+    //javadoc: TonemapMantiuk::getScale()
+    public  float getScale()
+    {
+        
+        float retVal = getScale_0(nativeObj);
+        
+        return retVal;
     }
 
 
     //
-    // C++:  float cv::TonemapMantiuk::getSaturation()
+    // C++:  void setSaturation(float saturation)
     //
 
-    public float getSaturation() {
-        return getSaturation_0(nativeObj);
-    }
-
-
-    //
-    // C++:  void cv::TonemapMantiuk::setSaturation(float saturation)
-    //
-
-    public void setSaturation(float saturation) {
+    //javadoc: TonemapMantiuk::setSaturation(saturation)
+    public  void setSaturation(float saturation)
+    {
+        
         setSaturation_0(nativeObj, saturation);
+        
+        return;
+    }
+
+
+    //
+    // C++:  void setScale(float scale)
+    //
+
+    //javadoc: TonemapMantiuk::setScale(scale)
+    public  void setScale(float scale)
+    {
+        
+        setScale_0(nativeObj, scale);
+        
+        return;
     }
 
 
@@ -63,17 +76,17 @@ public class TonemapMantiuk extends Tonemap {
 
 
 
-    // C++:  float cv::TonemapMantiuk::getScale()
-    private static native float getScale_0(long nativeObj);
-
-    // C++:  void cv::TonemapMantiuk::setScale(float scale)
-    private static native void setScale_0(long nativeObj, float scale);
-
-    // C++:  float cv::TonemapMantiuk::getSaturation()
+    // C++:  float getSaturation()
     private static native float getSaturation_0(long nativeObj);
 
-    // C++:  void cv::TonemapMantiuk::setSaturation(float saturation)
+    // C++:  float getScale()
+    private static native float getScale_0(long nativeObj);
+
+    // C++:  void setSaturation(float saturation)
     private static native void setSaturation_0(long nativeObj, float saturation);
+
+    // C++:  void setScale(float scale)
+    private static native void setScale_0(long nativeObj, float scale);
 
     // native support for java finalize()
     private static native void delete(long nativeObj);

@@ -31,8 +31,7 @@
 #ifndef OPENCV_FLANN_LINEAR_INDEX_H_
 #define OPENCV_FLANN_LINEAR_INDEX_H_
 
-//! @cond IGNORED
-
+#include "general.h"
 #include "nn_index.h"
 
 namespace cvflann
@@ -64,47 +63,47 @@ public:
     LinearIndex(const LinearIndex&);
     LinearIndex& operator=(const LinearIndex&);
 
-    flann_algorithm_t getType() const CV_OVERRIDE
+    flann_algorithm_t getType() const
     {
         return FLANN_INDEX_LINEAR;
     }
 
 
-    size_t size() const CV_OVERRIDE
+    size_t size() const
     {
         return dataset_.rows;
     }
 
-    size_t veclen() const CV_OVERRIDE
+    size_t veclen() const
     {
         return dataset_.cols;
     }
 
 
-    int usedMemory() const CV_OVERRIDE
+    int usedMemory() const
     {
         return 0;
     }
 
-    void buildIndex() CV_OVERRIDE
+    void buildIndex()
     {
         /* nothing to do here for linear search */
     }
 
-    void saveIndex(FILE*) CV_OVERRIDE
+    void saveIndex(FILE*)
     {
         /* nothing to do here for linear search */
     }
 
 
-    void loadIndex(FILE*) CV_OVERRIDE
+    void loadIndex(FILE*)
     {
         /* nothing to do here for linear search */
 
         index_params_["algorithm"] = getType();
     }
 
-    void findNeighbors(ResultSet<DistanceType>& resultSet, const ElementType* vec, const SearchParams& /*searchParams*/) CV_OVERRIDE
+    void findNeighbors(ResultSet<DistanceType>& resultSet, const ElementType* vec, const SearchParams& /*searchParams*/)
     {
         ElementType* data = dataset_.data;
         for (size_t i = 0; i < dataset_.rows; ++i, data += dataset_.cols) {
@@ -113,7 +112,7 @@ public:
         }
     }
 
-    IndexParams getParameters() const CV_OVERRIDE
+    IndexParams getParameters() const
     {
         return index_params_;
     }
@@ -129,7 +128,5 @@ private:
 };
 
 }
-
-//! @endcond
 
 #endif // OPENCV_FLANN_LINEAR_INDEX_H_

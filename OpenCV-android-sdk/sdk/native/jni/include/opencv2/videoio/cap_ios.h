@@ -39,15 +39,33 @@
 
 @class CvAbstractCamera;
 
-CV_EXPORTS @interface CvAbstractCamera : NSObject
+@interface CvAbstractCamera : NSObject
 {
+    AVCaptureSession* captureSession;
+    AVCaptureConnection* videoCaptureConnection;
+    AVCaptureVideoPreviewLayer *captureVideoPreviewLayer;
+
     UIDeviceOrientation currentDeviceOrientation;
 
     BOOL cameraAvailable;
+    BOOL captureSessionLoaded;
+    BOOL running;
+    BOOL useAVCaptureVideoPreviewLayer;
+
+    AVCaptureDevicePosition defaultAVCaptureDevicePosition;
+    AVCaptureVideoOrientation defaultAVCaptureVideoOrientation;
+    NSString *const defaultAVCaptureSessionPreset;
+
+    int defaultFPS;
+
+    UIView* parentView;
+
+    int imageWidth;
+    int imageHeight;
 }
 
-@property (nonatomic, strong) AVCaptureSession* captureSession;
-@property (nonatomic, strong) AVCaptureConnection* videoCaptureConnection;
+@property (nonatomic, retain) AVCaptureSession* captureSession;
+@property (nonatomic, retain) AVCaptureConnection* videoCaptureConnection;
 
 @property (nonatomic, readonly) BOOL running;
 @property (nonatomic, readonly) BOOL captureSessionLoaded;
@@ -62,24 +80,24 @@ CV_EXPORTS @interface CvAbstractCamera : NSObject
 @property (nonatomic, assign) int imageWidth;
 @property (nonatomic, assign) int imageHeight;
 
-@property (nonatomic, strong) UIView* parentView;
+@property (nonatomic, retain) UIView* parentView;
 
-- CV_UNUSED(start);
-- CV_UNUSED(stop);
-- CV_UNUSED(switchCameras);
+- (void)start;
+- (void)stop;
+- (void)switchCameras;
 
 - (id)initWithParentView:(UIView*)parent;
 
-- CV_UNUSED(createCaptureOutput);
-- CV_UNUSED(createVideoPreviewLayer);
-- CV_UNUSED(updateOrientation);
+- (void)createCaptureOutput;
+- (void)createVideoPreviewLayer;
+- (void)updateOrientation;
 
-- CV_UNUSED(lockFocus);
-- CV_UNUSED(unlockFocus);
-- CV_UNUSED(lockExposure);
-- CV_UNUSED(unlockExposure);
-- CV_UNUSED(lockBalance);
-- CV_UNUSED(unlockBalance);
+- (void)lockFocus;
+- (void)unlockFocus;
+- (void)lockExposure;
+- (void)unlockExposure;
+- (void)lockBalance;
+- (void)unlockBalance;
 
 @end
 
@@ -87,7 +105,7 @@ CV_EXPORTS @interface CvAbstractCamera : NSObject
 
 @class CvVideoCamera;
 
-CV_EXPORTS @protocol CvVideoCameraDelegate <NSObject>
+@protocol CvVideoCameraDelegate <NSObject>
 
 #ifdef __cplusplus
 // delegate method for processing image frames
@@ -96,29 +114,37 @@ CV_EXPORTS @protocol CvVideoCameraDelegate <NSObject>
 
 @end
 
-CV_EXPORTS @interface CvVideoCamera : CvAbstractCamera<AVCaptureVideoDataOutputSampleBufferDelegate>
+@interface CvVideoCamera : CvAbstractCamera<AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     AVCaptureVideoDataOutput *videoDataOutput;
 
     dispatch_queue_t videoDataOutputQueue;
     CALayer *customPreviewLayer;
 
+    BOOL grayscaleMode;
+
+    BOOL recordVideo;
+    BOOL rotateVideo;
+    AVAssetWriterInput* recordAssetWriterInput;
+    AVAssetWriterInputPixelBufferAdaptor* recordPixelBufferAdaptor;
+    AVAssetWriter* recordAssetWriter;
+
     CMTime lastSampleTime;
 
 }
 
-@property (nonatomic, weak) id<CvVideoCameraDelegate> delegate;
+@property (nonatomic, assign) id<CvVideoCameraDelegate> delegate;
 @property (nonatomic, assign) BOOL grayscaleMode;
 
 @property (nonatomic, assign) BOOL recordVideo;
 @property (nonatomic, assign) BOOL rotateVideo;
-@property (nonatomic, strong) AVAssetWriterInput* recordAssetWriterInput;
-@property (nonatomic, strong) AVAssetWriterInputPixelBufferAdaptor* recordPixelBufferAdaptor;
-@property (nonatomic, strong) AVAssetWriter* recordAssetWriter;
+@property (nonatomic, retain) AVAssetWriterInput* recordAssetWriterInput;
+@property (nonatomic, retain) AVAssetWriterInputPixelBufferAdaptor* recordPixelBufferAdaptor;
+@property (nonatomic, retain) AVAssetWriter* recordAssetWriter;
 
 - (void)adjustLayoutToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
-- CV_UNUSED(layoutPreviewLayer);
-- CV_UNUSED(saveVideo);
+- (void)layoutPreviewLayer;
+- (void)saveVideo;
 - (NSURL *)videoFileURL;
 - (NSString *)videoFileString;
 
@@ -129,21 +155,21 @@ CV_EXPORTS @interface CvVideoCamera : CvAbstractCamera<AVCaptureVideoDataOutputS
 
 @class CvPhotoCamera;
 
-CV_EXPORTS @protocol CvPhotoCameraDelegate <NSObject>
+@protocol CvPhotoCameraDelegate <NSObject>
 
 - (void)photoCamera:(CvPhotoCamera*)photoCamera capturedImage:(UIImage *)image;
 - (void)photoCameraCancel:(CvPhotoCamera*)photoCamera;
 
 @end
 
-CV_EXPORTS @interface CvPhotoCamera : CvAbstractCamera
+@interface CvPhotoCamera : CvAbstractCamera
 {
     AVCaptureStillImageOutput *stillImageOutput;
 }
 
-@property (nonatomic, weak) id<CvPhotoCameraDelegate> delegate;
+@property (nonatomic, assign) id<CvPhotoCameraDelegate> delegate;
 
-- CV_UNUSED(takePicture);
+- (void)takePicture;
 
 @end
 

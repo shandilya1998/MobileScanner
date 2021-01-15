@@ -12,8 +12,6 @@
  * Adapted for FLANN by Marius Muja
  */
 
-//! @cond IGNORED
-
 #include "defines.h"
 #include <stdexcept>
 #include <ostream>
@@ -56,50 +54,49 @@ struct base_any_policy
 template<typename T>
 struct typed_base_any_policy : base_any_policy
 {
-    virtual ::size_t get_size() CV_OVERRIDE { return sizeof(T); }
-    virtual const std::type_info& type() CV_OVERRIDE { return typeid(T); }
+    virtual ::size_t get_size() { return sizeof(T); }
+    virtual const std::type_info& type() { return typeid(T); }
 
 };
 
 template<typename T>
-struct small_any_policy CV_FINAL : typed_base_any_policy<T>
+struct small_any_policy : typed_base_any_policy<T>
 {
-    virtual void static_delete(void**) CV_OVERRIDE { }
-    virtual void copy_from_value(void const* src, void** dest) CV_OVERRIDE
+    virtual void static_delete(void**) { }
+    virtual void copy_from_value(void const* src, void** dest)
     {
         new (dest) T(* reinterpret_cast<T const*>(src));
     }
-    virtual void clone(void* const* src, void** dest) CV_OVERRIDE { *dest = *src; }
-    virtual void move(void* const* src, void** dest) CV_OVERRIDE { *dest = *src; }
-    virtual void* get_value(void** src) CV_OVERRIDE { return reinterpret_cast<void*>(src); }
-    virtual const void* get_value(void* const * src) CV_OVERRIDE { return reinterpret_cast<const void*>(src); }
-    virtual void print(std::ostream& out, void* const* src) CV_OVERRIDE { out << *reinterpret_cast<T const*>(src); }
+    virtual void clone(void* const* src, void** dest) { *dest = *src; }
+    virtual void move(void* const* src, void** dest) { *dest = *src; }
+    virtual void* get_value(void** src) { return reinterpret_cast<void*>(src); }
+    virtual const void* get_value(void* const * src) { return reinterpret_cast<const void*>(src); }
+    virtual void print(std::ostream& out, void* const* src) { out << *reinterpret_cast<T const*>(src); }
 };
 
 template<typename T>
-struct big_any_policy CV_FINAL : typed_base_any_policy<T>
+struct big_any_policy : typed_base_any_policy<T>
 {
-    virtual void static_delete(void** x) CV_OVERRIDE
+    virtual void static_delete(void** x)
     {
-        if (* x) delete (* reinterpret_cast<T**>(x));
-        *x = NULL;
+        if (* x) delete (* reinterpret_cast<T**>(x)); *x = NULL;
     }
-    virtual void copy_from_value(void const* src, void** dest) CV_OVERRIDE
+    virtual void copy_from_value(void const* src, void** dest)
     {
         *dest = new T(*reinterpret_cast<T const*>(src));
     }
-    virtual void clone(void* const* src, void** dest) CV_OVERRIDE
+    virtual void clone(void* const* src, void** dest)
     {
         *dest = new T(**reinterpret_cast<T* const*>(src));
     }
-    virtual void move(void* const* src, void** dest) CV_OVERRIDE
+    virtual void move(void* const* src, void** dest)
     {
         (*reinterpret_cast<T**>(dest))->~T();
         **reinterpret_cast<T**>(dest) = **reinterpret_cast<T* const*>(src);
     }
-    virtual void* get_value(void** src) CV_OVERRIDE { return *src; }
-    virtual const void* get_value(void* const * src) CV_OVERRIDE { return *src; }
-    virtual void print(std::ostream& out, void* const* src) CV_OVERRIDE { out << *reinterpret_cast<T const*>(*src); }
+    virtual void* get_value(void** src) { return *src; }
+    virtual const void* get_value(void* const * src) { return *src; }
+    virtual void print(std::ostream& out, void* const* src) { out << *reinterpret_cast<T const*>(*src); }
 };
 
 template<> inline void big_any_policy<flann_centers_init_t>::print(std::ostream& out, void* const* src)
@@ -248,12 +245,6 @@ public:
         return assign(x);
     }
 
-    /// Assignment operator. Template-based version above doesn't work as expected. We need regular assignment operator here.
-    any& operator=(const any& x)
-    {
-        return assign(x);
-    }
-
     /// Assignment operator, specialed for literal strings.
     /// They have types like const char [6] which don't work as expected.
     any& operator=(const char* x)
@@ -328,7 +319,5 @@ inline std::ostream& operator <<(std::ostream& out, const any& any_val)
 }
 
 }
-
-//! @endcond
 
 #endif // OPENCV_FLANN_ANY_H_

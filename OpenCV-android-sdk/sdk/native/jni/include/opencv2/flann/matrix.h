@@ -31,9 +31,9 @@
 #ifndef OPENCV_FLANN_DATASET_H_
 #define OPENCV_FLANN_DATASET_H_
 
-//! @cond IGNORED
-
 #include <stdio.h>
+
+#include "general.h"
 
 namespace cvflann
 {
@@ -66,7 +66,7 @@ public:
     /**
      * Convenience function for deallocating the storage data.
      */
-    CV_DEPRECATED void free()
+    FLANN_DEPRECATED void free()
     {
         fprintf(stderr, "The cvflann::Matrix<T>::free() method is deprecated "
                 "and it does not do any memory deallocation any more.  You are"
@@ -112,7 +112,5 @@ public:
 
 
 }
-
-//! @endcond
 
 #endif //OPENCV_FLANN_DATASET_H_

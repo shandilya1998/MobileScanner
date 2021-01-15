@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_VEC_DISTANCE_HPP
-#define OPENCV_CUDA_VEC_DISTANCE_HPP
+#ifndef __OPENCV_CUDA_VEC_DISTANCE_HPP__
+#define __OPENCV_CUDA_VEC_DISTANCE_HPP__
 
 #include "reduce.hpp"
 #include "functional.hpp"
@@ -229,4 +229,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_VEC_DISTANCE_HPP
+#endif // __OPENCV_CUDA_VEC_DISTANCE_HPP__

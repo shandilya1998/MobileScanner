@@ -40,8 +40,8 @@
 //
 //M*/
 
-#ifndef OPENCV_CUDA_DYNAMIC_SMEM_HPP
-#define OPENCV_CUDA_DYNAMIC_SMEM_HPP
+#ifndef __OPENCV_CUDA_DYNAMIC_SMEM_HPP__
+#define __OPENCV_CUDA_DYNAMIC_SMEM_HPP__
 
 /** @file
  * @deprecated Use @ref cudev instead.
@@ -85,4 +85,4 @@ namespace cv { namespace cuda { namespace device
 
 //! @endcond
 
-#endif // OPENCV_CUDA_DYNAMIC_SMEM_HPP
+#endif // __OPENCV_CUDA_DYNAMIC_SMEM_HPP__

@@ -45,6 +45,9 @@ public class DMatch {
         distance = _distance;
     }
 
+    /**
+     * Less is better.
+     */
     public boolean lessThan(DMatch it) {
         return distance < it.distance;
     }

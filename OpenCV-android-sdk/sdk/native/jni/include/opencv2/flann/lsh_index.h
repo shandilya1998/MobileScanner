@@ -35,13 +35,13 @@
 #ifndef OPENCV_FLANN_LSH_INDEX_H_
 #define OPENCV_FLANN_LSH_INDEX_H_
 
-//! @cond IGNORED
-
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <map>
 #include <vector>
 
+#include "general.h"
 #include "nn_index.h"
 #include "matrix.h"
 #include "result_set.h"
@@ -51,11 +51,6 @@
 #include "random.h"
 #include "saving.h"
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4702) //disable unreachable code
-#endif
-
 namespace cvflann
 {
 
@@ -63,20 +58,20 @@ struct LshIndexParams : public IndexParams
 {
     LshIndexParams(unsigned int table_number = 12, unsigned int key_size = 20, unsigned int multi_probe_level = 2)
     {
-        (*this)["algorithm"] = FLANN_INDEX_LSH;
+        (* this)["algorithm"] = FLANN_INDEX_LSH;
         // The number of hash tables to use
-        (*this)["table_number"] = static_cast<int>(table_number);
+        (*this)["table_number"] = table_number;
         // The length of the key in the hash tables
-        (*this)["key_size"] = static_cast<int>(key_size);
+        (*this)["key_size"] = key_size;
         // Number of levels to use in multi-probe (0 for standard LSH)
-        (*this)["multi_probe_level"] = static_cast<int>(multi_probe_level);
+        (*this)["multi_probe_level"] = multi_probe_level;
     }
 };
 
 /**
- * Locality-sensitive hashing  index
+ * Randomized kd-tree index
  *
- * Contains the tables and other information for indexing a set of points
+ * Contains the k-d trees and other information for indexing a set of points
  * for nearest-neighbor matching.
  */
 template<typename Distance>
@@ -97,9 +92,9 @@ public:
     {
         // cv::flann::IndexParams sets integer params as 'int', so it is used with get_param
         // in place of 'unsigned int'
-        table_number_ = get_param(index_params_,"table_number",12);
-        key_size_ = get_param(index_params_,"key_size",20);
-        multi_probe_level_ = get_param(index_params_,"multi_probe_level",2);
+        table_number_ = (unsigned int)get_param<int>(index_params_,"table_number",12);
+        key_size_ = (unsigned int)get_param<int>(index_params_,"key_size",20);
+        multi_probe_level_ = (unsigned int)get_param<int>(index_params_,"multi_probe_level",2);
 
         feature_size_ = (unsigned)dataset_.cols;
         fill_xor_mask(0, key_size_, multi_probe_level_, xor_masks_);
@@ -112,10 +107,10 @@ public:
     /**
      * Builds the index
      */
-    void buildIndex() CV_OVERRIDE
+    void buildIndex()
     {
         tables_.resize(table_number_);
-        for (int i = 0; i < table_number_; ++i) {
+        for (unsigned int i = 0; i < table_number_; ++i) {
             lsh::LshTable<ElementType>& table = tables_[i];
             table = lsh::LshTable<ElementType>(feature_size_, key_size_);
 
@@ -124,13 +119,13 @@ public:
         }
     }
 
-    flann_algorithm_t getType() const CV_OVERRIDE
+    flann_algorithm_t getType() const
     {
         return FLANN_INDEX_LSH;
     }
 
 
-    void saveIndex(FILE* stream) CV_OVERRIDE
+    void saveIndex(FILE* stream)
     {
         save_value(stream,table_number_);
         save_value(stream,key_size_);
@@ -138,7 +133,7 @@ public:
         save_value(stream, dataset_);
     }
 
-    void loadIndex(FILE* stream) CV_OVERRIDE
+    void loadIndex(FILE* stream)
     {
         load_value(stream, table_number_);
         load_value(stream, key_size_);
@@ -156,7 +151,7 @@ public:
     /**
      *  Returns size of index.
      */
-    size_t size() const CV_OVERRIDE
+    size_t size() const
     {
         return dataset_.rows;
     }
@@ -164,7 +159,7 @@ public:
     /**
      * Returns the length of an index feature.
      */
-    size_t veclen() const CV_OVERRIDE
+    size_t veclen() const
     {
         return feature_size_;
     }
@@ -173,13 +168,13 @@ public:
      * Computes the index memory usage
      * Returns: memory used by the index
      */
-    int usedMemory() const CV_OVERRIDE
+    int usedMemory() const
     {
         return (int)(dataset_.rows * sizeof(int));
     }
 
 
-    IndexParams getParameters() const CV_OVERRIDE
+    IndexParams getParameters() const
     {
         return index_params_;
     }
@@ -192,13 +187,13 @@ public:
      * \param[in] knn Number of nearest neighbors to return
      * \param[in] params Search parameters
      */
-    virtual void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params) CV_OVERRIDE
+    virtual void knnSearch(const Matrix<ElementType>& queries, Matrix<int>& indices, Matrix<DistanceType>& dists, int knn, const SearchParams& params)
     {
-        CV_Assert(queries.cols == veclen());
-        CV_Assert(indices.rows >= queries.rows);
-        CV_Assert(dists.rows >= queries.rows);
-        CV_Assert(int(indices.cols) >= knn);
-        CV_Assert(int(dists.cols) >= knn);
+        assert(queries.cols == veclen());
+        assert(indices.rows >= queries.rows);
+        assert(dists.rows >= queries.rows);
+        assert(int(indices.cols) >= knn);
+        assert(int(dists.cols) >= knn);
 
 
         KNNUniqueResultSet<DistanceType> resultSet(knn);
@@ -222,7 +217,7 @@ public:
      *     vec = the vector for which to search the nearest neighbors
      *     maxCheck = the maximum number of restarts (in a best-bin-first manner)
      */
-    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& /*searchParams*/) CV_OVERRIDE
+    void findNeighbors(ResultSet<DistanceType>& result, const ElementType* vec, const SearchParams& /*searchParams*/)
     {
         getNeighbors(vec, result);
     }
@@ -381,11 +376,11 @@ private:
     IndexParams index_params_;
 
     /** table number */
-    int table_number_;
+    unsigned int table_number_;
     /** key size */
-    int key_size_;
+    unsigned int key_size_;
     /** How far should we look for neighbors in multi-probe LSH */
-    int multi_probe_level_;
+    unsigned int multi_probe_level_;
 
     /** The XOR masks to apply to a key to get the neighboring buckets */
     std::vector<lsh::BucketKey> xor_masks_;
@@ -393,11 +388,5 @@ private:
     Distance distance_;
 };
 }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
-
-//! @endcond
 
 #endif //OPENCV_FLANN_LSH_INDEX_H_
